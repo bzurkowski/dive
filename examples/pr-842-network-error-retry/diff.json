@@ -1,0 +1,1139 @@
+{
+ "repo": "sindresorhus/ky",
+ "pr": 842,
+ "url": "https://github.com/sindresorhus/ky/pull/842",
+ "baseRef": "main",
+ "base": "191057d135c1cfe07f9fa16978c2482969ccac20",
+ "head": "5703d624c6990817662a827be06dd006870acde8",
+ "files": [
+  {
+   "path": "readme.md",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 262,
+     "oldLines": 6,
+     "newStart": 262,
+     "newLines": 8,
+     "lines": [
+      " ",
+      " If `retry` is a number, it will be used as `limit` and other defaults will remain in place.",
+      " ",
+      "+Network errors (e.g., DNS failures, connection refused, offline) are automatically retried for retriable methods. Only errors recognized as network errors are retried; other errors (e.g., programming bugs) are thrown immediately. Use `shouldRetry` to customize this behavior.",
+      "+",
+      " If the response provides an HTTP status contained in `afterStatusCodes`, Ky will wait until the date, timeout, or timestamp given in the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header has passed to retry the request. If `Retry-After` is missing, the non-standard [`RateLimit-Reset`](https://www.ietf.org/archive/id/draft-polli-ratelimit-headers-05.html#section-3.3) header is used in its place as a fallback. If the provided status code is not in the list, the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header will be ignored.",
+      " ",
+      " If `maxRetryAfter` is set to `undefined`, it will use `options.timeout`. If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header is greater than `maxRetryAfter`, it will use `maxRetryAfter`."
+     ]
+    },
+    {
+     "oldStart": 287,
+     "oldLines": 7,
+     "newStart": 289,
+     "newLines": 7,
+     "lines": [
+      " The function receives a state object with the error and retry count (starts at 1 for the first retry), and should return:",
+      " - `true` to force a retry (bypasses `retryOnTimeout`, status code checks, and other default validations)",
+      " - `false` to prevent a retry (no retry will occur)",
+      "-- `undefined` to use the default retry logic (`retryOnTimeout`, status codes, etc.)",
+      "+- `undefined` to use the default retry logic (`retryOnTimeout`, status codes, network errors). Unrecognized error types are not retried.",
+      " ",
+      " **General example**",
+      " "
+     ]
+    },
+    {
+     "oldStart": 451,
+     "oldLines": 7,
+     "newStart": 453,
+     "newLines": 7,
+     "lines": [
+      " ",
+      " The `retryCount` is always `>= 1`, since this hook is only called during retries, not on the initial request.",
+      " ",
+      "-If the request received a response, the error will be of type `HTTPError`. The `Response` object will be available at `error.response`, and the pre-parsed response body will be available at `error.data`. Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will not be an instance of `HTTPError`.",
+      "+If the request received a response, the error will be of type `HTTPError`. The `Response` object will be available at `error.response`, and the pre-parsed response body will be available at `error.data`. Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will be an instance of `NetworkError` instead of `HTTPError`.",
+      " ",
+      " You can prevent Ky from retrying the request by throwing an error. Ky will not handle it in any way and the error will be propagated to the request initiator. The rest of the `beforeRetry` hooks will not be called in this case. Alternatively, you can return the [`ky.stop`](#kystop) symbol to do the same thing but without propagating an error (this has some limitations, see `ky.stop` docs for details).",
+      " "
+     ]
+    },
+    {
+     "oldStart": 524,
+     "oldLines": 7,
+     "newStart": 526,
+     "newLines": 7,
+     "lines": [
+      " ",
+      " This hook enables you to modify any error right before it is thrown. The hook function receives a state object with the normalized request, options, error, and retry count, and should return an `Error` instance.",
+      " ",
+      "-This hook is called for all error types, including `HTTPError`, `TimeoutError`, `ForceRetryError` (when retry limit is exceeded via `ky.retry()`), and network errors. Use type guards like `isHTTPError()` or `isTimeoutError()` to handle specific error types.",
+      "+This hook is called for all error types, including `HTTPError`, `NetworkError`, `TimeoutError`, and `ForceRetryError` (when retry limit is exceeded via `ky.retry()`). Use type guards like `isHTTPError()`, `isNetworkError()`, or `isTimeoutError()` to handle specific error types.",
+      " ",
+      " The `retryCount` is `0` for the initial request and increments with each retry. This allows you to distinguish between the initial request and retries, which is useful when you need different error handling based on retry attempts (e.g., showing different error messages on the final attempt).",
+      " "
+     ]
+    },
+    {
+     "oldStart": 1084,
+     "oldLines": 7,
+     "newStart": 1086,
+     "newLines": 7,
+     "lines": [
+      " ",
+      " ### KyError",
+      " ",
+      "-Base class for all Ky-specific errors. `HTTPError`, `TimeoutError`, and `ForceRetryError` extend this class.",
+      "+Base class for all Ky-specific errors. `HTTPError`, `NetworkError`, `TimeoutError`, and `ForceRetryError` extend this class.",
+      " ",
+      " You can use `instanceof KyError` to check if an error originated from Ky, or use the `isKyError()` type guard for cross-realm compatibility and TypeScript type narrowing.",
+      " "
+     ]
+    },
+    {
+     "oldStart": 1109,
+     "oldLines": 7,
+     "newStart": 1111,
+     "newLines": 7,
+     "lines": [
+      " ",
+      " It also has a `data` property with the pre-parsed response body. For JSON responses (based on `Content-Type`), the body is parsed using the [`parseJson` option](#parsejson) if set, or `JSON.parse` by default. For other content types, it is set as plain text. If the body is empty or parsing fails, `data` will be `undefined`. To avoid hanging or excessive buffering, `error.data` population is bounded by the request timeout and a 10 MiB response body size limit. The `data` property is populated before [`beforeError`](#hooks) hooks run, so hooks can access it.",
+      " ",
+      "-Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will not be an instance of HTTPError and will not contain a `response` property.",
+      "+Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will be an instance of [`NetworkError`](#networkerror) instead of `HTTPError` and will not contain a `response` property.",
+      " ",
+      " > [!NOTE]",
+      " > The response body is automatically consumed when populating `error.data`, so you do not need to manually consume or cancel `error.response.body`."
+     ]
+    },
+    {
+     "oldStart": 1174,
+     "oldLines": 6,
+     "newStart": 1176,
+     "newLines": 28,
+     "lines": [
+      " ",
+      " The error thrown when the request times out. It has a `request` property with the [`Request` object](https://developer.mozilla.org/en-US/docs/Web/API/Request).",
+      " ",
+      "+### NetworkError",
+      "+",
+      "+The error thrown when a network error occurs during the request (e.g., DNS failure, connection refused, offline). It has a `request` property with the [`Request` object](https://developer.mozilla.org/en-US/docs/Web/API/Request). The original error is available via the standard `cause` property.",
+      "+",
+      "+Network errors are automatically retried (for [retriable methods](#retry)).",
+      "+",
+      "+> [!NOTE]",
+      "+> Network errors are detected using runtime-specific heuristics. Unrecognized runtimes may produce errors that are not wrapped in `NetworkError`. Use the [`shouldRetry`](#retry) option to handle such cases.",
+      "+",
+      "+```js",
+      "+import ky, {isNetworkError} from 'ky';",
+      "+",
+      "+try {",
+      "+\tawait ky('https://example.com').json();",
+      "+} catch (error) {",
+      "+\tif (isNetworkError(error)) {",
+      "+\t\tconsole.log('Network error:', error.message);",
+      "+\t\tconsole.log('Original error:', error.cause);",
+      "+\t}",
+      "+}",
+      "+```",
+      "+",
+      " ## Tips",
+      " ",
+      " ### Sending form data"
+     ]
+    }
+   ],
+   "additions": 29,
+   "deletions": 5
+  },
+  {
+   "path": "source/core/Ky.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 1,
+     "oldLines": 4,
+     "newStart": 1,
+     "newLines": 5,
+     "lines": [
+      " import {HTTPError} from '../errors/HTTPError.js';",
+      "+import {NetworkError} from '../errors/NetworkError.js';",
+      " import {NonError} from '../errors/NonError.js';",
+      " import {ForceRetryError} from '../errors/ForceRetryError.js';",
+      " import {SchemaValidationError} from '../errors/SchemaValidationError.js';"
+     ]
+    },
+    {
+     "oldStart": 20,
+     "oldLines": 7,
+     "newStart": 21,
+     "newLines": 8,
+     "lines": [
+      " import delay from '../utils/delay.js';",
+      " import {type ObjectEntries} from '../utils/types.js';",
+      " import {findUnknownOptions, hasSearchParameters} from '../utils/options.js';",
+      "-import {isHTTPError, isTimeoutError} from '../utils/type-guards.js';",
+      "+import isRawNetworkError from '../utils/is-network-error.js';",
+      "+import {isHTTPError, isNetworkError, isTimeoutError} from '../utils/type-guards.js';",
+      " import {",
+      " \tmaxSafeTimeout,",
+      " \tresponseTypes,"
+     ]
+    },
+    {
+     "oldStart": 436,
+     "oldLines": 8,
+     "newStart": 438,
+     "newLines": 12,
+     "lines": [
+      " \t\t}",
+      " ",
+      " \t\t// Default timeout behavior",
+      "-\t\tif (isTimeoutError(error) && !this.#options.retry.retryOnTimeout) {",
+      "-\t\t\tthrow error;",
+      "+\t\tif (isTimeoutError(error)) {",
+      "+\t\t\tif (!this.#options.retry.retryOnTimeout) {",
+      "+\t\t\t\tthrow error;",
+      "+\t\t\t}",
+      "+",
+      "+\t\t\treturn this.#calculateDelay();",
+      " \t\t}",
+      " ",
+      " \t\tif (isHTTPError(error)) {"
+     ]
+    },
+    {
+     "oldStart": 472,
+     "oldLines": 6,
+     "newStart": 478,
+     "newLines": 13,
+     "lines": [
+      " \t\t\tif (error.response.status === 413) {",
+      " \t\t\t\tthrow error;",
+      " \t\t\t}",
+      "+",
+      "+\t\t\treturn this.#calculateDelay();",
+      "+\t\t}",
+      "+",
+      "+\t\t// Only retry known retriable error types. Unknown errors (e.g., programming bugs) are not retried.",
+      "+\t\tif (!isNetworkError(error)) {",
+      "+\t\t\tthrow error;",
+      " \t\t}",
+      " ",
+      " \t\treturn this.#calculateDelay();"
+     ]
+    },
+    {
+     "oldStart": 797,
+     "oldLines": 19,
+     "newStart": 810,
+     "newLines": 27,
+     "lines": [
+      " \t\t\tthis.request = retryRequest;",
+      " \t\t}",
+      " ",
+      "-\t\tif (this.#options.timeout === false) {",
+      "-\t\t\treturn this.#options.fetch(request, nonRequestOptions);",
+      "-\t\t}",
+      "+\t\ttry {",
+      "+\t\t\tif (this.#options.timeout === false) {",
+      "+\t\t\t\treturn await this.#options.fetch(request, nonRequestOptions);",
+      "+\t\t\t}",
+      " ",
+      "-\t\tconst remainingTimeout = this.#getRemainingTimeout() ?? this.#options.timeout;",
+      "-\t\tif (remainingTimeout <= 0) {",
+      "-\t\t\tthrow new TimeoutError(this.request);",
+      "-\t\t}",
+      "+\t\t\tconst remainingTimeout = this.#getRemainingTimeout() ?? this.#options.timeout;",
+      "+\t\t\tif (remainingTimeout <= 0) {",
+      "+\t\t\t\tthrow new TimeoutError(this.request);",
+      "+\t\t\t}",
+      " ",
+      "-\t\treturn timeout(request, nonRequestOptions, this.#abortController, {",
+      "-\t\t\t...this.#options,",
+      "-\t\t\ttimeout: remainingTimeout,",
+      "-\t\t} as TimeoutOptions);",
+      "+\t\t\treturn await timeout(request, nonRequestOptions, this.#abortController, {",
+      "+\t\t\t\t...this.#options,",
+      "+\t\t\t\ttimeout: remainingTimeout,",
+      "+\t\t\t} as TimeoutOptions);",
+      "+\t\t} catch (error) {",
+      "+\t\t\tif (isRawNetworkError(error)) {",
+      "+\t\t\t\tthrow new NetworkError(this.request, {cause: error as Error});",
+      "+\t\t\t}",
+      "+",
+      "+\t\t\tthrow error;",
+      "+\t\t}",
+      " \t}",
+      " ",
+      " \t#getRemainingTimeout(): number | undefined {"
+     ]
+    }
+   ],
+   "additions": 35,
+   "deletions": 14
+  },
+  {
+   "path": "source/errors/HTTPError.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 6,
+     "oldLines": 7,
+     "newStart": 6,
+     "newLines": 7,
+     "lines": [
+      " /**",
+      " Error thrown when the response has a non-2xx status code and `throwHttpErrors` is enabled.",
+      " ",
+      "-The error has a `response` property with the `Response` object, a `request` property with the `Request` object, and a `data` property with the pre-parsed response body.",
+      "+The error has a `response` property with the `Response` object, a `request` property with the `Request` object, an `options` property with the normalized options, and a `data` property with the pre-parsed response body.",
+      " */",
+      " export class HTTPError<T = unknown> extends KyError {",
+      " \toverride name = 'HTTPError' as const;"
+     ]
+    }
+   ],
+   "additions": 1,
+   "deletions": 1
+  },
+  {
+   "path": "source/errors/KyError.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 1,
+     "oldLines": 5,
+     "newStart": 1,
+     "newLines": 5,
+     "lines": [
+      " /**",
+      "-Base class for all Ky-specific errors. `HTTPError`, `TimeoutError`, and `ForceRetryError` extend this class.",
+      "+Base class for all Ky-specific errors. `HTTPError`, `NetworkError`, `TimeoutError`, and `ForceRetryError` extend this class.",
+      " */",
+      " export class KyError extends Error {",
+      " \toverride name = 'KyError';"
+     ]
+    }
+   ],
+   "additions": 1,
+   "deletions": 1
+  },
+  {
+   "path": "source/errors/NetworkError.ts",
+   "status": "added",
+   "hunks": [
+    {
+     "oldStart": 0,
+     "oldLines": 0,
+     "newStart": 1,
+     "newLines": 17,
+     "lines": [
+      "+import type {KyRequest} from '../types/request.js';",
+      "+import {KyError} from './KyError.js';",
+      "+",
+      "+/**",
+      "+Error thrown when a network error occurs during the request (e.g., DNS failure, connection refused, offline).",
+      "+",
+      "+The error has a `request` property with the `Request` object. The original error is available via the standard `cause` property.",
+      "+*/",
+      "+export class NetworkError extends KyError {",
+      "+\toverride name = 'NetworkError' as const;",
+      "+\trequest: KyRequest;",
+      "+",
+      "+\tconstructor(request: Request, options?: {cause?: Error}) {",
+      "+\t\tsuper(`Request failed due to a network error: ${request.method} ${request.url}`, options);",
+      "+\t\tthis.request = request;",
+      "+\t}",
+      "+}"
+     ]
+    }
+   ],
+   "additions": 17,
+   "deletions": 0
+  },
+  {
+   "path": "source/index.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 70,
+     "oldLines": 11,
+     "newStart": 70,
+     "newLines": 13,
+     "lines": [
+      " export {KyError} from './errors/KyError.js';",
+      " export {HTTPError} from './errors/HTTPError.js';",
+      " export {SchemaValidationError} from './errors/SchemaValidationError.js';",
+      "+export {NetworkError} from './errors/NetworkError.js';",
+      " export {TimeoutError} from './errors/TimeoutError.js';",
+      " export {ForceRetryError} from './errors/ForceRetryError.js';",
+      " export {",
+      " \tisKyError,",
+      " \tisHTTPError,",
+      "+\tisNetworkError,",
+      " \tisTimeoutError,",
+      " \tisForceRetryError,",
+      " } from './utils/type-guards.js';"
+     ]
+    }
+   ],
+   "additions": 2,
+   "deletions": 0
+  },
+  {
+   "path": "source/types/hooks.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 31,
+     "oldLines": 7,
+     "newStart": 31,
+     "newLines": 7,
+     "lines": [
+      " \trequest: KyRequest;",
+      " \toptions: NormalizedOptions;",
+      " ",
+      "-\t// `Error` (not `KyError`) because this receives all errors, including non-Ky ones like network `TypeError`s.",
+      "+\t// `Error` (not `KyError`) because this receives all errors, including non-Ky ones.",
+      " \terror: Error;",
+      " ",
+      " \t/**"
+     ]
+    },
+    {
+     "oldStart": 119,
+     "oldLines": 7,
+     "newStart": 119,
+     "newLines": 7,
+     "lines": [
+      " ",
+      " \tThe `retryCount` is always `>= 1`, since this hook is only called during retries, not on the initial request.",
+      " ",
+      "-\tIf the request received a response, the error will be of type `HTTPError`. The `Response` object will be available at `error.response`, and the pre-parsed response body will be available at `error.data`. Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will not be an instance of `HTTPError`.",
+      "+\tIf the request received a response, the error will be of type `HTTPError`. The `Response` object will be available at `error.response`, and the pre-parsed response body will be available at `error.data`. Be aware that some types of errors, such as network errors, inherently mean that a response was not received. In that case, the error will be an instance of `NetworkError` instead of `HTTPError`.",
+      " ",
+      " \tYou can prevent Ky from retrying the request by throwing an error. Ky will not handle it in any way and the error will be propagated to the request initiator. The rest of the `beforeRetry` hooks will not be called in this case. Alternatively, you can return the [`ky.stop`](#kystop) symbol to do the same thing but without propagating an error (this has some limitations, see `ky.stop` docs for details).",
+      " "
+     ]
+    },
+    {
+     "oldStart": 195,
+     "oldLines": 7,
+     "newStart": 195,
+     "newLines": 7,
+     "lines": [
+      " \t/**",
+      " \tThis hook enables you to modify any error right before it is thrown. The hook function receives a state object with the normalized request, options, error, and retry count, and should return an `Error` instance.",
+      " ",
+      "-\tThis hook is called for all error types, including `HTTPError`, `TimeoutError`, `ForceRetryError` (when retry limit is exceeded via `ky.retry()`), and network errors. Use type guards like `isHTTPError()` or `isTimeoutError()` to handle specific error types.",
+      "+\tThis hook is called for all error types, including `HTTPError`, `NetworkError`, `TimeoutError`, and `ForceRetryError` (when retry limit is exceeded via `ky.retry()`). Use type guards like `isHTTPError()`, `isNetworkError()`, or `isTimeoutError()` to handle specific error types.",
+      " ",
+      " \tThe `retryCount` is `0` for the initial request and increments with each retry. This allows you to distinguish between the initial request and retries, which is useful when you need different error handling based on retry attempts (e.g., showing different error messages on the final attempt).",
+      " "
+     ]
+    }
+   ],
+   "additions": 3,
+   "deletions": 3
+  },
+  {
+   "path": "source/types/options.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 145,
+     "oldLines": 17,
+     "newStart": 145,
+     "newLines": 15,
+     "lines": [
+      " \tprefix?: URL | string;",
+      " ",
+      " \t/**",
+      "-\tAn object representing `limit`, `methods`, `statusCodes`, `afterStatusCodes`, and `maxRetryAfter` fields for maximum retry count, allowed methods, allowed status codes, status codes allowed to use the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) time, and maximum [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) time.",
+      "+\tAn object representing `limit`, `methods`, `statusCodes`, `afterStatusCodes`, `maxRetryAfter`, `backoffLimit`, `delay`, `jitter`, `retryOnTimeout`, and `shouldRetry` fields for maximum retry count, allowed methods, allowed status codes, status codes allowed to use the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) time, maximum [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) time, backoff limit, delay calculation function, retry jitter, timeout retry behavior, and custom retry logic.",
+      " ",
+      " \tIf `retry` is a number, it will be used as `limit` and other defaults will remain in place.",
+      " ",
+      "-\tIf the response provides an HTTP status contained in `afterStatusCodes`, Ky will wait until the date or timeout given in the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header has passed to retry the request. If `Retry-After` is missing, the non-standard [`RateLimit-Reset`](https://www.ietf.org/archive/id/draft-polli-ratelimit-headers-02.html#section-3.3) header is used in its place as a fallback. If the provided status code is not in the list, the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header will be ignored.",
+      "+\tNetwork errors (e.g., DNS failures, connection refused, offline) are automatically retried for retriable methods. Only errors recognized as network errors are retried; other errors (e.g., programming bugs) are thrown immediately. Use `shouldRetry` to customize this behavior.",
+      " ",
+      "-\tIf `maxRetryAfter` is set to `undefined`, it will use `options.timeout`. If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header is greater than `maxRetryAfter`, it will cancel the request.",
+      "+\tIf the response provides an HTTP status contained in `afterStatusCodes`, Ky will wait until the date, timeout, or timestamp given in the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header has passed to retry the request. If `Retry-After` is missing, the non-standard [`RateLimit-Reset`](https://www.ietf.org/archive/id/draft-polli-ratelimit-headers-05.html#section-3.3) header is used in its place as a fallback. If the provided status code is not in the list, the [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header will be ignored.",
+      " ",
+      "-\tBy default, delays between retries are calculated with the function `0.3 * (2 ** (attemptCount - 1)) * 1000`, where `attemptCount` is the attempt number (starts from 1), however this can be changed by passing a `delay` function.",
+      "-",
+      "-\tRetries are not triggered following a timeout.",
+      "+\tIf `maxRetryAfter` is set to `undefined`, it will use `options.timeout`. If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) header is greater than `maxRetryAfter`, it will use `maxRetryAfter`.",
+      " ",
+      " \t@example",
+      " \t```"
+     ]
+    }
+   ],
+   "additions": 4,
+   "deletions": 6
+  },
+  {
+   "path": "source/types/retry.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 42,
+     "oldLines": 7,
+     "newStart": 42,
+     "newLines": 7,
+     "lines": [
+      " \tafterStatusCodes?: number[];",
+      " ",
+      " \t/**",
+      "-\tIf the `Retry-After` header is greater than `maxRetryAfter`, the request will be canceled.",
+      "+\tIf the `Retry-After` header is greater than `maxRetryAfter`, it will use `maxRetryAfter`.",
+      " ",
+      " \t@default Infinity",
+      " \t*/"
+     ]
+    },
+    {
+     "oldStart": 135,
+     "oldLines": 7,
+     "newStart": 135,
+     "newLines": 7,
+     "lines": [
+      " \tShould return:",
+      " \t- `true` to force a retry (bypasses `retryOnTimeout`, status code checks, and other validations)",
+      " \t- `false` to prevent a retry (no retry will occur)",
+      "-\t- `undefined` to use the default retry logic (`retryOnTimeout`, status codes, etc.)",
+      "+\t- `undefined` to use the default retry logic (`retryOnTimeout`, status codes, network errors). Unrecognized error types are not retried.",
+      " ",
+      " \t@example",
+      " \t```"
+     ]
+    }
+   ],
+   "additions": 2,
+   "deletions": 2
+  },
+  {
+   "path": "source/utils/is-network-error.ts",
+   "status": "added",
+   "hunks": [
+    {
+     "oldStart": 0,
+     "oldLines": 0,
+     "newStart": 1,
+     "newLines": 49,
+     "lines": [
+      "+// Inlined from https://github.com/sindresorhus/is-network-error v1.3.1",
+      "+",
+      "+const objectToString = Object.prototype.toString;",
+      "+",
+      "+const isError = (value: unknown): value is Error => objectToString.call(value) === '[object Error]';",
+      "+",
+      "+const errorMessages = new Set([",
+      "+\t'network error', // Chrome",
+      "+\t'NetworkError when attempting to fetch resource.', // Firefox",
+      "+\t'The Internet connection appears to be offline.', // Safari 16",
+      "+\t'Network request failed', // `cross-fetch`",
+      "+\t'fetch failed', // Undici (Node.js)",
+      "+\t'terminated', // Undici (Node.js)",
+      "+\t' A network error occurred.', // Bun (WebKit) - leading space is intentional",
+      "+\t'Network connection lost', // Cloudflare Workers (fetch)",
+      "+]);",
+      "+",
+      "+export default function isRawNetworkError(error: unknown): error is TypeError {",
+      "+\tconst isValid = error",
+      "+\t\t&& isError(error)",
+      "+\t\t&& error.name === 'TypeError'",
+      "+\t\t&& typeof error.message === 'string';",
+      "+",
+      "+\tif (!isValid) {",
+      "+\t\treturn false;",
+      "+\t}",
+      "+",
+      "+\tconst {message, stack} = error;",
+      "+",
+      "+\t// Safari 17+ has generic message but no stack for network errors",
+      "+\tif (message === 'Load failed') {",
+      "+\t\treturn stack === undefined",
+      "+\t\t\t// Sentry adds its own stack trace to the fetch error, so also check for that",
+      "+\t\t\t|| '__sentry_captured__' in error;",
+      "+\t}",
+      "+",
+      "+\t// Deno network errors start with specific text",
+      "+\tif (message.startsWith('error sending request for url')) {",
+      "+\t\treturn true;",
+      "+\t}",
+      "+",
+      "+\t// Chrome: exact \"Failed to fetch\" or with hostname: \"Failed to fetch (example.com)\"",
+      "+\tif (message === 'Failed to fetch' || (message.startsWith('Failed to fetch (') && message.endsWith(')'))) {",
+      "+\t\treturn true;",
+      "+\t}",
+      "+",
+      "+\t// Standard network error messages",
+      "+\treturn errorMessages.has(message);",
+      "+}"
+     ]
+    }
+   ],
+   "additions": 49,
+   "deletions": 0
+  },
+  {
+   "path": "source/utils/type-guards.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 1,
+     "oldLines": 5,
+     "newStart": 1,
+     "newLines": 6,
+     "lines": [
+      " import {KyError} from '../errors/KyError.js';",
+      " import {HTTPError} from '../errors/HTTPError.js';",
+      "+import {NetworkError} from '../errors/NetworkError.js';",
+      " import {TimeoutError} from '../errors/TimeoutError.js';",
+      " import {ForceRetryError} from '../errors/ForceRetryError.js';",
+      " "
+     ]
+    },
+    {
+     "oldStart": 28,
+     "oldLines": 7,
+     "newStart": 29,
+     "newLines": 7,
+     "lines": [
+      " ```",
+      " */",
+      " export function isKyError(error: unknown): error is KyError {",
+      "-\treturn error instanceof KyError || isHTTPError(error) || isTimeoutError(error) || isForceRetryError(error);",
+      "+\treturn error instanceof KyError || isHTTPError(error) || isNetworkError(error) || isTimeoutError(error) || isForceRetryError(error);",
+      " }",
+      " ",
+      " /**"
+     ]
+    },
+    {
+     "oldStart": 53,
+     "oldLines": 6,
+     "newStart": 54,
+     "newLines": 28,
+     "lines": [
+      " \treturn error instanceof HTTPError || ((error as any)?.name === HTTPError.name);",
+      " }",
+      " ",
+      "+/**",
+      "+Type guard to check if an error is a NetworkError.",
+      "+",
+      "+@param error - The error to check",
+      "+@returns `true` if the error is a NetworkError, `false` otherwise",
+      "+",
+      "+@example",
+      "+```",
+      "+import ky, {isNetworkError} from 'ky';",
+      "+try {",
+      "+\tconst response = await ky.get('/api/data');",
+      "+} catch (error) {",
+      "+\tif (isNetworkError(error)) {",
+      "+\t\tconsole.log('Network error:', error.request.url);",
+      "+\t}",
+      "+}",
+      "+```",
+      "+*/",
+      "+export function isNetworkError(error: unknown): error is NetworkError {",
+      "+\treturn error instanceof NetworkError || ((error as any)?.name === NetworkError.name);",
+      "+}",
+      "+",
+      " /**",
+      " Type guard to check if an error is a TimeoutError.",
+      " "
+     ]
+    }
+   ],
+   "additions": 24,
+   "deletions": 1
+  },
+  {
+   "path": "test/headers.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 139,
+     "oldLines": 7,
+     "newStart": 139,
+     "newLines": 8,
+     "lines": [
+      " ",
+      " \tconst error = await t.throwsAsync(request);",
+      " ",
+      "-\tt.is(error.cause?.code, 'UND_ERR_REQ_CONTENT_LENGTH_MISMATCH');",
+      "+\t// The undici TypeError (\"fetch failed\") is wrapped in NetworkError, so the undici cause is one level deeper",
+      "+\tt.is(error.cause?.cause?.code, 'UND_ERR_REQ_CONTENT_LENGTH_MISMATCH');",
+      " });",
+      " ",
+      " test('sets `content-length` to `0` when requesting PUT with empty body', async t => {"
+     ]
+    }
+   ],
+   "additions": 2,
+   "deletions": 1
+  },
+  {
+   "path": "test/hooks.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 4,
+     "oldLines": 6,
+     "newStart": 4,
+     "newLines": 7,
+     "lines": [
+      " \tHTTPError,",
+      " \tKyError,",
+      " \tisHTTPError,",
+      "+\tisNetworkError,",
+      " \tisTimeoutError,",
+      " \tisForceRetryError,",
+      " \tTimeoutError,"
+     ]
+    },
+    {
+     "oldStart": 660,
+     "oldLines": 7,
+     "newStart": 661,
+     "newLines": 7,
+     "lines": [
+      " \t\t\tasync fetch(request) {",
+      " \t\t\t\tif (requestCount === 0) {",
+      " \t\t\t\t\trequestCount++;",
+      "-\t\t\t\t\tthrow new Error('simulated network failure');",
+      "+\t\t\t\t\tthrow new TypeError('Failed to fetch');",
+      " \t\t\t\t}",
+      " ",
+      " \t\t\t\treturn globalThis.fetch(request);"
+     ]
+    },
+    {
+     "oldStart": 668,
+     "oldLines": 7,
+     "newStart": 669,
+     "newLines": 7,
+     "lines": [
+      " \t\t\thooks: {",
+      " \t\t\t\tbeforeRetry: [",
+      " \t\t\t\t\t({error, retryCount}) => {",
+      "-\t\t\t\t\t\tt.is(error.message, 'simulated network failure');",
+      "+\t\t\t\t\t\tt.true(isNetworkError(error));",
+      " \t\t\t\t\t\t// @ts-expect-error",
+      " \t\t\t\t\t\tt.is(error.response, undefined);",
+      " \t\t\t\t\t\tt.is(retryCount, 1);"
+     ]
+    },
+    {
+     "oldStart": 1122,
+     "oldLines": 7,
+     "newStart": 1123,
+     "newLines": 7,
+     "lines": [
+      " \tlet beforeErrorHookCalled = false;",
+      " ",
+      " \tconst customFetch: typeof fetch = async () => {",
+      "-\t\tthrow new TypeError('network-down');",
+      "+\t\tthrow new TypeError('Failed to fetch');",
+      " \t};",
+      " ",
+      " \tconst thrownError = await t.throwsAsync("
+     ]
+    },
+    {
+     "oldStart": 1151,
+     "oldLines": 7,
+     "newStart": 1152,
+     "newLines": 7,
+     "lines": [
+      " \t);",
+      " ",
+      " \tt.true(beforeErrorHookCalled);",
+      "-\tt.true(thrownError instanceof TypeError);",
+      "+\tt.true(isNetworkError(thrownError));",
+      " });",
+      " ",
+      " test('hooks beforeRequest returning Request continues running remaining hooks', async t => {"
+     ]
+    },
+    {
+     "oldStart": 1623,
+     "oldLines": 7,
+     "newStart": 1624,
+     "newLines": 7,
+     "lines": [
+      " \t);",
+      " ",
+      " \tt.truthy(receivedError);",
+      "-\tt.is(receivedError!.message, 'Failed to fetch');",
+      "+\tt.true(isNetworkError(receivedError));",
+      " \tt.is(receivedRetryCount, 0);",
+      " });",
+      " "
+     ]
+    },
+    {
+     "oldStart": 1970,
+     "oldLines": 7,
+     "newStart": 1971,
+     "newLines": 7,
+     "lines": [
+      " \tt.is(receivedOptions?.method, 'GET');",
+      " });",
+      " ",
+      "-test('beforeError receives request and options for network TypeError', async t => {",
+      "+test('beforeError receives request and options for NetworkError', async t => {",
+      " \tlet receivedRequest: Request | undefined;",
+      " \tlet receivedOptions: NormalizedOptions | undefined;",
+      " "
+     ]
+    },
+    {
+     "oldStart": 2185,
+     "oldLines": 7,
+     "newStart": 2186,
+     "newLines": 7,
+     "lines": [
+      " \t\t\t},",
+      " \t\t\tasync fetch() {",
+      " \t\t\t\tfetchCallCount++;",
+      "-\t\t\t\tthrow new TypeError('network down');",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      " \t\t\t},",
+      " \t\t\thooks: {",
+      " \t\t\t\tbeforeRetry: ["
+     ]
+    },
+    {
+     "oldStart": 3915,
+     "oldLines": 7,
+     "newStart": 3916,
+     "newLines": 7,
+     "lines": [
+      " \t\t},",
+      " \t\tasync fetch() {",
+      " \t\t\tfetchCallCount++;",
+      "-\t\t\tthrow new TypeError('network down');",
+      "+\t\t\tthrow new TypeError('Failed to fetch');",
+      " \t\t},",
+      " \t\thooks: {",
+      " \t\t\tbeforeRetry: [() => new Response('retry-fallback', {status: 502})],"
+     ]
+    },
+    {
+     "oldStart": 4085,
+     "oldLines": 7,
+     "newStart": 4086,
+     "newLines": 7,
+     "lines": [
+      " \t\t\tdelay: () => 0,",
+      " \t\t},",
+      " \t\tasync fetch() {",
+      "-\t\t\tthrow new TypeError('network down');",
+      "+\t\t\tthrow new TypeError('Failed to fetch');",
+      " \t\t},",
+      " \t\thooks: {",
+      " \t\t\tbeforeRetry: [() => new Response('from-hook', {status: 200})],"
+     ]
+    }
+   ],
+   "additions": 10,
+   "deletions": 9
+  },
+  {
+   "path": "test/memory-leak.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 1,
+     "oldLines": 7,
+     "newStart": 1,
+     "newLines": 7,
+     "lines": [
+      " import {ReadableStream} from 'node:stream/web';",
+      " import test from 'ava';",
+      " import LeakDetector from 'jest-leak-detector';",
+      "-import ky, {type KyInstance} from '../source/index.js';",
+      "+import ky, {NetworkError, type KyInstance} from '../source/index.js';",
+      " import {createHttpTestServer} from './helpers/create-http-test-server.js';",
+      " ",
+      " test('shared abort signal must not cause memory leak of input', async t => {"
+     ]
+    },
+    {
+     "oldStart": 41,
+     "oldLines": 8,
+     "newStart": 41,
+     "newLines": 7,
+     "lines": [
+      " \t\t\t\tbody: stream,",
+      " \t\t\t}),",
+      " \t\t\t{",
+      "-\t\t\t\tinstanceOf: TypeError,",
+      "-\t\t\t\tmessage: 'fetch failed',",
+      "+\t\t\t\tinstanceOf: NetworkError,",
+      " \t\t\t},",
+      " \t\t);",
+      " "
+     ]
+    }
+   ],
+   "additions": 2,
+   "deletions": 3
+  },
+  {
+   "path": "test/retry.ts",
+   "status": "modified",
+   "hunks": [
+    {
+     "oldStart": 1,
+     "oldLines": 6,
+     "newStart": 1,
+     "newLines": 11,
+     "lines": [
+      " import {setTimeout as delay} from 'node:timers/promises';",
+      " import test from 'ava';",
+      "-import ky, {TimeoutError} from '../source/index.js';",
+      "+import ky, {",
+      "+\tNetworkError,",
+      "+\tTimeoutError,",
+      "+\tisKyError,",
+      "+\tisNetworkError,",
+      "+} from '../source/index.js';",
+      " import {createHttpTestServer} from './helpers/create-http-test-server.js';",
+      " import {parseRawBody} from './helpers/parse-body.js';",
+      " import {withPerformance} from './helpers/with-performance.js';"
+     ]
+    },
+    {
+     "oldStart": 1604,
+     "oldLines": 3,
+     "newStart": 1609,
+     "newLines": 213,
+     "lines": [
+      " \t\t},",
+      " \t);",
+      " });",
+      "+",
+      "+test('NetworkError wraps fetch network errors', async t => {",
+      "+\tconst error = await t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: 0,",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(error instanceof NetworkError);",
+      "+\tt.true(isNetworkError(error));",
+      "+\tt.true(isKyError(error));",
+      "+\tt.is(error.name, 'NetworkError');",
+      "+\tt.true(error.request.url.includes('example.com'));",
+      "+\tt.true(error.cause instanceof TypeError);",
+      "+\tt.is((error.cause as TypeError).message, 'Failed to fetch');",
+      "+\tt.is(error.message, 'Request failed due to a network error: GET https://example.com/');",
+      "+});",
+      "+",
+      "+test('non-network TypeError is not retried', async t => {",
+      "+\tlet fetchCallCount = 0;",
+      "+",
+      "+\tawait t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: {",
+      "+\t\t\t\tlimit: 2,",
+      "+\t\t\t\tdelay: () => 0,",
+      "+\t\t\t},",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tfetchCallCount++;",
+      "+\t\t\t\tthrow new TypeError('Cannot read properties of undefined');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t\t{instanceOf: TypeError},",
+      "+\t);",
+      "+",
+      "+\tt.is(fetchCallCount, 1);",
+      "+});",
+      "+",
+      "+test('shouldRetry can force retry of non-network errors', async t => {",
+      "+\tlet fetchCallCount = 0;",
+      "+",
+      "+\tawait t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: {",
+      "+\t\t\t\tlimit: 2,",
+      "+\t\t\t\tdelay: () => 0,",
+      "+\t\t\t\tshouldRetry: () => true,",
+      "+\t\t\t},",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tfetchCallCount++;",
+      "+\t\t\t\tthrow new TypeError('Cannot read properties of undefined');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t\t{instanceOf: TypeError},",
+      "+\t);",
+      "+",
+      "+\t// 1 initial + 2 retries",
+      "+\tt.is(fetchCallCount, 3);",
+      "+});",
+      "+",
+      "+test('NetworkError is retried by default', async t => {",
+      "+\tlet fetchCallCount = 0;",
+      "+",
+      "+\tconst result = await ky('https://example.com', {",
+      "+\t\tretry: {",
+      "+\t\t\tlimit: 2,",
+      "+\t\t\tdelay: () => 0,",
+      "+\t\t},",
+      "+\t\tasync fetch() {",
+      "+\t\t\tfetchCallCount++;",
+      "+\t\t\tif (fetchCallCount <= 2) {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t}",
+      "+",
+      "+\t\t\treturn new Response('ok');",
+      "+\t\t},",
+      "+\t}).text();",
+      "+",
+      "+\tt.is(result, 'ok');",
+      "+\tt.is(fetchCallCount, 3);",
+      "+});",
+      "+",
+      "+test('NetworkError is not retried for non-retriable method (POST)', async t => {",
+      "+\tlet fetchCallCount = 0;",
+      "+",
+      "+\tconst error = await t.throwsAsync(",
+      "+\t\tky.post('https://example.com', {",
+      "+\t\t\tretry: {",
+      "+\t\t\t\tlimit: 2,",
+      "+\t\t\t\tdelay: () => 0,",
+      "+\t\t\t},",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tfetchCallCount++;",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(isNetworkError(error));",
+      "+\tt.is(fetchCallCount, 1);",
+      "+});",
+      "+",
+      "+test('shouldRetry receives NetworkError (not raw TypeError)', async t => {",
+      "+\tlet receivedError: Error | undefined;",
+      "+",
+      "+\tawait t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: {",
+      "+\t\t\t\tlimit: 1,",
+      "+\t\t\t\tdelay: () => 0,",
+      "+\t\t\t\tshouldRetry({error}) {",
+      "+\t\t\t\t\treceivedError = error;",
+      "+\t\t\t\t\treturn false;",
+      "+\t\t\t\t},",
+      "+\t\t\t},",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(isNetworkError(receivedError));",
+      "+\tt.true(receivedError!.cause instanceof TypeError);",
+      "+});",
+      "+",
+      "+test('non-network TypeError is not wrapped in NetworkError', async t => {",
+      "+\tconst error = await t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: 0,",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tthrow new TypeError('Cannot read properties of undefined');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(error instanceof TypeError);",
+      "+\tt.false(isNetworkError(error));",
+      "+\tt.is(error.message, 'Cannot read properties of undefined');",
+      "+});",
+      "+",
+      "+test('shouldRetry returning undefined for NetworkError falls through to default retry', async t => {",
+      "+\tlet fetchCallCount = 0;",
+      "+",
+      "+\tconst result = await ky('https://example.com', {",
+      "+\t\tretry: {",
+      "+\t\t\tlimit: 2,",
+      "+\t\t\tdelay: () => 0,",
+      "+\t\t\tshouldRetry() {",
+      "+\t\t\t\treturn undefined;",
+      "+\t\t\t},",
+      "+\t\t},",
+      "+\t\tasync fetch() {",
+      "+\t\t\tfetchCallCount++;",
+      "+\t\t\tif (fetchCallCount <= 2) {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t}",
+      "+",
+      "+\t\t\treturn new Response('ok');",
+      "+\t\t},",
+      "+\t}).text();",
+      "+",
+      "+\tt.is(result, 'ok');",
+      "+\tt.is(fetchCallCount, 3);",
+      "+});",
+      "+",
+      "+test('beforeError hook receives NetworkError with cause chain', async t => {",
+      "+\tlet receivedError: Error | undefined;",
+      "+",
+      "+\tawait t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\tretry: 0,",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t},",
+      "+\t\t\thooks: {",
+      "+\t\t\t\tbeforeError: [",
+      "+\t\t\t\t\t({error}) => {",
+      "+\t\t\t\t\t\treceivedError = error;",
+      "+\t\t\t\t\t\treturn error;",
+      "+\t\t\t\t\t},",
+      "+\t\t\t\t],",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(receivedError instanceof NetworkError);",
+      "+\tt.true(isNetworkError(receivedError));",
+      "+\tt.is(receivedError!.name, 'NetworkError');",
+      "+\tt.true(receivedError!.cause instanceof TypeError);",
+      "+\tt.is((receivedError!.cause as TypeError).message, 'Failed to fetch');",
+      "+});",
+      "+",
+      "+test('NetworkError is thrown when timeout is disabled', async t => {",
+      "+\tconst error = await t.throwsAsync(",
+      "+\t\tky('https://example.com', {",
+      "+\t\t\ttimeout: false,",
+      "+\t\t\tretry: 0,",
+      "+\t\t\tasync fetch() {",
+      "+\t\t\t\tthrow new TypeError('Failed to fetch');",
+      "+\t\t\t},",
+      "+\t\t}),",
+      "+\t);",
+      "+",
+      "+\tt.true(isNetworkError(error));",
+      "+\tt.is(error.name, 'NetworkError');",
+      "+\tt.true(error.cause instanceof TypeError);",
+      "+});"
+     ]
+    }
+   ],
+   "additions": 216,
+   "deletions": 1
+  }
+ ]
+}

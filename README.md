@@ -4,6 +4,8 @@
 It tells a story in small steps: the problem, the glossary, the big picture, then the happy path and the edge cases, with real code, animated diagrams, and short quizzes.
 The result is one self-contained `docs/dives/<slug>/index.html` you can open, attach, or share.
 
+Example: [`examples/pr-842-network-error-retry`](examples/pr-842-network-error-retry), a dive into [sindresorhus/ky#842](https://github.com/sindresorhus/ky/pull/842). Open its `index.html` in a browser.
+
 ## Install
 
 **Claude Code**
