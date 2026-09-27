@@ -82,12 +82,7 @@ export type Item = { kind: 'row'; i: number } | { kind: 'gap'; start: number; en
 
 // Hide unchanged rows more than `context` rows away from a change or a note.
 // Runs shorter than 4 rows stay visible; `open` holds gap starts the user expanded.
-export function layout(
-  rows: Row[],
-  spans: ([number, number] | null)[],
-  open: Set<number>,
-  context = 8,
-): Item[] {
+export function layout(rows: Row[], spans: ([number, number] | null)[], open: Set<number>, context = 8): Item[] {
   const hot = rows.map((r) => r.type !== 'ctx')
   for (const s of spans) if (s) hot.fill(true, s[0], s[1] + 1)
   if (!hot.includes(true)) return rows.map((_, i) => ({ kind: 'row', i }))

@@ -76,7 +76,9 @@ export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean })
             <span className="font-serif text-xl font-semibold">{t.term}</span>
             {t.code && <code className="font-mono text-sm text-muted">{t.code}</code>}
           </dt>
-          <dd className="mt-1 text-base leading-relaxed"><Inline text={t.meaning} /></dd>
+          <dd className="mt-1 text-base leading-relaxed">
+            <Inline text={t.meaning} />
+          </dd>
         </div>
       ))}
     </dl>
@@ -107,7 +109,9 @@ export function QuizView({ step }: { step: QuizStep }) {
   const done = picked !== null
   return (
     <article>
-      <h2 className={heading}><Inline text={step.question} /></h2>
+      <h2 className={heading}>
+        <Inline text={step.question} />
+      </h2>
       <p className="mt-2 text-muted">Pick one answer.</p>
       <ul className="mt-6 space-y-3">
         {options.map((o, i) => {
@@ -128,21 +132,32 @@ export function QuizView({ step }: { step: QuizStep }) {
                 className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 <span className="flex items-start gap-3">
-                  <span className="grow"><Inline text={o.text} /></span>
+                  <span className="grow">
+                    <Inline text={o.text} />
+                  </span>
                   {done && (o.correct || i === picked) && (
                     <span className={`shrink-0 text-sm font-semibold ${o.correct ? 'text-ok' : 'text-bad'}`}>
                       {o.correct ? 'Correct' : 'Your pick'}
                     </span>
                   )}
                 </span>
-                {done && <span className="mt-2 block text-base text-muted"><Inline text={o.why} /></span>}
+                {done && (
+                  <span className="mt-2 block text-base text-muted">
+                    <Inline text={o.why} />
+                  </span>
+                )}
               </button>
             </li>
           )
         })}
       </ul>
       <p aria-live="polite" className="mt-5 text-lg font-semibold">
-        {done && (options[picked].correct ? <span className="text-ok">Right.</span> : <span className="text-bad">Not this one. The correct answer is marked.</span>)}
+        {done &&
+          (options[picked].correct ? (
+            <span className="text-ok">Right.</span>
+          ) : (
+            <span className="text-bad">Not this one. The correct answer is marked.</span>
+          ))}
       </p>
     </article>
   )

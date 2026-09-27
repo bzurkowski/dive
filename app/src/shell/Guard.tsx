@@ -8,6 +8,10 @@ export class Guard extends Component<{ children: ReactNode }, { error?: Error }>
     return { error }
   }
   render() {
-    return this.state.error ? <Notice>This step could not be shown: {this.state.error.message}</Notice> : this.props.children
+    return this.state.error ? (
+      <Notice>This step could not be shown: {this.state.error.message}</Notice>
+    ) : (
+      this.props.children
+    )
   }
 }

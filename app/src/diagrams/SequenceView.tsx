@@ -68,7 +68,15 @@ export function SequenceView({ step, focus, onFocus }: StepViewProps<SequenceSte
         <div className="relative">
           <svg width={width} height={height} className="block" role="img" aria-label={step.title}>
             {step.actors.map((a) => (
-              <line key={a.id} x1={x(a.id)} x2={x(a.id)} y1={0} y2={height} className="stroke-line" strokeDasharray="4 4" />
+              <line
+                key={a.id}
+                x1={x(a.id)}
+                x2={x(a.id)}
+                y1={0}
+                y2={height}
+                className="stroke-line"
+                strokeDasharray="4 4"
+              />
             ))}
             {step.messages.map((m, i) => {
               if (!col.has(m.from) || !col.has(m.to)) return null
@@ -144,7 +152,12 @@ export function SequenceView({ step, focus, onFocus }: StepViewProps<SequenceSte
             <div
               ref={anchor}
               className="pointer-events-none absolute scroll-mt-20"
-              style={{ left: Math.min(ax1, ax2) - cw / 2, top: ay - 34, width: Math.abs(ax2 - ax1) + cw, height: active.note ? 130 : 48 }}
+              style={{
+                left: Math.min(ax1, ax2) - cw / 2,
+                top: ay - 34,
+                width: Math.abs(ax2 - ax1) + cw,
+                height: active.note ? 130 : 48,
+              }}
             />
           )}
           {active?.note && (

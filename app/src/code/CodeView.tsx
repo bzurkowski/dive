@@ -72,16 +72,21 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
       : href
   const hasNotes = step.notes.length > 0
   const card = (i: number) => (
-    <NoteCard key={`n${i}`} note={step.notes[i]} i={i} total={step.notes.length} active={i === focus} anchor={!spans[i]} />
+    <NoteCard
+      key={`n${i}`}
+      note={step.notes[i]}
+      i={i}
+      total={step.notes.length}
+      active={i === focus}
+      anchor={!spans[i]}
+    />
   )
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-line bg-surface">
       <header className="flex items-center gap-3 border-b border-line px-4 py-2 text-sm">
         <span className="truncate font-mono font-medium">{step.file}</span>
-        {file.status && (
-          <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>
-        )}
+        {file.status && <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>}
         {file.oldPath && <span className="truncate text-xs text-muted">from {file.oldPath}</span>}
         {file.diff && (
           <span className="font-mono text-xs">
@@ -147,8 +152,7 @@ const RowView = memo(function RowView(p: {
   anchor?: number
 }) {
   const { row } = p
-  if (row.type === 'hunk')
-    return <div className="bg-bg px-4 text-xs leading-6 text-muted">{row.text}</div>
+  if (row.type === 'hunk') return <div className="bg-bg px-4 text-xs leading-6 text-muted">{row.text}</div>
   const line = row.type === 'del' ? p.tokens?.old?.[row.o!] : p.tokens?.new?.[row.n!]
   const bg = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : p.band === 2 ? 'bg-mark' : ''
   const num = 'select-none pr-3 text-right text-muted tabular-nums'
@@ -198,7 +202,9 @@ function NoteCard(p: { note: CodeNote; i: number; total: number; active: boolean
           {note.side === 'old' ? ' · removed code' : ''}
         </span>
       </div>
-      <p className="text-[15px] leading-relaxed"><Inline text={note.text} /></p>
+      <p className="text-[15px] leading-relaxed">
+        <Inline text={note.text} />
+      </p>
     </div>
   )
 }

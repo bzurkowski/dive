@@ -10,7 +10,10 @@ export function useSize<T extends HTMLElement>() {
     // Measure before the first paint, so the first frame already fits.
     const cs = getComputedStyle(el)
     const pad = (a: string, b: string) => parseFloat(cs.getPropertyValue(a)) + parseFloat(cs.getPropertyValue(b))
-    setSize({ w: el.clientWidth - pad('padding-left', 'padding-right'), h: el.clientHeight - pad('padding-top', 'padding-bottom') })
+    setSize({
+      w: el.clientWidth - pad('padding-left', 'padding-right'),
+      h: el.clientHeight - pad('padding-top', 'padding-bottom'),
+    })
     const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height }))
     ro.observe(el)
     return () => ro.disconnect()

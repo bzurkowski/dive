@@ -11,11 +11,13 @@ export const COVER: Pos = { c: -1, s: 0, f: 0 }
 
 export type Flat = { c: number; s: number }[]
 
-export const flatten = (dive: Dive): Flat =>
-  dive.chapters.flatMap((ch, c) => ch.steps.map((_, s) => ({ c, s })))
+export const flatten = (dive: Dive): Flat => dive.chapters.flatMap((ch, c) => ch.steps.map((_, s) => ({ c, s })))
 
 export function parseHash(dive: Dive, hash: string): Pos {
-  const [c, s, f] = hash.replace(/^#\/?/, '').split('/').map((x) => Number(x) || 0)
+  const [c, s, f] = hash
+    .replace(/^#\/?/, '')
+    .split('/')
+    .map((x) => Number(x) || 0)
   const steps = dive.chapters[c]?.steps
   if (!hash.replace(/^#\/?/, '') || !steps?.length) return COVER
   const si = Math.min(Math.max(0, s), steps.length - 1)
@@ -41,23 +43,40 @@ export function move(dive: Dive, flat: Flat, p: Pos, dir: 1 | -1): Pos {
 
 // Reading time: ~200 wpm plus a fixed cost to look at code and diagrams.
 // ponytail: rough constants, tune against real dives.
-const SKIP = new Set(['kind', 'file', 'id', 'from', 'to', 'side', 'type', 'group', 'focus', 'url', 'lines', 'correct', 'code'])
+const SKIP = new Set([
+  'kind',
+  'file',
+  'id',
+  'from',
+  'to',
+  'side',
+  'type',
+  'group',
+  'focus',
+  'url',
+  'lines',
+  'correct',
+  'code',
+])
 
 function words(v: unknown): number {
   if (typeof v === 'string') return v.split(/\s+/).filter(Boolean).length
   if (Array.isArray(v)) return v.reduce((n: number, x) => n + words(x), 0)
-  if (v && typeof v === 'object')
-    return Object.entries(v).reduce((n, [k, x]) => n + (SKIP.has(k) ? 0 : words(x)), 0)
+  if (v && typeof v === 'object') return Object.entries(v).reduce((n, [k, x]) => n + (SKIP.has(k) ? 0 : words(x)), 0)
   return 0
 }
 
 export function stepSeconds(step: Step): number {
   const look =
-    step.kind === 'code' ? 10 + 10 * step.notes.length
-    : step.kind === 'sequence' ? 5 + 4 * step.messages.length
-    : step.kind === 'diagram' ? 8 + 4 * (step.notes?.length ?? 0)
-    : step.kind === 'quiz' ? 15
-    : 0
+    step.kind === 'code'
+      ? 10 + 10 * step.notes.length
+      : step.kind === 'sequence'
+        ? 5 + 4 * step.messages.length
+        : step.kind === 'diagram'
+          ? 8 + 4 * (step.notes?.length ?? 0)
+          : step.kind === 'quiz'
+            ? 15
+            : 0
   return (words(step) / 200) * 60 + look
 }
 

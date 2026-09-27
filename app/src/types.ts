@@ -21,14 +21,7 @@ export interface Source {
   links?: Link[] // knowledge-base pages and tickets used as sources
 }
 
-export type ChapterId =
-  | 'why'
-  | 'glossary'
-  | 'big-picture'
-  | 'happy-path'
-  | 'edge-cases'
-  | 'review-focus'
-  | 'recap'
+export type ChapterId = 'why' | 'glossary' | 'big-picture' | 'happy-path' | 'edge-cases' | 'review-focus' | 'recap'
 
 export interface Chapter {
   id: ChapterId

@@ -78,7 +78,11 @@ export default function App({ dive }: { dive: Dive }) {
       <div className="min-h-full p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-serif text-2xl font-semibold">Glossary</h2>
-          <button type="button" onClick={() => glossary.current?.close()} className="rounded px-2 py-1 text-muted hover:text-fg">
+          <button
+            type="button"
+            onClick={() => glossary.current?.close()}
+            className="rounded px-2 py-1 text-muted hover:text-fg"
+          >
             Close
           </button>
         </div>
@@ -100,14 +104,20 @@ export default function App({ dive }: { dive: Dive }) {
   const i = flatIndex(flat, pos)
   const size = stepSize(step)
   const atEnd = i === flat.length - 1 && pos.f === size - 1
-  const nextChapter = pos.s === chapter.steps.length - 1 && pos.f === size - 1 ? dive.chapters[flat[i + 1]?.c]?.title : undefined
+  const nextChapter =
+    pos.s === chapter.steps.length - 1 && pos.f === size - 1 ? dive.chapters[flat[i + 1]?.c]?.title : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
-  const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent disabled:opacity-40 disabled:hover:border-line'
+  const btn =
+    'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent disabled:opacity-40 disabled:hover:border-line'
 
   return (
     <div className="flex h-full">
       <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 lg:flex">
-        <button type="button" onClick={() => go(COVER)} className="mb-8 rounded text-left font-serif text-lg leading-snug font-semibold hover:text-accent">
+        <button
+          type="button"
+          onClick={() => go(COVER)}
+          className="mb-8 rounded text-left font-serif text-lg leading-snug font-semibold hover:text-accent"
+        >
           {dive.title}
         </button>
         <nav aria-label="Chapters">{rail}</nav>
@@ -115,10 +125,18 @@ export default function App({ dive }: { dive: Dive }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="relative flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
-          <button type="button" onClick={() => chapters.current?.showModal()} className="rounded px-2 py-1 text-sm font-medium lg:hidden">
+          <button
+            type="button"
+            onClick={() => chapters.current?.showModal()}
+            className="rounded px-2 py-1 text-sm font-medium lg:hidden"
+          >
             Chapters
           </button>
-          <button type="button" onClick={() => go(COVER)} className="min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg lg:hidden">
+          <button
+            type="button"
+            onClick={() => go(COVER)}
+            className="min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg lg:hidden"
+          >
             {dive.title}
           </button>
           <p className="hidden min-w-0 truncate text-sm text-muted lg:block">
@@ -133,7 +151,10 @@ export default function App({ dive }: { dive: Dive }) {
             Glossary
           </button>
           <div className="absolute inset-x-0 -bottom-px h-0.5 bg-line" aria-hidden>
-            <div className="h-full bg-accent motion-safe:transition-[width]" style={{ width: `${((i + 1) / flat.length) * 100}%` }} />
+            <div
+              className="h-full bg-accent motion-safe:transition-[width]"
+              style={{ width: `${((i + 1) / flat.length) * 100}%` }}
+            />
           </div>
         </header>
 
@@ -146,7 +167,11 @@ export default function App({ dive }: { dive: Dive }) {
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
                 <div className="max-w-5xl">
                   <h2 className="font-serif text-2xl leading-tight font-semibold">{step.title}</h2>
-                  {'say' in step && <p className="mt-1 text-[17px] leading-snug"><Inline text={step.say} /></p>}
+                  {'say' in step && (
+                    <p className="mt-1 text-[17px] leading-snug">
+                      <Inline text={step.say} />
+                    </p>
+                  )}
                 </div>
                 <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">
                   <StepView dive={dive} step={step} focus={pos.f} onFocus={(f) => go({ ...pos, f })} />
@@ -163,13 +188,24 @@ export default function App({ dive }: { dive: Dive }) {
         </main>
 
         <footer className="flex items-center gap-3 border-t border-line bg-surface px-4 py-2.5">
-          <button type="button" className={btn} onClick={() => go(move(dive, flat, pos, -1))} aria-keyshortcuts="ArrowLeft">
+          <button
+            type="button"
+            className={btn}
+            onClick={() => go(move(dive, flat, pos, -1))}
+            aria-keyshortcuts="ArrowLeft"
+          >
             Previous
           </button>
           <p className="min-w-0 grow truncate text-center text-sm text-muted">
             {size > 1 && `${pos.f + 1} of ${size}`}
           </p>
-          <button type="button" className={btn} disabled={atEnd} onClick={() => go(move(dive, flat, pos, 1))} aria-keyshortcuts="ArrowRight">
+          <button
+            type="button"
+            className={btn}
+            disabled={atEnd}
+            onClick={() => go(move(dive, flat, pos, 1))}
+            aria-keyshortcuts="ArrowRight"
+          >
             {atEnd ? 'End of dive' : nextChapter ? `Next chapter: ${nextChapter}` : 'Next'}
           </button>
         </footer>
@@ -183,10 +219,18 @@ export default function App({ dive }: { dive: Dive }) {
       >
         <div className="min-h-full p-6">
           <div className="mb-6 flex items-center justify-between">
-            <button type="button" onClick={() => go(COVER)} className="rounded text-left font-serif text-lg font-semibold">
+            <button
+              type="button"
+              onClick={() => go(COVER)}
+              className="rounded text-left font-serif text-lg font-semibold"
+            >
               {dive.title}
             </button>
-            <button type="button" onClick={() => chapters.current?.close()} className="rounded px-2 py-1 text-muted hover:text-fg">
+            <button
+              type="button"
+              onClick={() => chapters.current?.close()}
+              className="rounded px-2 py-1 text-muted hover:text-fg"
+            >
               Close
             </button>
           </div>
@@ -198,7 +242,17 @@ export default function App({ dive }: { dive: Dive }) {
   )
 }
 
-function StepView({ dive, step, focus, onFocus }: { dive: Dive; step: Step; focus: number; onFocus: (f: number) => void }) {
+function StepView({
+  dive,
+  step,
+  focus,
+  onFocus,
+}: {
+  dive: Dive
+  step: Step
+  focus: number
+  onFocus: (f: number) => void
+}) {
   const { repo, head } = dive.source
   switch (step.kind) {
     case 'code': {

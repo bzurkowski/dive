@@ -33,11 +33,25 @@ const LANGS: Record<string, LanguageInput> = {
 }
 
 const ALIASES: Record<string, string> = {
-  ts: 'typescript', mts: 'typescript', cts: 'typescript',
-  js: 'javascript', mjs: 'javascript', cjs: 'javascript', jsx: 'tsx',
-  py: 'python', kt: 'kotlin', kts: 'kotlin', rs: 'rust',
-  cs: 'csharp', 'c#': 'csharp', yml: 'yaml', md: 'markdown',
-  bash: 'shellscript', sh: 'shellscript', shell: 'shellscript', zsh: 'shellscript',
+  ts: 'typescript',
+  mts: 'typescript',
+  cts: 'typescript',
+  js: 'javascript',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  jsx: 'tsx',
+  py: 'python',
+  kt: 'kotlin',
+  kts: 'kotlin',
+  rs: 'rust',
+  cs: 'csharp',
+  'c#': 'csharp',
+  yml: 'yaml',
+  md: 'markdown',
+  bash: 'shellscript',
+  sh: 'shellscript',
+  shell: 'shellscript',
+  zsh: 'shellscript',
 }
 
 let core: Promise<HighlighterCore> | undefined
@@ -62,10 +76,7 @@ const cache = new WeakMap<FileData, Promise<Tokens>>()
 export function highlightFile(file: FileData, parsed: Parsed): Promise<Tokens> {
   let hit = cache.get(file)
   if (!hit) {
-    hit = Promise.all([
-      file.diff ? tokenize(parsed.oldText, file.lang) : null,
-      tokenize(parsed.newText, file.lang),
-    ])
+    hit = Promise.all([file.diff ? tokenize(parsed.oldText, file.lang) : null, tokenize(parsed.newText, file.lang)])
       .then(([o, n]) => ({ old: o, new: n }))
       .catch(() => ({ old: null, new: null }))
     cache.set(file, hit)

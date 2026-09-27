@@ -6,9 +6,30 @@ import './diagrams.css'
 import { textWidth, useSize } from './util'
 
 // Full class names so Tailwind picks them up.
-const FILLS = ['fill-sky-500/10', 'fill-amber-500/10', 'fill-emerald-500/10', 'fill-violet-500/10', 'fill-rose-500/10', 'fill-teal-500/10']
-const STROKES = ['stroke-sky-500/60', 'stroke-amber-500/60', 'stroke-emerald-500/60', 'stroke-violet-500/60', 'stroke-rose-500/60', 'stroke-teal-500/60']
-const SWATCHES = ['bg-sky-500/40', 'bg-amber-500/40', 'bg-emerald-500/40', 'bg-violet-500/40', 'bg-rose-500/40', 'bg-teal-500/40']
+const FILLS = [
+  'fill-sky-500/10',
+  'fill-amber-500/10',
+  'fill-emerald-500/10',
+  'fill-violet-500/10',
+  'fill-rose-500/10',
+  'fill-teal-500/10',
+]
+const STROKES = [
+  'stroke-sky-500/60',
+  'stroke-amber-500/60',
+  'stroke-emerald-500/60',
+  'stroke-violet-500/60',
+  'stroke-rose-500/60',
+  'stroke-teal-500/60',
+]
+const SWATCHES = [
+  'bg-sky-500/40',
+  'bg-amber-500/40',
+  'bg-emerald-500/40',
+  'bg-violet-500/40',
+  'bg-rose-500/40',
+  'bg-teal-500/40',
+]
 
 const NODE_PX = 14
 const EDGE_PX = 11.5
@@ -27,7 +48,8 @@ function wrap(label: string): string[] {
   if (label.length <= 24) return [label]
   const mid = label.length / 2
   let cut = -1
-  for (let i = 0; i < label.length; i++) if (label[i] === ' ' && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i
+  for (let i = 0; i < label.length; i++)
+    if (label[i] === ' ' && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i
   return cut < 0 ? [label] : [label.slice(0, cut), label.slice(cut + 1)]
 }
 
@@ -39,7 +61,10 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   for (const n of step.nodes) {
     const ls = wrap(n.label)
     lines.set(n.id, ls)
-    g.setNode(n.id, { width: Math.max(96, ...ls.map((l) => textWidth(l, NODE_PX, 500) + 28)), height: 20 + ls.length * LINE_H })
+    g.setNode(n.id, {
+      width: Math.max(96, ...ls.map((l) => textWidth(l, NODE_PX, 500) + 28)),
+      height: 20 + ls.length * LINE_H,
+    })
   }
   step.edges.forEach((e, i) => {
     if (!g.hasNode(e.from) || !g.hasNode(e.to)) return
@@ -64,7 +89,8 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
 // Smooth path through dagre's points.
 function curve(p: Pt[]): string {
   let d = `M${p[0].x} ${p[0].y}`
-  for (let i = 1; i < p.length - 1; i++) d += ` Q${p[i].x} ${p[i].y} ${(p[i].x + p[i + 1].x) / 2} ${(p[i].y + p[i + 1].y) / 2}`
+  for (let i = 1; i < p.length - 1; i++)
+    d += ` Q${p[i].x} ${p[i].y} ${(p[i].x + p[i + 1].x) / 2} ${(p[i].y + p[i + 1].y) / 2}`
   const last = p[p.length - 1]
   return `${d} L${last.x} ${last.y}`
 }
@@ -125,7 +151,11 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                 className={`transition-opacity duration-300 ${lit ? 'text-accent' : 'text-muted'} ${dim ? 'opacity-20' : ''}`}
               >
                 <path d={curve(pts)} fill="none" stroke="currentColor" strokeWidth={lit ? 2 : 1.25} />
-                <path d="M0 0 L-10 -5 L-10 5 Z" fill="currentColor" transform={`translate(${b.x} ${b.y}) rotate(${deg})`} />
+                <path
+                  d="M0 0 L-10 -5 L-10 5 Z"
+                  fill="currentColor"
+                  transform={`translate(${b.x} ${b.y}) rotate(${deg})`}
+                />
                 {e.label && lx !== undefined && ly !== undefined && (
                   <>
                     <rect
@@ -136,7 +166,14 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                       rx={4}
                       className="fill-surface"
                     />
-                    <text x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fill="currentColor" fontSize={EDGE_PX}>
+                    <text
+                      x={lx}
+                      y={ly}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fill="currentColor"
+                      fontSize={EDGE_PX}
+                    >
                       {e.label}
                     </text>
                   </>
