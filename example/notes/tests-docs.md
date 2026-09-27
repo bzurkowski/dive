@@ -1,57 +1,61 @@
-# Tests and docs
-Purpose: Pin down the new contract: runtime network failures from `fetch` come out as `NetworkError` with the raw error in `cause` and are retried by default, while any other thrown error is passed through unwrapped and is never retried by default. The readme documents the same contract.
+# Tests and docs for NetworkError and stricter retry
+Purpose: pin down the new contract in tests and the readme. A fetch failure that looks like a network error now reaches callers and hooks as a `NetworkError` (the raw `TypeError` is kept in `cause`). Only `NetworkError`, `HTTPError` and `TimeoutError` are retried by default; any other error is thrown right away.
 
 ## Terms
-- NetworkError (`NetworkError`): new `KyError` subclass thrown by `Ky.#fetch` when the raw fetch rejection looks like a network failure; it has `request`, its `cause` is the raw error, and its message is `Request failed due to a network error: <METHOD> <URL>` (source/errors/NetworkError.ts:9-17).
-- Raw network error check (`isRawNetworkError`): message-based heuristic for a raw `TypeError` coming out of fetch. It matches `Failed to fetch`, `fetch failed`, `terminated`, `Load failed` with no stack, and others (source/utils/is-network-error.ts:18-49). The tests fake a network error by throwing `new TypeError('Failed to fetch')`.
-- Network error type guard (`isNetworkError`): public guard that passes on `instanceof NetworkError` or on `name === 'NetworkError'` (source/utils/type-guards.ts:75-77). `isKyError` now accepts it too.
-- Non-network TypeError: the tests use `new TypeError('Cannot read properties of undefined')` as a stand-in for a programming bug. It is neither wrapped nor retried.
+- NetworkError (`NetworkError`): a new `KyError` subclass thrown by `#fetch` when the fetch implementation rejects with a recognized network `TypeError`. It has `request`, `cause` holds the original error, and its message is `Request failed due to a network error: <METHOD> <url>`.
+- Raw network error (`isRawNetworkError`): a heuristic inlined from `is-network-error` v1.3.1. It recognizes a runtime's fetch `TypeError` by its exact message (`Failed to fetch`, `fetch failed`, `network error`, `terminated`, `Load failed` without a stack, and others).
+- Public type guard (`isNetworkError`): `instanceof NetworkError` or `name === 'NetworkError'`, so the check also works across realms. `isKyError` now includes it too.
+- Default retry fallthrough (`#calculateRetryDelay` tail): the step that runs after the `shouldRetry`, timeout and HTTP checks. It used to retry any error. Now it throws unless the error is a `NetworkError`.
+- Unrecognized error: any error from `fetch` whose message the heuristic does not recognize, such as a thrown bug `TypeError('Cannot read properties of undefined')`. It passes through unchanged and is not retried.
 
 ## Entry points
-- test/retry.ts:1613 ava (`npm test` = `xo && npm run build && ava`, package.json:25) runs the 10 new NetworkError/retry tests. Each one injects a custom `fetch` that throws.
-- test/hooks.ts:664 and similar: the existing hook tests go through `Ky.#retry` -> `#fetch` -> `#retryFromError` -> `beforeRetry`/`beforeError` (source/core/Ky.ts:100, 697-784, 189-204).
-- test/headers.ts:127 and test/memory-leak.ts:34 use real undici `fetch` against a live server or an `invalid:` URL, so they exercise the real `fetch failed` wrapping path.
-- readme.md:265, 1179 are the user-facing entry points for the retry and NetworkError docs.
+- test/retry.ts:1613 ava runs the new NetworkError/retry block (tests at 1613-1821) through `npm test` (`xo && npm run build && ava`).
+- test/hooks.ts:647 ava runs the hook tests that feed a stub `fetch` which throws `TypeError('Failed to fetch')`.
+- test/headers.ts:127 ava runs a real undici request whose content-length mismatch fails as `fetch failed`.
+- test/memory-leak.ts:34 ava runs `ky.post('invalid:')`, which makes undici reject with `fetch failed`.
+- readme.md:265 users read about the retry policy. readme.md:1179 is the new `NetworkError` API section.
 
 ## Flow
-1. test/retry.ts:3-8 import `NetworkError`, `isKyError` and `isNetworkError` from the public index, which proves they are exported (source/index.ts:73,79).
-2. test/retry.ts:1613-1631 `retry: 0` plus a fetch that throws `TypeError('Failed to fetch')`. The catch in `Ky.#fetch` (source/core/Ky.ts:827-833) wraps it, so the thrown error is `instanceof NetworkError`, passes `isNetworkError` and `isKyError`, has `name` `NetworkError`, `request.url`, a `cause` that is the original TypeError, and the exact message `Request failed due to a network error: GET https://example.com/`.
-3. test/retry.ts:1675-1695 the default retry policy retries NetworkError. The fetch fails twice, then returns `ok`, giving 3 calls. The path is the new last branch of `#calculateRetryDelay`, where `isNetworkError` returns `#calculateDelay()` (source/core/Ky.ts:485-490).
-4. test/retry.ts:1633-1651 a non-network TypeError with `limit: 2` gives exactly 1 fetch call, and the raw TypeError is rethrown. This is the behavior change: before, the fall-through at old source/core/Ky.ts:479 retried any error. Now source/core/Ky.ts:486-488 throws it.
-5. test/retry.ts:1740-1753 a non-network TypeError is not wrapped. It comes out as a plain `TypeError` with its original message, and `isNetworkError` is false (source/core/Ky.ts:832).
-6. test/retry.ts:1653-1673 `shouldRetry: () => true` still forces retries of an unknown error: 1 initial call plus 2 retries = 3 calls, then the raw TypeError. `shouldRetry` runs before the new `isNetworkError` gate (source/core/Ky.ts:424-435), so it remains the escape hatch.
-7. test/retry.ts:1717-1738 `shouldRetry` receives the wrapped `NetworkError`, not the raw TypeError. This holds because wrapping happens inside `#fetch`, before `#calculateRetryDelay` runs.
-8. test/retry.ts:1755-1778 when `shouldRetry` returns `undefined` for a NetworkError, control falls through to the defaults and the error is retried (3 calls).
-9. test/retry.ts:1780-1805 `beforeError` receives the NetworkError with its cause chain intact (source/core/Ky.ts:189-204).
-10. test/retry.ts:1807-1821 with `timeout: false`, the error is still a NetworkError. This covers the `timeout === false` branch, which now does `return await this.#options.fetch(...)` (source/core/Ky.ts:814-815). Without the added `await`, the rejection would bypass the `catch`.
-11. test/hooks.ts:7 imports `isNetworkError`. test/hooks.ts:664,672 change the injected failure from `new Error('simulated network failure')` to `TypeError('Failed to fetch')` and assert `isNetworkError(error)` in `beforeRetry`. The old plain `Error` would no longer be retried, so `beforeRetry` would never run.
-12. test/hooks.ts:1126,1155 `beforeRetry` rethrows the same NetworkError. Because `hookError === error`, it is not added to `#beforeRetryHookErrors` (source/core/Ky.ts:749-751), so `beforeError` still runs. The final assertion changes from `instanceof TypeError` to `isNetworkError`.
-13. test/hooks.ts:1627 `beforeError` now asserts `isNetworkError(receivedError)` instead of the raw message `Failed to fetch`, because the message is now Ky's wrapper message.
-14. test/hooks.ts:3919, 4089 change `'network down'` to `'Failed to fetch'`. These tests use the default retry policy, so an unrecognized message would no longer be retried and the `beforeRetry` Response fallback would never be reached. The change is required, not cosmetic.
-15. test/headers.ts:142-143 real undici: a content-length mismatch produces `TypeError('fetch failed')`, which is now wrapped. The undici code moves from `error.cause.code` to `error.cause.cause.code`.
-16. test/memory-leak.ts:4,44 (old 44-45) in the failed stream POST to `invalid:`, undici's `fetch failed` is now caught as `instanceOf: NetworkError`. The `message: 'fetch failed'` assertion is dropped because the message is now Ky's.
-17. readme.md:265-266 a new paragraph: network errors are retried for retriable methods, unrecognized errors are thrown immediately, and `shouldRetry` is the override.
-18. readme.md:292 the `shouldRetry` return value `undefined` now lists "network errors" among the defaults and adds that unrecognized error types are not retried.
-19. readme.md:456, 1114 `beforeRetry` and HTTPError docs: an error with no response is now "an instance of `NetworkError`" rather than "not an instance of `HTTPError`".
-20. readme.md:529, 1089 `beforeError` lists `NetworkError` and the `isNetworkError()` guard. `KyError` lists `NetworkError` as a subclass.
-21. readme.md:1179-1200 new `### NetworkError` section covering `request`, `cause`, retry for retriable methods, a note that detection is a heuristic (errors from unrecognized runtimes stay unwrapped, so use `shouldRetry`), and an `isNetworkError` example.
+1. [flow, core] source/core/Ky.ts:813-833 `#fetch` wraps the fetch call and the timeout race in try/catch. When `isRawNetworkError(error)` matches, it throws `new NetworkError(this.request, {cause})`; any other error is rethrown untouched. This is the one place wrapping happens, so every test below that stubs `fetch` to throw `TypeError('Failed to fetch')` goes through here.
+2. [flow, core] source/core/Ky.ts:485-490 This is the new tail of `#calculateRetryDelay`. It runs after the limit, method, `shouldRetry`, timeout and HTTP checks. An error that is not a `NetworkError` is thrown instead of retried. Before this PR, any error reached `return this.#calculateDelay()` and was retried.
+3. [flow, detail] source/core/Ky.ts:441-447 and :477-482 The timeout branch and the HTTP branch now `return this.#calculateDelay()` themselves. Without that, the new `!isNetworkError` guard would throw them. The existing retry.ts tests `retryOnTimeout: true ...` (1067, 1093) and the status-code tests cover this.
+4. [flow, core] test/retry.ts:1613-1631 `NetworkError wraps fetch network errors`. With `retry: 0`, a stub `fetch` throws `TypeError('Failed to fetch')`. The test checks `instanceof NetworkError`, `isNetworkError`, `isKyError`, the `name`, the `request.url`, that `cause` is the original `TypeError`, and the exact message `Request failed due to a network error: GET https://example.com/`.
+5. [flow, core] test/retry.ts:1675-1695 `NetworkError is retried by default`. `fetch` throws twice and then returns `ok`. With `limit: 2` it makes 3 calls in total, so a network error still goes through the default retry path.
+6. [flow, core] test/retry.ts:1633-1651 `non-network TypeError is not retried`. `TypeError('Cannot read properties of undefined')` with `limit: 2` gives exactly 1 fetch call. This is the "tighten retry logic" half of the PR: the fallthrough no longer retries unknown errors.
+7. [flow, core] test/retry.ts:1740-1753 `non-network TypeError is not wrapped in NetworkError`. The same bug-like `TypeError` reaches the caller unchanged: `instanceof TypeError`, `isNetworkError` is false, and the message is kept.
+8. [flow, core] test/retry.ts:1653-1673 `shouldRetry can force retry of non-network errors`. `shouldRetry: () => true` gets 3 calls for the same unknown `TypeError`. This escape hatch is what the readme NOTE (readme.md:1185-1186) points users to for runtimes the heuristic does not recognize.
+9. [flow, core] test/retry.ts:1717-1738 `shouldRetry receives NetworkError (not raw TypeError)`. Wrapping happens before retry decisions, so `shouldRetry` sees `isNetworkError(error)` with `cause instanceof TypeError`.
+10. [flow, detail] test/retry.ts:1755-1778 When `shouldRetry` returns `undefined`, the error falls through to the default logic, and a `NetworkError` is still retried (3 calls).
+11. [flow, detail] test/retry.ts:1780-1805 The `beforeError` hook receives the `NetworkError`, the same object the caller would get, with its `cause` chain. test/hooks.ts:1604-1629 (assert at 1627) checks the same thing: it used to assert `message === 'Failed to fetch'` and now asserts `isNetworkError`.
+12. [flow, detail] test/retry.ts:1807-1821 With `timeout: false`, `#fetch` takes the direct `await this.#options.fetch(...)` path (Ky.ts:814-816). The error is still wrapped, which shows the try/catch covers both branches. The `await` was added so that a rejection is caught inside the try block.
+13. [flow, core] test/hooks.ts:647-685 (changes at 664, 672) `beforeRetry hook is called even if the error has no response`. The stub used to throw `new Error('simulated network failure')`. That error would no longer be retried, so the hook would never run. The stub now throws `TypeError('Failed to fetch')`, and the hook asserts `isNetworkError(error)` and `error.response === undefined`.
+14. [flow, detail] test/hooks.ts:1122-1156 (changes at 1126, 1155) `beforeError runs when beforeRetry rethrows network errors`. `beforeRetry` rethrows the same `NetworkError`. Because `hookError === error`, Ky.ts:748-751 does not mark it as a hook error, so `beforeError` still runs and edits the message. The final error is `isNetworkError`; it used to be `instanceof TypeError`.
+15. [flow, core] test/headers.ts:141-143 This is a real undici failure (`UND_ERR_REQ_CONTENT_LENGTH_MISMATCH`), where undici rejects with `TypeError('fetch failed')`. That error is now wrapped, so the undici code sits one level deeper at `error.cause.cause.code`. It used to be at `error.cause.code`. This is a user-visible break for anyone who reads undici codes such as `ECONNREFUSED` off `cause`.
+16. [flow, detail] test/memory-leak.ts:4, 39-46 `ky.post('invalid:')` rejects in undici with `fetch failed`. The expectation changes from `{instanceOf: TypeError, message: 'fetch failed'}` to `{instanceOf: NetworkError}`, and the stream-leak check stays the same.
+17. [type, core] readme.md:1179-1199 This is the new `### NetworkError` section. It covers `request` and `cause`, says network errors are retried for retriable methods, and has a NOTE that detection is heuristic and unrecognized runtimes produce errors that are not wrapped (use `shouldRetry`). The example uses `isNetworkError`.
+18. [type, core] readme.md:265 and readme.md:292 These describe the retry policy. Network errors are retried for retriable methods, and all other errors are thrown immediately. `shouldRetry` returning `undefined` means "default logic: `retryOnTimeout`, status codes, network errors", and unrecognized types are not retried.
+19. [type, detail] readme.md:456, 529, 1089, 1114 These update cross-references. `beforeRetry` and the `HTTPError` docs now say that a failure with no response is a `NetworkError`. The `beforeError` docs list `NetworkError` and `isNetworkError()`, and the `KyError` docs list `NetworkError` as a subclass.
 
 ## Edge cases
-- test/retry.ts:1697-1715 NetworkError on POST -> 1 call, NetworkError thrown. The method check (source/core/Ky.ts:419-421) runs before the network-error branch.
-- test/retry.ts:1633-1651 unknown TypeError with retries left -> thrown on the first attempt, not after the limit.
-- test/retry.ts:1653-1673 `shouldRetry` returns true for an unknown error -> retried up to the limit. After that, the raw (unwrapped) TypeError is thrown.
-- test/retry.ts:1807-1821 `timeout: false` -> wrapping still applies. This guards the added `return await`.
-- test/hooks.ts:2189 `shouldRetry` returns true, so the `'network down'` -> `'Failed to fetch'` swap here is only for consistency. The test would pass either way.
-- test/headers.ts:142-143 a client-side content-length bug surfaces as NetworkError, because undici reports it as `fetch failed`.
-- test/memory-leak.ts:44 an invalid URL scheme (`invalid:`) surfaces as NetworkError, for the same reason.
+- test/retry.ts:1697-1715 A POST fails with a network error -> it is wrapped as a `NetworkError` but not retried (1 call), because the method check in Ky.ts:419-421 runs before any type check.
+- test/hooks.ts:3908-3929 (change at 3919) `throwHttpErrors: false` with a stub that throws a network error and a `beforeRetry` hook that returns a 502 `Response` -> the retry happens and the hook's response is returned. The stub had to change from `TypeError('network down')` to `'Failed to fetch'`. Otherwise the error is now thrown before `beforeRetry` runs.
+- test/hooks.ts:4079-4106 (change at 4089) When `beforeRetry` returns an ok `Response` after a network error, that response goes through the `afterResponse` hooks. It needs the same message change as the previous item, for the same reason.
+- test/hooks.ts:4135-4205 (unchanged) Stubs that throw `TypeError('network error')` in lowercase are still retried, because `'network error'` is Chrome's message in the heuristic set. A network error followed by an HTTP 500 shares one retry budget.
+- test/retry.ts:605-633 (unchanged) The stub throws `new Error('fetch failed')`, whose name is `Error`, not `TypeError` -> it is not wrapped, and with `limit: 0` the same object reaches the caller (`is: expectedError`).
+- source/utils/is-network-error.ts:31-36 Safari `Load failed` counts as a network error only when `stack` is undefined or Sentry has marked it. No test in this area covers that, or the Deno, Firefox, Bun or Cloudflare messages.
 
 ## Mechanical
-- test/hooks.ts:1974 renames the test title from `...for network TypeError` to `...for NetworkError`. The body is unchanged.
-- test/retry.ts:3-8 changes the import from a single line to multi-line.
+- test/retry.ts:3-8 import list expanded (`NetworkError`, `isKyError`, `isNetworkError`), replaces old test/retry.ts:3
+- test/hooks.ts:7 import `isNetworkError`
+- test/hooks.ts:1974 rename test title "network TypeError" -> "NetworkError" (body unchanged)
+- test/hooks.ts:2170-2216 (change at 2189) boilerplate test: message changed to `'Failed to fetch'` for consistency. Not required, because `shouldRetry` returns `true` and forces the retry anyway.
+- test/memory-leak.ts:4 import `NetworkError`
+- test/headers.ts:141 explanatory comment added, replaces old test/headers.ts:142 assertion
 
 ## Risks and open questions
-- undici maps nearly every failure to `TypeError('fetch failed')`, including client bugs (content-length mismatch, unknown scheme; see headers.ts:143, memory-leak.ts:44). Those become NetworkError and are retried for GET/PUT, which contradicts the readme's "programming bugs are thrown immediately" (readme.md:265).
-- Breaking change for custom `fetch` implementations: errors that are not a TypeError, or have an unlisted message (node-fetch `FetchError`, axios adapters, `'network down'`), were retried before and now are not. The tests in hooks.ts had to change for this reason.
-- The tests only cover the `Failed to fetch` (Chrome) and `fetch failed` (undici) messages. No test covers Safari's `Load failed`/stack check, Deno, Bun, Cloudflare, `terminated`, or `Failed to fetch (host)` in source/utils/is-network-error.ts.
-- `isNetworkError` duck-types on `name === 'NetworkError'`, so a DOMException named `NetworkError` also passes: it gets retried, and the guard claims a `.request` property it lacks. No test covers this.
-- When `shouldRetry` forces retries of an unknown error, the final thrown error is the raw error, not a KyError (retry.ts:1653-1673). This is intended, but callers checking `isKyError` will not catch it.
+- Breaking change for callers who catch `TypeError` or read `error.message === 'Failed to fetch'` or `error.cause.code`. They now get a `NetworkError` with the codes one level deeper (headers.ts:143). This probably needs a major-version note.
+- Custom `fetch` wrappers or runtimes that reject with their own messages (for example `'network down'`, or a React Native polyfill variant) used to be retried and are now silently not retried. The only remedy is `shouldRetry: () => true`, which skips all other checks.
+- undici's `fetch failed` is a catch-all: a content-length mismatch (headers.ts) and an invalid scheme `invalid:` (memory-leak.ts) both become `NetworkError`. For retriable methods (GET, PUT) such configuration bugs are now retried with backoff, which contradicts the "programming bugs are thrown immediately" wording in readme.md:265.
+- Only `#fetch` wraps errors. Network failures while reading the body (undici `terminated` during `.json()`/`.text()`) reach the caller as a raw `TypeError`, even though `'terminated'` is in the heuristic list. No test covers it.
+- The detection heuristic has no unit tests, and neither does the cross-realm branch (`name === 'NetworkError'`) of `isNetworkError`. Every test uses Chrome's `'Failed to fetch'` or Node's `'fetch failed'`.
+- The existing test/retry.ts:18-34 `network error` sets status 99_999. Under Express 5, `res.status` probably throws a `RangeError`, which becomes a 500, so the test likely exercises HTTP 500 retry rather than a real socket failure. That would leave real-network retry covered only by stubs.
