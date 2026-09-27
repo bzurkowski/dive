@@ -1,0 +1,44 @@
+/* Reveal animations for sequence and box diagrams. */
+@keyframes dive-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dive-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dive-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Use on a path with pathLength="1". */
+.dive-draw {
+  stroke-dasharray: 1;
+  animation: dive-draw 0.45s ease-out;
+}
+.dive-head {
+  animation: dive-fade 0.2s 0.35s both;
+}
+.dive-pop {
+  animation: dive-pop 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dive-draw,
+  .dive-head,
+  .dive-pop {
+    animation: none;
+  }
+}
