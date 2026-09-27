@@ -38,7 +38,7 @@ Dive tells the story step by step, with the real code, diagrams, a glossary, and
    - one for Notion, Confluence, Jira, or Linear, if you have them connected.
 3. Outlines the story from the scouts' notes.
 4. Hands each chapter to its own writer, in parallel.
-5. Checks every code reference against the real code and builds the page. For pull requests, it also checks that every changed hunk is explained.
+5. Checks every code reference against the real code and builds the page. It also prints the word count and an estimated reading time.
 
 ## What's in a dive
 

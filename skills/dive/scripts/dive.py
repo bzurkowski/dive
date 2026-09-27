@@ -34,6 +34,7 @@ LANGS = {'ts': 'ts', 'tsx': 'tsx', 'js': 'js', 'jsx': 'jsx', 'mjs': 'js', 'cjs':
          'hpp': 'cpp', 'scala': 'scala', 'dart': 'dart', 'ex': 'elixir', 'exs': 'elixir', 'toml': 'toml',
          'xml': 'xml', 'graphql': 'graphql', 'proto': 'proto', 'tf': 'hcl'}
 NAMES = {'Dockerfile': 'dockerfile', 'Makefile': 'make'}
+PROSE = {'title', 'summary', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'}
 HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
 
 
@@ -227,46 +228,11 @@ def validate(dive, files):
     return errs
 
 
-def changed(h):
-    o, n, old, new = h['oldStart'], h['newStart'], set(), set()
-    for l in h['lines']:
-        if l[0] == '+':
-            new.add(n)
-            n += 1
-        elif l[0] == '-':
-            old.add(o)
-            o += 1
-        else:
-            o, n = o + 1, n + 1
-    return old, new
-
-
-def coverage(dive, diff):
-    """Changed hunks that no code note touches, and files no step or card mentions."""
-    notes, cards = {}, ''
-    for c in dive['chapters']:
-        for s in c['steps']:
-            if s.get('kind') == 'code':
-                for n in s['notes']:
-                    notes.setdefault(n['file'], []).append((n.get('side', 'new'), *n['lines']))
-            elif s.get('kind') == 'card':
-                cards += s.get('body', '') + ' '.join(l.get('url', '') for l in s.get('links') or [])
-    gaps = []
-    for f in diff['files']:
-        p = f['path']
-        if p in cards:  # listed in a card: the card explains the hunks no note covers
-            continue
-        if p not in notes:
-            gaps.append(f"{p} (+{f['additions']} -{f['deletions']}): in no step or card")
-            continue
-        for h in f['hunks']:
-            old, new = changed(h)
-            if not new:  # pure deletion: a new-side note around the spot counts too
-                new = set(range(h['newStart'], h['newStart'] + h['newLines'] + 1))
-            hit = any(any(a <= x <= b for x in (old if side == 'old' else new)) for side, a, b in notes[p])
-            if not hit:
-                gaps.append(f"{p}:{h['newStart']}-{h['newStart'] + max(h['newLines'], 1) - 1}: hunk in no note")
-    return gaps
+def words(x):
+    """Words the reader reads: strings under PROSE keys, anywhere in the dive."""
+    if isinstance(x, dict):
+        return sum(len(v.split()) if k in PROSE and isinstance(v, str) else words(v) for k, v in x.items())
+    return sum(map(words, x)) if isinstance(x, list) else 0
 
 
 def load(path, errs):
@@ -326,12 +292,9 @@ def build(d):
     print(f"Built {out} ({out.stat().st_size // 1024} KB): {len(dive['chapters'])} chapters, {steps} steps.")
     if skipped:
         print(f"Not embedded (lockfile or > {MAX_LINES} lines): {', '.join(skipped)}")
-    gaps = coverage(dive, diff) if diff else []
-    if gaps:
-        print(f'Coverage: {len(gaps)} gaps. Explain each in a code note, or list the file in an "Also changed" card:')
-        print('\n'.join(f'  {g}' for g in gaps))
-    elif diff:
-        print('Coverage: every changed hunk is in a note or card.')
+    w = words(dive)
+    notes = sum(len(s['notes']) for c in dive['chapters'] for s in c['steps'] if s['kind'] == 'code')
+    print(f'Reading: {w} words, {notes} code notes, about {max(1, round(w / 200))} min.')
 
 
 def main():

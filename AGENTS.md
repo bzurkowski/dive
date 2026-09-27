@@ -16,7 +16,7 @@ Simple and fast. If the skill is slow or long, people do not use it.
 skills/dive/                  the skill (this is what ships)
   SKILL.md                    entry point: the workflow
   references/                 loaded on demand (scouts, story, format, writing)
-  scripts/dive.py             prep (fetch PR, diff.json) + build (validate, coverage, bake index.html)
+  scripts/dive.py             prep (fetch PR, diff.json) + build (validate, bake index.html, reading time)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind); never shipped
   src/types.ts                data contract: single source of truth for dive.json

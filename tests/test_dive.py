@@ -40,7 +40,7 @@ class DiveTest(unittest.TestCase):
 
         (d / 'dive.json').write_text(json.dumps({'title': 'T', 'summary': 'S', 'source': {'kind': 'pr', 'ref': '1'}, 'chapters': []}))
         (d / 'parts').mkdir()
-        step = {'kind': 'code', 'title': 'Guard', 'say': 'A guard.', 'file': 'app.py', 'notes': [{'lines': [2, 9], 'text': 'x'}]}
+        step = {'kind': 'code', 'title': 'Guard', 'say': 'A guard.', 'notes': [{'file': 'app.py', 'lines': [2, 9], 'text': 'x'}]}
         (d / 'parts' / 'happy-path.json').write_text(json.dumps({'id': 'happy-path', 'title': 'Happy path', 'steps': [step]}))
         r = run('build', str(d))
         self.assertEqual(r.returncode, 1)
@@ -50,8 +50,7 @@ class DiveTest(unittest.TestCase):
         (d / 'parts' / 'happy-path.json').write_text(json.dumps({'id': 'happy-path', 'title': 'Happy path', 'steps': [step]}))
         r = run('build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertIn('util.py (+1 -0): in no step or card', r.stdout)
-        self.assertNotIn('app.py:', r.stdout)
+        self.assertIn('Reading: 8 words, 1 code notes, about 1 min.', r.stdout)
         self.assertFalse((d / 'parts' / 'happy-path.json').exists())
 
         html = (d / 'index.html').read_text()
@@ -59,16 +58,6 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(data['chapters'][0]['id'], 'happy-path')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
-
-        # A card that lists a file covers its hunks that no note explains.
-        dive = json.loads((d / 'dive.json').read_text())
-        dive['chapters'][0]['steps'][0]['notes'][0]['lines'] = [1, 1]
-        dive['chapters'].append({'id': 'recap', 'title': 'Recap', 'steps': [{'kind': 'card', 'title': 'Also changed', 'body': '- `app.py`\n- `util.py`'}]})
-        (d / 'dive.json').write_text(json.dumps(dive))
-        r = run('build', str(d))
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertNotIn('hunk in no note', r.stdout)
-        self.assertNotIn('in no step or card', r.stdout)
 
 
 if __name__ == '__main__':

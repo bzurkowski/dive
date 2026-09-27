@@ -53,9 +53,8 @@ In one message, spawn one **writer** per chapter in the outline. Give a chapter 
 
 ## 5. Build
 
-Run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`. It merges the parts into `dive.json`, checks every step and line range, embeds the real code, and writes `index.html`.
+Run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`. It merges the parts into `dive.json`, checks every step and line range, embeds the real code, writes `index.html`, and prints the word count, code-note count, and estimated reading time.
 
-- **Errors**: fix them in the part file (or in `dive.json` after a successful build, which deletes the parts), then build again.
-- **Coverage** (`pr`): the script lists changed hunks that no note explains. Explain each behavior change in a code note. List each mechanical file in the "Also changed" card. Build again until coverage is clean.
+On errors, fix the part file (or `dive.json` after a successful build, which deletes the parts), then build again.
 
 Open the page: `open docs/dives/<slug>/index.html` on macOS, `xdg-open` on Linux. Give the user the path and one sentence about the story. Leave all files uncommitted.
