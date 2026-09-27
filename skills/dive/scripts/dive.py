@@ -252,9 +252,10 @@ def coverage(dive, diff):
     gaps = []
     for f in diff['files']:
         p = f['path']
+        if p in cards:  # listed in a card: the card explains the hunks no note covers
+            continue
         if p not in notes:
-            if p not in cards:
-                gaps.append(f"{p} (+{f['additions']} -{f['deletions']}): in no step or card")
+            gaps.append(f"{p} (+{f['additions']} -{f['deletions']}): in no step or card")
             continue
         for h in f['hunks']:
             old, new = changed(h)

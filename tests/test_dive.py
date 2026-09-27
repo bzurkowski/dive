@@ -60,6 +60,16 @@ class DiveTest(unittest.TestCase):
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
 
+        # A card that lists a file covers its hunks that no note explains.
+        dive = json.loads((d / 'dive.json').read_text())
+        dive['chapters'][0]['steps'][0]['notes'][0]['lines'] = [1, 1]
+        dive['chapters'].append({'id': 'recap', 'title': 'Recap', 'steps': [{'kind': 'card', 'title': 'Also changed', 'body': '- `app.py`\n- `util.py`'}]})
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run('build', str(d))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertNotIn('hunk in no note', r.stdout)
+        self.assertNotIn('in no step or card', r.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()
