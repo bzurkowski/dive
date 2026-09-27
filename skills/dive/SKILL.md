@@ -7,9 +7,9 @@ description: Builds a dive, an interactive story-driven walkthrough that explain
 
 A dive tells the story of a PR, module, or domain in small steps, so a tired developer understands it in about 10 minutes. The output is one self-contained file: `docs/dives/<slug>/index.html`.
 
-You orchestrate. Scouts discover in parallel, you outline the story, writers fill chapters in parallel, and a script builds the page. Keep your own context small: read the scouts' notes, not the whole codebase.
+You orchestrate. Scouts discover in parallel, you outline the story, writers fill chapters in parallel, a script builds the page, and an editor cuts what the story does not need. Keep your own context small: read the scouts' notes, not the whole codebase.
 
-`<skill>` is the directory of this file. Run all commands from the repository root. Scouts and writers are subagents that inherit your model. If you cannot spawn subagents, do each scout and writer task yourself, one after another.
+`<skill>` is the directory of this file. Run all commands from the repository root. Scouts, writers, and the editor are subagents that inherit your model. If you cannot spawn subagents, do each scout, writer, and editor task yourself, one after another.
 
 ## 1. Prep
 
@@ -58,5 +58,13 @@ In one message, spawn one **writer** per chapter in the outline. Give a chapter 
 Run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`. It merges the parts into `dive.json`, checks every step and line range, embeds the real code, writes `index.html`, and prints the word count, code-note count, and estimated reading time.
 
 On errors, fix the part file (or `dive.json` after a successful build, which deletes the parts), then build again.
+
+## 6. Edit
+
+Spawn one **editor** subagent with a fresh context. Editor brief:
+
+> You edit a dive about <argument> as a first-time reader. Read `<skill>/references/story.md` and `<skill>/references/writing.md`, the story plan in `docs/dives/<slug>/outline.md`, and `docs/dives/<slug>/dive.json`. The last build printed: <its Reading line>.
+> Delete or merge steps and notes that break the importance rule in story.md: notes on unchanged code, trivia, repeats across chapters, test notes that only repeat, suspected bugs outside `review-focus`. Move a fact to the step where it belongs when needed. Check the soft budget in story.md against the build output. Do not add new facts. Do not cut a detail the reader needs to understand the change.
+> Edit `dive.json` (the parts are already merged), run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`, and fix any errors. Return the list of cuts, one line each.
 
 Open the page: `open docs/dives/<slug>/index.html` on macOS, `xdg-open` on Linux. Give the user the path and one sentence about the story. Leave all files uncommitted.
