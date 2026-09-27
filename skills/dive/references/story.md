@@ -21,13 +21,14 @@ Keep this order. Leave out a chapter that has nothing true to say. Readers jump 
 **Importance rule**: each note must help the reader understand the change. Drop:
 
 - a note on unchanged code. When the order of unchanged checks matters, say it in one sentence in `say`.
-- trivia about the internals of vendored or inlined code. One note that names what the code is is enough.
+- internals of vendored or inlined code that the change does not use. Note only the parts it uses (see **New names**).
 - a fact another step already said.
 - a test note that only repeats the behavior note above it.
 
 Importance, not brevity: never drop a detail the reader needs to understand the change.
 
 - **Once**: say each fact once, in the step where the reader sees it in code. Other steps build on it.
+- **New names**: the first time a note names a function, constant or type from the diff, that code gets its own note before the note that names it. For a function, note the line that matters to the story, not the whole body. Example: one note on the list of runtime error messages, then one note on the line of `isRawNetworkError` that checks a message against that list. The other lines of `isRawNetworkError` get no note.
 - **Order**: `happy-path` goes bottom-up: new types and constants, then the data model, migrations and services, then the flow in execution order, from entry point to effect.
 - **Designed or suspected**: `edge-cases` holds only designed behavior. Suspected bugs and risks go only to `review-focus`.
 - **Tests**: put a test note right after the note on the behavior it proves, in the same step, only when the test adds something. List other tests in the "Also changed" card.
@@ -38,7 +39,7 @@ Importance, not brevity: never drop a detail the reader needs to understand the 
 
 - `card`: problem, decision, review focus, recap. At most 5 bullets.
 - `terms`: the glossary. Give the identifier in code for each term.
-- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author would tell a reviewer about them: what they do and why. Never cite line numbers in text: give those lines their own note. Show a constant or type before the notes that use it. 1-3 sentences per note, about 15 lines per range at most.
+- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author would tell a reviewer about them: what they do and why. Never cite line numbers in text: give those lines their own note. 1-3 sentences per note, about 15 lines per range at most.
 - `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. At most about 10 messages: show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
 - `diagram`: static structure of one layer or region: which parts exist and what depends on what. 3-10 nodes. Use notes to walk through it. Draw one for a simple change. Add one per extra layer or region of a complex change, and no more.
 - `quiz`: one at the end of `big-picture`, `happy-path`, and `edge-cases`.
@@ -73,7 +74,7 @@ Failed refunds now retry with growing, random waits and stop after 5 attempts.
 
 ## happy-path
 - code src/refunds/retry.ts:3-5 - the limits: `MAX_ATTEMPTS` and the wait cap that `nextDelay` doubles - notes/refunds.md
-- code src/refunds/worker.ts:7-8 → src/refunds/retry.ts:7-26 - one attempt: count it, back off, send with an idempotency key - notes/refunds.md
+- code src/refunds/worker.ts:7-8 → src/refunds/retry.ts:9 → src/refunds/retry.ts:19 - one attempt: count it, `nextDelay` caps the wait, send with an idempotency key - notes/refunds.md
 - quiz - a timeout after the gateway already refunded
 
 ## recap

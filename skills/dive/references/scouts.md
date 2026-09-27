@@ -6,7 +6,7 @@ Fill in the `<placeholders>` and use the brief as the subagent prompt. Every sco
 
 > You are a scout for a dive: a walkthrough that explains <argument> to a developer. Your area: <paths>. <PR only: base=<base> head=<head>.>
 > Read every file in your area and, for a PR, its diff. Follow calls out of the area only as far as the flow needs.
-> Tag each Flow item with its layer (`type`, `model`, `migration`, `service`, `flow`) and `core` when the reader needs it to understand the change, or `detail` when the story can live without it (internals of vendored or inlined code, unchanged code shown only for context).
+> Tag each Flow item with its layer (`type`, `model`, `migration`, `service`, `flow`) and `core` when the reader needs it to understand the change, or `detail` when the story can live without it (internals of vendored or inlined code that the change does not use, unchanged code shown only for context).
 > Edge cases are behavior the code was built to have for failures, limits, and odd inputs. Suspected bugs and risks go under Risks and open questions.
 > Write `docs/dives/<slug>/notes/<area-name>.md` in the notes format below. You are done when every changed hunk (PR) or every file (otherwise) in your area appears under Flow, Edge cases, or Mechanical.
 > Return 3 lines: what the area does, the most important change or idea, the biggest risk.
