@@ -1,6 +1,7 @@
 import dagre from '@dagrejs/dagre'
 import { useMemo } from 'react'
 import type { DiagramStep, StepViewProps } from '../types'
+import { Inline } from '../Inline'
 import './diagrams.css'
 import { textWidth, useSize } from './util'
 
@@ -199,7 +200,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
             </div>
           )}
           <p key={focus} className="dive-pop max-w-3xl text-[15px] leading-relaxed">
-            {note.text}
+            <Inline text={note.text} />
           </p>
         </div>
       )}

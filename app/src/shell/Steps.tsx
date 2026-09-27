@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Inline } from '../Inline'
 import type { CardStep, Link, QuizStep, Term, TermsStep } from '../types'
 
 export function Notice({ children }: { children: ReactNode }) {
@@ -6,19 +7,6 @@ export function Notice({ children }: { children: ReactNode }) {
     <p role="status" className="m-4 rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted">
       {children}
     </p>
-  )
-}
-
-// `backticks` become code spans.
-export function Inline({ text }: { text: string }) {
-  return text.split(/(`[^`]+`)/).map((part, i) =>
-    part.startsWith('`') && part.endsWith('`') && part.length > 1 ? (
-      <code key={i} className="rounded bg-line/60 px-1 py-px font-mono text-[0.88em]">
-        {part.slice(1, -1)}
-      </code>
-    ) : (
-      part
-    ),
   )
 }
 
@@ -88,7 +76,7 @@ export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean })
             <span className="font-serif text-xl font-semibold">{t.term}</span>
             {t.code && <code className="font-mono text-sm text-muted">{t.code}</code>}
           </dt>
-          <dd className="mt-1 text-base leading-relaxed">{t.meaning}</dd>
+          <dd className="mt-1 text-base leading-relaxed"><Inline text={t.meaning} /></dd>
         </div>
       ))}
     </dl>
@@ -119,7 +107,7 @@ export function QuizView({ step }: { step: QuizStep }) {
   const done = picked !== null
   return (
     <article>
-      <h2 className={heading}>{step.question}</h2>
+      <h2 className={heading}><Inline text={step.question} /></h2>
       <p className="mt-2 text-muted">Pick one answer.</p>
       <ul className="mt-6 space-y-3">
         {options.map((o, i) => {
@@ -140,14 +128,14 @@ export function QuizView({ step }: { step: QuizStep }) {
                 className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 <span className="flex items-start gap-3">
-                  <span className="grow">{o.text}</span>
+                  <span className="grow"><Inline text={o.text} /></span>
                   {done && (o.correct || i === picked) && (
                     <span className={`shrink-0 text-sm font-semibold ${o.correct ? 'text-ok' : 'text-bad'}`}>
                       {o.correct ? 'Correct' : 'Your pick'}
                     </span>
                   )}
                 </span>
-                {done && <span className="mt-2 block text-base text-muted">{o.why}</span>}
+                {done && <span className="mt-2 block text-base text-muted"><Inline text={o.why} /></span>}
               </button>
             </li>
           )

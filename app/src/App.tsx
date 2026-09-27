@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { Inline } from './Inline'
 import { CodeView } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
 import { SequenceView } from './diagrams/SequenceView'
@@ -145,7 +146,7 @@ export default function App({ dive }: { dive: Dive }) {
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
                 <div className="max-w-5xl">
                   <h2 className="font-serif text-2xl leading-tight font-semibold">{step.title}</h2>
-                  {'say' in step && <p className="mt-1 text-[17px] leading-snug">{step.say}</p>}
+                  {'say' in step && <p className="mt-1 text-[17px] leading-snug"><Inline text={step.say} /></p>}
                 </div>
                 <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">
                   <StepView dive={dive} step={step} focus={pos.f} onFocus={(f) => go({ ...pos, f })} />

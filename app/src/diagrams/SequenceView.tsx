@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { SequenceStep, StepViewProps } from '../types'
+import { Inline } from '../Inline'
 import './diagrams.css'
 import { textWidth, useSize } from './util'
 
@@ -156,7 +157,7 @@ export function SequenceView({ step, focus, onFocus }: StepViewProps<SequenceSte
                 className="absolute -top-[7px] h-3 w-3 rotate-45 border-t border-l border-line bg-surface"
                 style={{ left: Math.max(12, Math.min(mid - noteLeft - 6, noteW - 24)) }}
               />
-              {active.note}
+              <Inline text={active.note} />
             </div>
           )}
         </div>

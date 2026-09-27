@@ -1,4 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import { Inline } from '../Inline'
 import type { CodeNote, CodeStep, FileData, StepViewProps } from '../types'
 import { highlightFile, type Tokens } from './highlight'
 import { layout, noteSpan, parse, type Row } from './rows'
@@ -197,19 +198,7 @@ function NoteCard(p: { note: CodeNote; i: number; total: number; active: boolean
           {note.side === 'old' ? ' · removed code' : ''}
         </span>
       </div>
-      <p className="text-[15px] leading-relaxed">{inline(note.text)}</p>
+      <p className="text-[15px] leading-relaxed"><Inline text={note.text} /></p>
     </div>
   )
 }
-
-// `code` spans in note text.
-const inline = (text: string) =>
-  text.split(/`([^`]+)`/).map((s, k) =>
-    k % 2 ? (
-      <code key={k} className="rounded bg-bg px-1 font-mono text-[0.9em]">
-        {s}
-      </code>
-    ) : (
-      s
-    ),
-  )
