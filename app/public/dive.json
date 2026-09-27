@@ -241,26 +241,19 @@
       "steps": [
         {
           "kind": "code",
-          "title": "The worker counts attempts",
-          "say": "The worker now records each attempt before it sends the refund.",
-          "file": "src/refunds/worker.ts",
+          "title": "One retry attempt",
+          "say": "The worker counts the attempt, then retryRefund sends it and records the result.",
           "notes": [
             {
+              "file": "src/refunds/worker.ts",
               "lines": [
                 7,
                 8
               ],
               "text": "The attempt count goes up first. If the process crashes during the call, the attempt still counts."
-            }
-          ]
-        },
-        {
-          "kind": "code",
-          "title": "One attempt",
-          "say": "retryRefund sends one attempt and records the result.",
-          "file": "src/refunds/retry.ts",
-          "notes": [
+            },
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 9,
                 9
@@ -269,6 +262,7 @@
               "text": "Before: every failure waited a fixed 60 seconds and retried forever."
             },
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 7,
                 11
@@ -276,6 +270,7 @@
               "text": "nextDelay picks a random wait up to a cap. The cap doubles after each attempt."
             },
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 19,
                 19
@@ -283,6 +278,7 @@
               "text": "The refund id is the idempotency key. A repeated call cannot refund the customer twice."
             },
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 26,
                 26
@@ -321,9 +317,9 @@
           "kind": "code",
           "title": "When to give up",
           "say": "Two new rules stop retries that cannot succeed.",
-          "file": "src/refunds/retry.ts",
           "notes": [
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 14,
                 17
@@ -331,6 +327,7 @@
               "text": "After 5 attempts, the refund is marked failed with reason max_attempts."
             },
             {
+              "file": "src/refunds/retry.ts",
               "lines": [
                 22,
                 25
@@ -343,9 +340,9 @@
           "kind": "code",
           "title": "Where retryable comes from",
           "say": "The gateway client decides if an error is retryable.",
-          "file": "src/payments/gateway.ts",
           "notes": [
             {
+              "file": "src/payments/gateway.ts",
               "lines": [
                 1,
                 5

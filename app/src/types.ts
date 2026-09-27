@@ -54,13 +54,13 @@ export interface Term {
 
 export interface CodeStep {
   kind: 'code'
-  title: string
+  title: string // names the piece of logic, never a file
   say: string
-  file: string // repo path, key into Dive.files
-  notes: CodeNote[] // in reading order; → moves note to note
+  notes: CodeNote[] // in execution order, across files; → moves note to note
 }
 
 export interface CodeNote {
+  file: string // repo path, key into Dive.files
   lines: [number, number] // inclusive range; new-file numbers unless side = 'old'
   side?: 'new' | 'old' // 'old' for deleted lines
   text: string // 1-3 short sentences, like a PR self-review comment

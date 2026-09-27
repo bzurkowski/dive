@@ -63,7 +63,7 @@ export function parse(file: FileData): Parsed {
 }
 
 // Row index range [first, last] a note covers, or null if its lines are not in the file.
-export function noteSpan(rows: Row[], note: CodeNote): [number, number] | null {
+export function noteSpan(rows: Row[], note: Omit<CodeNote, 'file'>): [number, number] | null {
   const [a, b] = note.lines
   const side = note.side === 'old' ? 'old' : 'new'
   let first = -1

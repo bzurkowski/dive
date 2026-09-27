@@ -4,22 +4,77 @@ import type { CodeNote, CodeStep, FileData, StepViewProps } from '../types'
 import { highlightFile, type Tokens } from './highlight'
 import { layout, noteSpan, parse, type Row } from './rows'
 
-type Props = StepViewProps<CodeStep> & { file?: FileData; href?: string }
-
-export function CodeView(props: Props) {
-  if (!props.file)
-    return (
-      <div className="p-6 text-sm text-muted">
-        File not included in this dive: <code className="font-mono">{props.step.file}</code>
-      </div>
-    )
-  // Fresh state (expanded gaps, scroll) per step.
-  return <CodeBody key={`${props.step.file}\n${props.step.title}`} {...props} file={props.file} />
+type Props = StepViewProps<CodeStep> & {
+  files?: Record<string, FileData>
+  blob?: string // GitHub blob URL prefix; the file path is appended
 }
 
-function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData }) {
+// One section per file, in order of first appearance in the notes.
+// `focus` and every data-note/card/anchor index are step-global note indices.
+export function CodeView({ step, files, focus, onFocus, blob }: Props) {
+  const box = useRef<HTMLDivElement>(null)
+  const scrolled = useRef(false)
+  useEffect(() => {
+    const b = box.current
+    const el = b?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
+    const card = b?.querySelector<HTMLElement>(`[data-card="${focus}"]`)
+    if (!b || !el || !card) return
+    const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
+    // Span start at 20% from the top, unless that pushes the card below the fold.
+    const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
+    b.scrollTo({ top, behavior: scrolled.current ? 'smooth' : 'auto' })
+    scrolled.current = true
+  }, [focus])
+
+  const pick = (e: MouseEvent) => {
+    if (!window.getSelection()?.isCollapsed) return // let people select code
+    const hit = (e.target as HTMLElement).closest<HTMLElement>('[data-note]')
+    if (hit) onFocus(Number(hit.dataset.note))
+  }
+
+  return (
+    <div ref={box} onClick={pick} className="relative h-full overflow-auto bg-surface">
+      {[...new Set(step.notes.map((n) => n.file))].map((path) => {
+        const file = files?.[path]
+        if (file)
+          return <FileBody key={path} step={step} path={path} file={file} focus={focus} href={blob && blob + path} />
+        return (
+          <section key={path} className="border-line not-first:border-t">
+            <div className="p-6 text-sm text-muted">
+              File not included in this dive: <code className="font-mono">{path}</code>
+            </div>
+            {step.notes.map(
+              (n, i) =>
+                n.file === path && (
+                  <NoteCard key={i} note={n} i={i} total={step.notes.length} active={i === focus} anchor />
+                ),
+            )}
+          </section>
+        )
+      })}
+    </div>
+  )
+}
+
+function FileBody({
+  step,
+  path,
+  file,
+  focus,
+  href,
+}: {
+  step: CodeStep
+  path: string
+  file: FileData
+  focus: number
+  href?: string
+}) {
   const parsed = useMemo(() => parse(file), [file])
-  const spans = useMemo(() => step.notes.map((n) => noteSpan(parsed.rows, n)), [parsed, step.notes])
+  // Global note index → row span in this file; notes in other files get null.
+  const spans = useMemo(
+    () => step.notes.map((n) => (n.file === path ? noteSpan(parsed.rows, n) : null)),
+    [parsed, step.notes, path],
+  )
   const [open, setOpen] = useState(() => new Set<number>())
   const items = useMemo(() => layout(parsed.rows, spans, open), [parsed, spans, open])
 
@@ -46,34 +101,11 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
     spans.forEach((s, i) => s && m.set(s[1], [...(m.get(s[1]) ?? []), i]))
     return m
   }, [spans])
-  const unplaced = step.notes.flatMap((_, i) => (spans[i] ? [] : [i]))
-
-  const box = useRef<HTMLDivElement>(null)
-  const scrolled = useRef(false)
-  useEffect(() => {
-    const b = box.current
-    const el = b?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
-    const card = b?.querySelector<HTMLElement>(`[data-card="${focus}"]`)
-    if (!b || !el || !card) return
-    const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
-    // Span start at 20% from the top, unless that pushes the card below the fold.
-    const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
-    b.scrollTo({ top, behavior: scrolled.current ? 'smooth' : 'auto' })
-    scrolled.current = true
-  }, [focus])
-
-  const pick = (e: MouseEvent) => {
-    if (!window.getSelection()?.isCollapsed) return // let people select code
-    const hit = (e.target as HTMLElement).closest<HTMLElement>('[data-note]')
-    if (hit) onFocus(Number(hit.dataset.note))
-  }
+  const unplaced = step.notes.flatMap((n, i) => (n.file === path && !spans[i] ? [i] : []))
 
   const active = step.notes[focus]
   const link =
-    href && active && active.side !== 'old' && !href.includes('#')
-      ? `${href}#L${active.lines[0]}-L${active.lines[1]}`
-      : href
-  const hasNotes = step.notes.length > 0
+    href && active?.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
   const card = (i: number) => (
     <NoteCard
       key={`n${i}`}
@@ -86,9 +118,9 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
-      <header className="flex items-center gap-3 border-b border-line px-4 py-2 text-sm">
-        <span className="truncate font-mono font-medium">{step.file}</span>
+    <section className="border-line not-first:border-t">
+      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-surface px-4 py-2 text-sm">
+        <span className="truncate font-mono font-medium">{path}</span>
         {file.status && <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>}
         {file.oldPath && <span className="truncate text-xs text-muted">from {file.oldPath}</span>}
         {file.diff && (
@@ -103,11 +135,7 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
           </a>
         )}
       </header>
-      <div
-        ref={box}
-        onClick={pick}
-        className="relative min-h-0 flex-1 overflow-auto py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]"
-      >
+      <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
         {unplaced.map(card)}
         {items.map((it) =>
           it.kind === 'gap' ? (
@@ -127,7 +155,7 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
                 diff={file.diff}
                 note={owner[it.i]}
                 band={owner[it.i] < 0 ? 0 : owner[it.i] === focus ? 2 : 1}
-                dim={hasNotes && owner[it.i] !== focus}
+                dim={owner[it.i] !== focus}
                 anchor={spans[focus]?.[0] === it.i ? focus : undefined}
               />,
               ...(cardsAfter.get(it.i) ?? []).map(card),
@@ -135,7 +163,7 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
           ),
         )}
       </div>
-    </div>
+    </section>
   )
 }
 

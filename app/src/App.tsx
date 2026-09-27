@@ -257,10 +257,8 @@ function StepView({
   const { repo, head } = dive.source
   switch (step.kind) {
     case 'code': {
-      const file = dive.files?.[step.file]
-      if (!file) return <Notice>The file {step.file} is missing from this dive.</Notice>
-      const href = repo && head ? `https://github.com/${repo}/blob/${head}/${step.file}` : undefined
-      return <CodeView step={step} file={file} focus={focus} onFocus={onFocus} href={href} />
+      const blob = repo && head ? `https://github.com/${repo}/blob/${head}/` : undefined
+      return <CodeView step={step} files={dive.files} focus={focus} onFocus={onFocus} blob={blob} />
     }
     case 'sequence':
       return <SequenceView step={step} focus={focus} onFocus={onFocus} />
