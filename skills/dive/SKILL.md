@@ -43,13 +43,15 @@ Fill in each brief from [references/scouts.md](references/scouts.md). Scouts wri
 
 ## 3. Outline (you)
 
-Read every note. Write `docs/dives/<slug>/outline.md` and `docs/dives/<slug>/dive.json` (title, summary, source, `"chapters": []`) as [references/story.md](references/story.md) and [references/format.md](references/format.md) describe. The outline is done when every item under Flow, Edge cases, and Mechanical in every note has a place: a step, or the "Also changed" card.
+Read every note: its Terms, its Flow items tagged `[<layer>, <core|detail>]`, and the context. Think how to explain the change most clearly to a human: which layers or regions, in what order, and how few steps reveal the important parts.
+
+Write `docs/dives/<slug>/outline.md`, its `## Story plan` first, before any step. Write `docs/dives/<slug>/dive.json` (title, summary, source, `"chapters": []`). Follow [references/story.md](references/story.md) and [references/format.md](references/format.md). The outline is done when every step serves the story plan, and every Flow, Edge cases, and Mechanical item in the notes is in a step, in "Also changed", or in the plan's Left out list.
 
 ## 4. Write (parallel)
 
 In one message, spawn one **writer** per chapter in the outline. Give a chapter with more than 4 steps to two or more writers, about 4 steps each, each with its own part file (`parts/<id>.1.json`, `parts/<id>.2.json`). Writer brief:
 
-> You write chapter `<id>` of a dive about <argument>. Read `<skill>/references/format.md`, `<skill>/references/story.md`, and `<skill>/references/writing.md`. Then read `docs/dives/<slug>/outline.md` and the notes it cites for your steps. Write `docs/dives/<slug>/parts/<id>.json` (or `<id>.<n>.json`) with <all steps | steps x-y> of your chapter. Take line numbers from the code itself: `git show <head>:<path> | cat -n` for new lines, `git show <base>:<path> | cat -n` for deleted lines, `cat -n <path>` outside a PR. Every sentence follows writing.md. Do not run dive.py: the build validates. Return one line: the number of steps you wrote.
+> You write chapter `<id>` of a dive about <argument>. Read `<skill>/references/format.md`, `<skill>/references/story.md`, and `<skill>/references/writing.md`. Then read `docs/dives/<slug>/outline.md` and the notes it cites for your steps. Follow its story plan. Write each note as what the author would tell a reviewer about those lines. Write `docs/dives/<slug>/parts/<id>.json` (or `<id>.<n>.json`) with <all steps | steps x-y> of your chapter. Take line numbers from the code itself: `git show <head>:<path> | cat -n` for new lines, `git show <base>:<path> | cat -n` for deleted lines, `cat -n <path>` outside a PR. Every sentence follows writing.md. Do not run dive.py: the build validates. Return one line: the number of steps you wrote.
 
 ## 5. Build
 
