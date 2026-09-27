@@ -430,6 +430,14 @@
             {
               "file": "source/utils/is-network-error.ts",
               "lines": [
+                7,
+                16
+              ],
+              "text": "`errorMessages` holds the exact messages that runtimes use for a network failure. The set covers Chrome, Firefox, Safari 16, `cross-fetch`, undici, Bun and Cloudflare Workers. The Bun entry starts with a space on purpose."
+            },
+            {
+              "file": "source/utils/is-network-error.ts",
+              "lines": [
                 18,
                 26
               ],
@@ -454,10 +462,10 @@
             {
               "file": "source/utils/is-network-error.ts",
               "lines": [
-                7,
-                16
+                47,
+                48
               ],
-              "text": "Line 48 matches every other message exactly against this set. The set covers Chrome, Firefox, Safari 16, `cross-fetch`, undici, Bun and Cloudflare Workers. The Bun entry starts with a space on purpose."
+              "text": "Every other message must match an entry in `errorMessages` exactly."
             },
             {
               "file": "source/errors/NetworkError.ts",
@@ -517,18 +525,26 @@
             {
               "file": "source/core/Ky.ts",
               "lines": [
-                478,
+                481,
                 483
               ],
-              "text": "When no `Retry-After` delay applies, a retriable HTTP status now returns its delay at line 482. The rules above it are unchanged."
+              "text": "When no `Retry-After` delay applies, a retriable HTTP status now returns its delay here. The `Retry-After` rules and the 413 check are unchanged."
             },
             {
               "file": "source/core/Ky.ts",
               "lines": [
                 485,
+                488
+              ],
+              "text": "This last check is new. Ky throws any error that fails `isNetworkError`, with no retry."
+            },
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                490,
                 490
               ],
-              "text": "This last check is new. Ky throws any error that fails `isNetworkError`, with no retry. Only a `NetworkError` reaches the default backoff at line 490."
+              "text": "Only a `NetworkError` reaches this default backoff."
             },
             {
               "file": "source/core/Ky.ts",
