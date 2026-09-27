@@ -18,7 +18,7 @@ CHAPTERS = ['why', 'glossary', 'big-picture', 'happy-path', 'edge-cases', 'revie
 REQUIRED = {
     'card': ('title', 'body'),
     'terms': ('title', 'terms'),
-    'code': ('title', 'say', 'file', 'notes'),
+    'code': ('title', 'say', 'notes'),
     'sequence': ('title', 'say', 'actors', 'messages'),
     'diagram': ('title', 'say', 'nodes', 'edges'),
     'quiz': ('title', 'question', 'options'),
@@ -137,7 +137,8 @@ def side_len(f, side):
 
 def embed_files(dive, diff):
     """Build the `files` map: changed files as full-context diffs, referenced files as text."""
-    refs = {s['file'] for c in dive['chapters'] for s in c['steps'] if s.get('kind') == 'code' and s.get('file')}
+    refs = {n['file'] for c in dive['chapters'] for s in c['steps'] if s.get('kind') == 'code'
+            for n in s.get('notes') or [] if n.get('file')}
     files, skipped = {}, []
     if diff:
         full = diff_files(diff['base'], diff['head'], context=10 ** 7)
@@ -186,21 +187,21 @@ def validate(dive, files):
                 for t in s.get('terms') or []:
                     need(t, f'{w} term', ('term', 'meaning'))
             elif k == 'code':
-                f = files.get(s.get('file'))
-                if s.get('file') and not f:
-                    errs.append(f"{w}: file not found: {s['file']}")
                 for j, n in enumerate(s.get('notes') or [], 1):
-                    need(n, f'{w} note {j}', ('text',))
-                    ln, side = n.get('lines'), n.get('side', 'new')
+                    need(n, f'{w} note {j}', ('file', 'text'))
+                    p, ln, side = n.get('file'), n.get('lines'), n.get('side', 'new')
+                    f = files.get(p)
+                    if p and not f:
+                        errs.append(f'{w} note {j}: file not found: {p}')
                     if side not in ('new', 'old'):
                         errs.append(f'{w} note {j}: side must be "new" or "old"')
                     elif not (isinstance(ln, list) and len(ln) == 2 and all(isinstance(x, int) for x in ln)
                               and 1 <= ln[0] <= ln[1]):
                         errs.append(f'{w} note {j}: lines must be [start, end] with 1 <= start <= end')
                     elif f and side == 'old' and not f['diff']:
-                        errs.append(f'{w} note {j}: side "old" needs a changed file')
+                        errs.append(f'{w} note {j}: side "old" needs a changed file, {p} is unchanged')
                     elif f and ln[1] > side_len(f, side):
-                        errs.append(f"{w} note {j}: lines {ln} outside {s['file']} ({side} side has {side_len(f, side)} lines)")
+                        errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
             elif k == 'sequence':
                 ids = {a.get('id') for a in s.get('actors') or []}
                 for j, m in enumerate(s.get('messages') or [], 1):
@@ -246,7 +247,8 @@ def coverage(dive, diff):
     for c in dive['chapters']:
         for s in c['steps']:
             if s.get('kind') == 'code':
-                notes.setdefault(s.get('file'), []).extend((n.get('side', 'new'), *n['lines']) for n in s['notes'])
+                for n in s['notes']:
+                    notes.setdefault(n['file'], []).append((n.get('side', 'new'), *n['lines']))
             elif s.get('kind') == 'card':
                 cards += s.get('body', '') + ' '.join(l.get('url', '') for l in s.get('links') or [])
     gaps = []
