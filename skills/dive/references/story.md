@@ -31,7 +31,7 @@ The story grows with the domain. Completeness wins for behavior:
 
 - `card`: problem, decision, review focus, recap. At most 5 bullets.
 - `terms`: the glossary. Give the identifier in code for each term.
-- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Write each note as the author's **self-review** of the PR: it sits on the lines it explains and says what they do and why. 1-3 sentences per note, about 15 lines per range at most.
+- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Write each note as the author's **self-review** of the PR: it sits on the lines it explains and says what they do and why. Never cite line numbers in text: give those lines their own note. Show a constant or type before the notes that use it. 1-3 sentences per note, about 15 lines per range at most.
 - `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. At most about 10 messages: show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
 - `diagram`: static structure: which parts exist and what depends on what. 3-10 nodes. Use notes to walk through it.
 - `quiz`: one at the end of `big-picture`, `happy-path`, and `edge-cases`.
