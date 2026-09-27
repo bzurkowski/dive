@@ -48,9 +48,9 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
                       type="button"
                       onClick={() => go({ c, s, f: 0 })}
                       aria-current={s === pos.s ? 'step' : undefined}
-                      className={`w-full rounded text-left text-sm leading-snug ${s === pos.s ? 'font-medium text-accent' : 'text-muted hover:text-fg'}`}
+                      className={`w-full rounded text-left text-sm leading-snug ${s === pos.s ? 'font-semibold' : 'text-muted hover:text-fg'}`}
                     >
-                      {st.title}
+                      <span className={s === pos.s ? 'mark' : ''}>{st.title}</span>
                     </button>
                   </li>
                 ))}

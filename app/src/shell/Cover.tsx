@@ -21,7 +21,9 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
             <span className="text-fg">{source.ref}</span>
           )}
         </p>
-        <h1 className="mt-4 font-serif text-4xl leading-[1.1] font-semibold text-balance sm:text-5xl">{dive.title}</h1>
+        <h1 className="mt-4 text-4xl leading-[1.05] font-extrabold tracking-tight text-balance sm:text-[3.5rem]">
+          {dive.title}
+        </h1>
         <p className="mt-6 max-w-[62ch] text-xl leading-relaxed">{dive.summary}</p>
 
         <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -47,7 +49,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
                 onClick={() => go({ c, s: 0, f: 0 })}
                 className="flex w-full items-baseline gap-4 py-4 text-left hover:text-accent"
               >
-                <span className="w-6 shrink-0 font-serif text-lg text-muted">{i + 1}</span>
+                <span className="w-6 shrink-0 text-lg text-muted tabular-nums">{i + 1}</span>
                 <span className="grow text-lg">{ch.title}</span>
                 <span className="shrink-0 text-sm text-muted">
                   {ch.steps.length} {ch.steps.length === 1 ? 'step' : 'steps'}, {minutes(chapterSeconds(ch.steps))}
@@ -59,7 +61,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
 
         {!!source.links?.length && (
           <section className="mt-12">
-            <h2 className="font-serif text-xl font-semibold">Sources</h2>
+            <h2 className="text-xl font-bold tracking-tight">Sources</h2>
             <Links links={source.links} />
           </section>
         )}

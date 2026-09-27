@@ -96,6 +96,8 @@ export function SequenceView({ step, focus, onFocus }: StepViewProps<SequenceSte
               const tone = m.type === 'error' ? 'text-red-600 dark:text-red-400' : on ? 'text-accent' : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const lw = textWidth(m.label, LABEL_PX, 600, true)
+              const tx = self ? x1 + LOOP + 8 : Math.max(lw / 2 + 4, Math.min((x1 + x2) / 2, width - lw / 2 - 4))
+              const ty = self ? y + 15 : y - 9
               return (
                 <g
                   key={i}
@@ -129,15 +131,25 @@ export function SequenceView({ step, focus, onFocus }: StepViewProps<SequenceSte
                     strokeLinejoin="round"
                     className={on ? 'dive-head' : ''}
                   />
+                  {on && (
+                    <rect
+                      x={self ? tx - 4 : tx - lw / 2 - 4}
+                      y={ty - 13}
+                      width={lw + 8}
+                      height={18}
+                      rx={2}
+                      className="fill-mark"
+                    />
+                  )}
                   <text
-                    x={self ? x1 + LOOP + 8 : Math.max(lw / 2 + 4, Math.min((x1 + x2) / 2, width - lw / 2 - 4))}
-                    y={self ? y + 15 : y - 9}
+                    x={tx}
+                    y={ty}
                     textAnchor={self ? 'start' : 'middle'}
                     fill="currentColor"
                     strokeWidth={4}
                     strokeLinejoin="round"
                     paintOrder="stroke"
-                    className="stroke-surface font-mono"
+                    className={`${on ? 'stroke-mark' : 'stroke-surface'} font-mono`}
                     fontSize={LABEL_PX}
                     fontWeight={on ? 600 : 400}
                   >

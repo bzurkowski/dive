@@ -8,7 +8,7 @@ import { textWidth, useSize } from './util'
 // Full class names so Tailwind picks them up.
 const FILLS = [
   'fill-sky-500/10',
-  'fill-amber-500/10',
+  'fill-fuchsia-500/10',
   'fill-emerald-500/10',
   'fill-violet-500/10',
   'fill-rose-500/10',
@@ -16,7 +16,7 @@ const FILLS = [
 ]
 const STROKES = [
   'stroke-sky-500/60',
-  'stroke-amber-500/60',
+  'stroke-fuchsia-500/60',
   'stroke-emerald-500/60',
   'stroke-violet-500/60',
   'stroke-rose-500/60',
@@ -24,7 +24,7 @@ const STROKES = [
 ]
 const SWATCHES = [
   'bg-sky-500/40',
-  'bg-amber-500/40',
+  'bg-fuchsia-500/40',
   'bg-emerald-500/40',
   'bg-violet-500/40',
   'bg-rose-500/40',

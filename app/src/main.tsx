@@ -5,8 +5,12 @@ import App from './App.tsx'
 import { loadDive } from './data.ts'
 
 const root = createRoot(document.getElementById('root')!)
-loadDive()
-  .then((dive) =>
+// Diagrams measure text on a canvas, so the fonts must be loaded first.
+const fonts = ['Next', 'Mono'].map((f) =>
+  document.fonts.load(`1em "Atkinson Hyperlegible ${f} Variable"`).catch(() => {}),
+)
+Promise.all([loadDive(), ...fonts])
+  .then(([dive]) =>
     root.render(
       <StrictMode>
         <App dive={dive} />

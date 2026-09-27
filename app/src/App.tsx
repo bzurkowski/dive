@@ -77,7 +77,7 @@ export default function App({ dive }: { dive: Dive }) {
     >
       <div className="min-h-full p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl font-semibold">Glossary</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Glossary</h2>
           <button
             type="button"
             onClick={() => glossary.current?.close()}
@@ -116,7 +116,7 @@ export default function App({ dive }: { dive: Dive }) {
         <button
           type="button"
           onClick={() => go(COVER)}
-          className="mb-8 rounded text-left font-serif text-lg leading-snug font-semibold hover:text-accent"
+          className="mb-8 rounded text-left text-lg leading-snug font-bold tracking-tight hover:text-accent"
         >
           {dive.title}
         </button>
@@ -166,7 +166,7 @@ export default function App({ dive }: { dive: Dive }) {
             {VISUAL.has(step.kind) ? (
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
                 <div className="max-w-5xl">
-                  <h2 className="font-serif text-2xl leading-tight font-semibold">{step.title}</h2>
+                  <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
                   {'say' in step && (
                     <p className="mt-1 text-[17px] leading-snug">
                       <Inline text={step.say} />
@@ -222,7 +222,7 @@ export default function App({ dive }: { dive: Dive }) {
             <button
               type="button"
               onClick={() => go(COVER)}
-              className="rounded text-left font-serif text-lg font-semibold"
+              className="rounded text-left text-lg font-bold tracking-tight"
             >
               {dive.title}
             </button>

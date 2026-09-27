@@ -55,7 +55,7 @@ export function Links({ links }: { links?: Link[] }) {
   )
 }
 
-const heading = 'font-serif text-3xl leading-tight font-semibold text-balance'
+const heading = 'text-3xl leading-tight font-bold tracking-tight text-balance'
 
 export function CardView({ step }: { step: CardStep }) {
   return (
@@ -73,7 +73,7 @@ export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean })
       {terms.map((t) => (
         <div key={t.term} className="border-t border-line py-4">
           <dt className="flex flex-wrap items-baseline gap-x-3">
-            <span className="font-serif text-xl font-semibold">{t.term}</span>
+            <span className="text-xl font-bold tracking-tight">{t.term}</span>
             {t.code && <code className="font-mono text-sm text-muted">{t.code}</code>}
           </dt>
           <dd className="mt-1 text-base leading-relaxed">

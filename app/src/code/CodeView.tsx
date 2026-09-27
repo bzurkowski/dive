@@ -83,7 +83,7 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-line bg-surface">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
       <header className="flex items-center gap-3 border-b border-line px-4 py-2 text-sm">
         <span className="truncate font-mono font-medium">{step.file}</span>
         {file.status && <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>}
@@ -190,11 +190,11 @@ function NoteCard(p: { note: CodeNote; i: number; total: number; active: boolean
       data-note={i}
       data-anchor={p.anchor ? i : undefined}
       className={`mx-4 my-2 cursor-pointer rounded-lg border px-4 py-3 font-sans transition-colors duration-200 ${
-        active ? 'border-accent bg-surface text-fg shadow-md' : 'border-line bg-bg text-muted'
+        active ? 'border-accent bg-surface text-fg' : 'border-line bg-bg text-muted'
       }`}
     >
       <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-        <span className={`rounded-full px-2 font-medium ${active ? 'bg-accent text-surface' : 'bg-line'}`}>
+        <span className={`rounded-full px-2 font-medium ${active ? 'bg-mark text-fg' : 'bg-line'}`}>
           {i + 1}/{total}
         </span>
         <span>
