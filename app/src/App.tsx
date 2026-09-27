@@ -7,6 +7,7 @@ import { Cover } from './shell/Cover'
 import { Guard } from './shell/Guard'
 import { flatIndex, flatten, move, parseHash, toHash, COVER, type Pos } from './shell/nav'
 import { Rail } from './shell/Rail'
+import { ThemeButton } from './shell/Theme'
 import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
 import { stepSize, type Dive, type Step, type Term } from './types'
 
@@ -97,6 +98,7 @@ export default function App({ dive }: { dive: Dive }) {
     return (
       <>
         <Cover dive={dive} go={go} />
+        <ThemeButton className="fixed top-3 right-4" />
         {glossaryDialog}
       </>
     )
@@ -150,6 +152,7 @@ export default function App({ dive }: { dive: Dive }) {
           >
             Glossary
           </button>
+          <ThemeButton />
           <div className="absolute inset-x-0 -bottom-px h-0.5 bg-line" aria-hidden>
             <div
               className="h-full bg-accent motion-safe:transition-[width]"

@@ -5,7 +5,7 @@
 
 /* Design tokens: a marked-up printout. Graphite ink (fg, accent) on paper;
    the highlighter (mark) is the only color that means "read this now"; green
-   and red only for diffs and answers. Light by default, dark follows the OS.
+   and red only for diffs and answers. Theme: data-theme on <html>, set in index.html.
    Use via Tailwind: bg-bg, bg-surface, text-fg, text-muted, border-line,
    text-accent, bg-accent/10, bg-mark, bg-add, bg-del, text-ok, text-bad.
    Fonts: Atkinson Hyperlegible Next and Mono, built for telling similar
@@ -26,20 +26,25 @@
   --font-mono: 'Atkinson Hyperlegible Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #131519;
-    --color-surface: #1a1d23;
-    --color-fg: #e7e9ee;
-    --color-muted: #9ca1ad;
-    --color-line: #2c3039;
-    --color-accent: #e7e9ee;
-    --color-add: #13271a;
-    --color-del: #341a1b;
-    --color-mark: #423a06;
-    --color-ok: #5ccb8c;
-    --color-bad: #f28b82;
-  }
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #131519;
+  --color-surface: #1a1d23;
+  --color-fg: #e7e9ee;
+  --color-muted: #9ca1ad;
+  --color-line: #2c3039;
+  --color-accent: #e7e9ee;
+  --color-add: #13271a;
+  --color-del: #341a1b;
+  --color-mark: #423a06;
+  --color-ok: #5ccb8c;
+  --color-bad: #f28b82;
 }
 
 html,
