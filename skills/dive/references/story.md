@@ -21,7 +21,8 @@ Keep this order. Leave out a chapter that has nothing true to say. Readers jump 
 The story grows with the domain. Completeness wins for behavior:
 
 - Every behavior change gets a place: a code note, a sequence message, or a diagram note. No chapter has a size limit.
-- Mechanical changes (renames, formatting, generated code, boilerplate tests, lockfiles) go in one "Also changed" card in `recap`. Write each path in backticks.
+- Mechanical changes (renames, formatting, generated code, boilerplate tests, lockfiles, doc comments) go in one "Also changed" card in `recap`. Write each path in backticks. Put no notes on imports and exports: list the file in the card, and it covers those hunks.
+- Say each fact once, in the step where the reader sees it in code. Other steps build on it and do not repeat it. `review-focus` and `recap` hold only what earlier steps did not say, or at most 5 short bullets.
 - Cut words, never facts. One idea per step and per note. A typical PR reads in about 10 minutes.
 - Order by execution, not by file: follow a request from its entry point to its effect.
 
@@ -30,7 +31,7 @@ The story grows with the domain. Completeness wins for behavior:
 - `card`: problem, decision, review focus, recap. At most 5 bullets.
 - `terms`: the glossary. Give the identifier in code for each term.
 - `code`: one file; notes in reading order. Write each note as the author's **self-review** of the PR: it sits on the lines it explains and says what they do and why. 1-3 sentences per note, about 15 lines per range at most. Split a long file into several steps rather than one note on 80 lines.
-- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
+- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. At most about 10 messages: show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
 - `diagram`: static structure: which parts exist and what depends on what. 3-10 nodes. Use notes to walk through it.
 - `quiz`: one at the end of `big-picture`, `happy-path`, and `edge-cases`.
 
