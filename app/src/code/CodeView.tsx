@@ -51,10 +51,13 @@ function CodeBody({ step, file, focus, onFocus, href }: Props & { file: FileData
   const box = useRef<HTMLDivElement>(null)
   const scrolled = useRef(false)
   useEffect(() => {
-    const el = box.current?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
-    if (!box.current || !el) return
     const b = box.current
-    const top = el.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop - b.clientHeight * 0.2
+    const el = b?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
+    const card = b?.querySelector<HTMLElement>(`[data-card="${focus}"]`)
+    if (!b || !el || !card) return
+    const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
+    // Span start at 20% from the top, unless that pushes the card below the fold.
+    const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
     b.scrollTo({ top, behavior: scrolled.current ? 'smooth' : 'auto' })
     scrolled.current = true
   }, [focus])
@@ -188,6 +191,7 @@ function NoteCard(p: { note: CodeNote; i: number; total: number; active: boolean
   return (
     <div
       data-note={i}
+      data-card={i}
       data-anchor={p.anchor ? i : undefined}
       className={`mx-4 my-2 cursor-pointer rounded-lg border px-4 py-3 font-sans transition-colors duration-200 ${
         active ? 'border-accent bg-surface text-fg' : 'border-line bg-bg text-muted'
