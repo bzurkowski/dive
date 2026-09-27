@@ -2,7 +2,9 @@
 
 Dive is an Agent Skill that turns a pull request, a code module, a question about your codebase, or a knowledge-base page into an interactive walkthrough you can read in about ten minutes.
 
-See an [example dive](examples/pr-842-network-error-retry) into [sindresorhus/ky#842](https://github.com/sindresorhus/ky/pull/842).
+| Big picture | Code walkthrough | Sequence |
+| --- | --- | --- |
+| ![Dependency diagram](docs/screenshots/diagram.png) | ![Highlighted code with a note](docs/screenshots/code.png) | ![Sequence diagram with a note](docs/screenshots/sequence.png) |
 
 ## Table of contents
 
