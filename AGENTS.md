@@ -30,6 +30,7 @@ app/                          walkthrough app source (Vite + React + TS + Tailwi
 cd app
 npm run dev      # serves public/dive.json as the data
 npm run build    # writes ../skills/dive/assets/template.html
+npm run format   # prettier; index.html is ignored (dive.py matches its data tag verbatim)
 ```
 
 Rebuild the template only at checkpoints and commit it. The template holds
