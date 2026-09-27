@@ -11,16 +11,16 @@ Example: [`examples/pr-842-network-error-retry`](examples/pr-842-network-error-r
 **Claude Code**
 
 ```
-/plugin marketplace add <owner>/dive
+/plugin marketplace add bzurkowski/dive
 /plugin install dive@dive
 ```
 
-**Codex and Cursor**: this repo is also a Codex plugin (`.codex-plugin/`, marketplace in `.agents/plugins/`) and a Cursor plugin (`.cursor-plugin/`). Add `<owner>/dive` as a plugin source in your agent.
+**Codex and Cursor**: this repo is also a Codex plugin (`.codex-plugin/`, marketplace in `.agents/plugins/`) and a Cursor plugin (`.cursor-plugin/`). Add `bzurkowski/dive` as a plugin source in your agent.
 
 **Any other agent** that reads Agent Skills:
 
 ```
-npx skills add <owner>/dive
+npx skills add bzurkowski/dive
 ```
 
 Or copy `skills/dive/` into your agent's skills directory.
