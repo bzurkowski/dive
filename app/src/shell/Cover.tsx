@@ -1,5 +1,5 @@
 import type { Dive } from '../types'
-import { chapterSeconds, minutes, type Pos } from './nav'
+import { chapterSeconds, COVER, minutes, type Pos } from './nav'
 import { Links } from './Steps'
 
 const KIND = { pr: 'Pull request', module: 'Module', question: 'Question', doc: 'Page' }
@@ -65,6 +65,41 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
             <Links links={source.links} />
           </section>
         )}
+      </div>
+    </main>
+  )
+}
+
+export function End({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
+  const { source } = dive
+  return (
+    <main className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-xl px-6 py-24 text-center sm:py-32">
+        <span aria-hidden className="mx-auto grid size-16 place-items-center rounded-full bg-ok/15 text-ok">
+          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <h1 className="mt-6 text-4xl leading-tight font-bold tracking-tight text-balance">You finished the dive</h1>
+        <p className="mt-3 text-xl leading-relaxed text-muted">{dive.title}</p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+          <button
+            type="button"
+            autoFocus
+            onClick={() => go(COVER)}
+            className="rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90"
+          >
+            Back to the start
+          </button>
+          {source.url && (
+            <a href={source.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
+              Open the {(KIND[source.kind] ?? 'source').toLowerCase()}
+            </a>
+          )}
+        </div>
+        <p className="mt-6 text-sm text-muted">
+          Press <kbd>←</kbd> to go back to the last step.
+        </p>
       </div>
     </main>
   )

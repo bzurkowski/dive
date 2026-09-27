@@ -3,9 +3,9 @@ import { Inline } from './Inline'
 import { CodeView } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
 import { SequenceView } from './diagrams/SequenceView'
-import { Cover } from './shell/Cover'
+import { Cover, End } from './shell/Cover'
 import { Guard } from './shell/Guard'
-import { flatIndex, flatten, move, parseHash, toHash, COVER, type Pos } from './shell/nav'
+import { flatIndex, flatten, move, parseHash, toHash, COVER, END, type Pos } from './shell/nav'
 import { Rail } from './shell/Rail'
 import { ThemeButton } from './shell/Theme'
 import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
@@ -97,7 +97,7 @@ export default function App({ dive }: { dive: Dive }) {
   if (!step)
     return (
       <>
-        <Cover dive={dive} go={go} />
+        {pos.c === END.c ? <End dive={dive} go={go} /> : <Cover dive={dive} go={go} />}
         <ThemeButton className="fixed top-3 right-4" />
         {glossaryDialog}
       </>
@@ -109,8 +109,7 @@ export default function App({ dive }: { dive: Dive }) {
   const nextChapter =
     pos.s === chapter.steps.length - 1 && pos.f === size - 1 ? dive.chapters[flat[i + 1]?.c]?.title : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
-  const btn =
-    'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent disabled:opacity-40 disabled:hover:border-line'
+  const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 
   return (
     <div className="flex h-full">
@@ -205,11 +204,10 @@ export default function App({ dive }: { dive: Dive }) {
           <button
             type="button"
             className={btn}
-            disabled={atEnd}
             onClick={() => go(move(dive, flat, pos, 1))}
             aria-keyshortcuts="ArrowRight"
           >
-            {atEnd ? 'End of dive' : nextChapter ? `Next chapter: ${nextChapter}` : 'Next'}
+            {atEnd ? 'Finish' : nextChapter ? `Next chapter: ${nextChapter}` : 'Next'}
           </button>
         </footer>
       </div>
