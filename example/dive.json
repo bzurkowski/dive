@@ -415,7 +415,15 @@
                 7,
                 16
               ],
-              "text": "This file is an inlined copy of `is-network-error` v1.3.1. `isRawNetworkError` returns `true` only for a `TypeError` whose message a known runtime uses for a network failure, such as `fetch failed` from undici."
+              "text": "This file is an inlined copy of `is-network-error` v1.3.1. `errorMessages` lists the exact messages that runtimes put on a fetch `TypeError` when the network fails, such as `fetch failed` from undici."
+            },
+            {
+              "file": "source/utils/is-network-error.ts",
+              "lines": [
+                48,
+                48
+              ],
+              "text": "`isRawNetworkError` ends with an exact lookup in `errorMessages`. Only an error named `TypeError` gets this far. Chrome's `Failed to fetch`, Safari's `Load failed` and Deno's messages have their own checks above."
             },
             {
               "file": "source/core/Ky.ts",
