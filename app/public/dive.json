@@ -1,0 +1,464 @@
+{
+  "title": "Retry failed refunds with backoff",
+  "summary": "Failed refunds now retry with growing, random waits and stop after 5 attempts. Retries can no longer refund a customer twice.",
+  "source": {
+    "kind": "pr",
+    "ref": "https://github.com/acme/shop/pull/42",
+    "url": "https://github.com/acme/shop/pull/42",
+    "repo": "acme/shop",
+    "base": "aaa1111",
+    "head": "bbb2222",
+    "links": [
+      {
+        "title": "RFC: Refund retries",
+        "url": "https://www.notion.so/acme/refund-retries"
+      }
+    ]
+  },
+  "chapters": [
+    {
+      "id": "why",
+      "title": "Why",
+      "steps": [
+        {
+          "kind": "card",
+          "title": "The problem",
+          "body": "Before this change, a failed refund retried every 60 seconds, forever.\n- A gateway outage caused a flood of retries.\n- A retry after a timeout could refund the customer twice.\n- Some errors can never succeed, for example a closed card.",
+          "links": [
+            {
+              "title": "RFC: Refund retries",
+              "url": "https://www.notion.so/acme/refund-retries"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glossary",
+      "title": "Glossary",
+      "steps": [
+        {
+          "kind": "terms",
+          "title": "Terms you will see",
+          "terms": [
+            {
+              "term": "Refund",
+              "meaning": "Money that goes back to the customer for a payment.",
+              "code": "Refund"
+            },
+            {
+              "term": "Attempt",
+              "meaning": "One try to send a refund to the gateway.",
+              "code": "refund.attempts"
+            },
+            {
+              "term": "Backoff",
+              "meaning": "A wait between attempts that grows after each failure.",
+              "code": "nextDelay"
+            },
+            {
+              "term": "Jitter",
+              "meaning": "Randomness in the wait, so retries do not all start at the same time."
+            },
+            {
+              "term": "Idempotency key",
+              "meaning": "An id that lets the gateway ignore a request it already did.",
+              "code": "idempotencyKey"
+            },
+            {
+              "term": "Retryable error",
+              "meaning": "An error that can succeed if you try again later.",
+              "code": "GatewayError.retryable"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "big-picture",
+      "title": "Big picture",
+      "steps": [
+        {
+          "kind": "diagram",
+          "title": "Parts of the refund flow",
+          "say": "A worker picks due refunds. The retry logic talks to the gateway and records the result in the store.",
+          "nodes": [
+            {
+              "id": "worker",
+              "label": "Refund worker",
+              "group": "jobs"
+            },
+            {
+              "id": "retry",
+              "label": "retryRefund",
+              "group": "jobs"
+            },
+            {
+              "id": "gateway",
+              "label": "Payment gateway",
+              "group": "external"
+            },
+            {
+              "id": "store",
+              "label": "Refund store",
+              "group": "db"
+            }
+          ],
+          "edges": [
+            {
+              "from": "worker",
+              "to": "store",
+              "label": "due()"
+            },
+            {
+              "from": "worker",
+              "to": "retry"
+            },
+            {
+              "from": "retry",
+              "to": "gateway",
+              "label": "refund()"
+            },
+            {
+              "from": "retry",
+              "to": "store",
+              "label": "mark / schedule"
+            }
+          ],
+          "notes": [
+            {
+              "focus": [
+                "worker",
+                "store"
+              ],
+              "text": "The worker asks the store for refunds that are due now."
+            },
+            {
+              "focus": [
+                "retry",
+                "gateway"
+              ],
+              "text": "retryRefund sends one attempt to the gateway."
+            },
+            {
+              "focus": [
+                "retry",
+                "store"
+              ],
+              "text": "The result goes back to the store: done, failed, or retry later."
+            }
+          ]
+        },
+        {
+          "kind": "sequence",
+          "title": "One refund, happy path",
+          "say": "Follow one refund from the worker to the gateway and back.",
+          "actors": [
+            {
+              "id": "worker",
+              "label": "Worker"
+            },
+            {
+              "id": "store",
+              "label": "Store"
+            },
+            {
+              "id": "retry",
+              "label": "retryRefund"
+            },
+            {
+              "id": "gateway",
+              "label": "Gateway"
+            }
+          ],
+          "messages": [
+            {
+              "from": "worker",
+              "to": "store",
+              "label": "due()",
+              "note": "Get refunds that are due."
+            },
+            {
+              "from": "worker",
+              "to": "store",
+              "label": "incrementAttempts(id)",
+              "note": "Count this attempt before we send it."
+            },
+            {
+              "from": "worker",
+              "to": "retry",
+              "label": "retryRefund(refund)"
+            },
+            {
+              "from": "retry",
+              "to": "gateway",
+              "label": "refund(id, amount, key)",
+              "note": "The refund id goes along as the idempotency key."
+            },
+            {
+              "from": "gateway",
+              "to": "retry",
+              "label": "200 OK",
+              "type": "return"
+            },
+            {
+              "from": "retry",
+              "to": "store",
+              "label": "markDone(id)",
+              "note": "The refund is complete."
+            }
+          ]
+        },
+        {
+          "kind": "quiz",
+          "title": "Check",
+          "question": "Why does each retry wait a random time?",
+          "options": [
+            {
+              "text": "So that many retries do not hit the gateway at the same moment.",
+              "why": "Correct. Jitter spreads retries over time after an outage.",
+              "correct": true
+            },
+            {
+              "text": "So that the gateway cannot guess when the next retry comes.",
+              "why": "No. This is not a security measure."
+            },
+            {
+              "text": "Because the gateway requires random waits between refunds.",
+              "why": "No. The gateway has no such rule. The change protects the gateway from load."
+            },
+            {
+              "text": "To keep the total retry time under 60 seconds.",
+              "why": "No. The waits grow with each attempt and can be much longer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "happy-path",
+      "title": "Happy path",
+      "steps": [
+        {
+          "kind": "code",
+          "title": "The worker counts attempts",
+          "say": "The worker now records each attempt before it sends the refund.",
+          "file": "src/refunds/worker.ts",
+          "notes": [
+            {
+              "lines": [
+                7,
+                8
+              ],
+              "text": "The attempt count goes up first. If the process crashes during the call, the attempt still counts."
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "title": "One attempt",
+          "say": "retryRefund sends one attempt and records the result.",
+          "file": "src/refunds/retry.ts",
+          "notes": [
+            {
+              "lines": [
+                9,
+                9
+              ],
+              "side": "old",
+              "text": "Before: every failure waited a fixed 60 seconds and retried forever."
+            },
+            {
+              "lines": [
+                7,
+                11
+              ],
+              "text": "nextDelay picks a random wait up to a cap. The cap doubles after each attempt."
+            },
+            {
+              "lines": [
+                19,
+                19
+              ],
+              "text": "The refund id is the idempotency key. A repeated call cannot refund the customer twice."
+            },
+            {
+              "lines": [
+                26,
+                26
+              ],
+              "text": "A retryable failure schedules the next attempt with the new backoff."
+            }
+          ]
+        },
+        {
+          "kind": "quiz",
+          "title": "Check",
+          "question": "A gateway call times out, but the gateway did process the refund. What happens on the next attempt?",
+          "options": [
+            {
+              "text": "The gateway sees the same idempotency key and does not refund again.",
+              "why": "Correct. The key makes the repeated call safe.",
+              "correct": true
+            },
+            {
+              "text": "The worker skips the refund because the attempt count went up.",
+              "why": "No. The count only stops retries after 5 attempts."
+            },
+            {
+              "text": "The customer gets a second refund, which support must reverse.",
+              "why": "No. That was the old behavior. The key now prevents it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "edge-cases",
+      "title": "Edge cases",
+      "steps": [
+        {
+          "kind": "code",
+          "title": "When to give up",
+          "say": "Two new rules stop retries that cannot succeed.",
+          "file": "src/refunds/retry.ts",
+          "notes": [
+            {
+              "lines": [
+                14,
+                17
+              ],
+              "text": "After 5 attempts, the refund is marked failed with reason max_attempts."
+            },
+            {
+              "lines": [
+                22,
+                25
+              ],
+              "text": "A non-retryable error, for example a closed card, fails the refund at once."
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "title": "Where retryable comes from",
+          "say": "The gateway client decides if an error is retryable.",
+          "file": "src/payments/gateway.ts",
+          "notes": [
+            {
+              "lines": [
+                1,
+                5
+              ],
+              "text": "Each gateway error carries a code and a retryable flag. This PR does not change it, but the retry logic now depends on it."
+            }
+          ]
+        },
+        {
+          "kind": "sequence",
+          "title": "Non-retryable error",
+          "say": "A closed card fails the refund at the first attempt.",
+          "actors": [
+            {
+              "id": "retry",
+              "label": "retryRefund"
+            },
+            {
+              "id": "gateway",
+              "label": "Gateway"
+            },
+            {
+              "id": "store",
+              "label": "Store"
+            }
+          ],
+          "messages": [
+            {
+              "from": "retry",
+              "to": "gateway",
+              "label": "refund(id, amount, key)"
+            },
+            {
+              "from": "gateway",
+              "to": "retry",
+              "label": "card_closed",
+              "type": "error",
+              "note": "retryable is false for this code."
+            },
+            {
+              "from": "retry",
+              "to": "store",
+              "label": "markFailed(id, card_closed)",
+              "note": "No retry is scheduled."
+            }
+          ]
+        },
+        {
+          "kind": "quiz",
+          "title": "Check",
+          "question": "A refund fails with a retryable error on its 5th attempt. What happens?",
+          "options": [
+            {
+              "text": "It is marked failed with reason max_attempts on the next run.",
+              "why": "Correct. A 6th retry is scheduled, and the check at the top stops it.",
+              "correct": true
+            },
+            {
+              "text": "It is marked failed at once with the gateway error code.",
+              "why": "No. Only non-retryable errors fail at once."
+            },
+            {
+              "text": "It retries forever, like before.",
+              "why": "No. The attempt limit stops it."
+            },
+            {
+              "text": "The worker resets the attempt count to 0.",
+              "why": "No. Nothing resets the count."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "review-focus",
+      "title": "Review focus",
+      "steps": [
+        {
+          "kind": "card",
+          "title": "What to check",
+          "body": "- Is 5 attempts the right limit for all payment methods?\n- Does every gateway error set `retryable` correctly?\n- The attempt count goes up before the call. Is that the intended order?"
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "title": "Recap",
+      "steps": [
+        {
+          "kind": "card",
+          "title": "In short",
+          "body": "- Waits grow and are random.\n- Retries stop after 5 attempts.\n- Errors that cannot succeed fail at once.\n- The idempotency key prevents double refunds."
+        }
+      ]
+    }
+  ],
+  "files": {
+    "src/refunds/retry.ts": {
+      "lang": "ts",
+      "diff": true,
+      "text": "-import { Gateway } from '../payments/gateway'\n+import { Gateway, GatewayError } from '../payments/gateway'\n import { Refund, RefundStore } from './store'\n \n+const MAX_ATTEMPTS = 5\n+const BASE_DELAY_MS = 1_000\n+\n+export function nextDelay(attempt: number): number {\n+  // Exponential backoff with full jitter.\n+  const cap = BASE_DELAY_MS * 2 ** attempt\n+  return Math.floor(Math.random() * cap)\n+}\n+\n export async function retryRefund(refund: Refund, gateway: Gateway, store: RefundStore) {\n+  if (refund.attempts >= MAX_ATTEMPTS) {\n+    await store.markFailed(refund.id, 'max_attempts')\n+    return\n+  }\n   try {\n-    await gateway.refund(refund.paymentId, refund.amount)\n+    await gateway.refund(refund.paymentId, refund.amount, { idempotencyKey: refund.id })\n     await store.markDone(refund.id)\n   } catch (err) {\n+    if (err instanceof GatewayError && !err.retryable) {\n+      await store.markFailed(refund.id, err.code)\n+      return\n+    }\n-    await store.scheduleRetry(refund.id, 60_000)\n+    await store.scheduleRetry(refund.id, nextDelay(refund.attempts + 1))\n   }\n }",
+      "status": "modified"
+    },
+    "src/refunds/worker.ts": {
+      "lang": "ts",
+      "diff": true,
+      "text": " import { retryRefund } from './retry'\n import { gateway } from '../payments/gateway'\n import { store } from './store'\n \n export async function runWorker() {\n   for (const refund of await store.due()) {\n-    await retryRefund(refund, gateway, store)\n+    await store.incrementAttempts(refund.id)\n+    await retryRefund({ ...refund, attempts: refund.attempts + 1 }, gateway, store)\n   }\n }",
+      "status": "modified"
+    },
+    "src/payments/gateway.ts": {
+      "lang": "ts",
+      "diff": false,
+      "text": "export class GatewayError extends Error {\n  constructor(public code: string, public retryable: boolean) {\n    super(code)\n  }\n}\n\nexport interface Gateway {\n  refund(paymentId: string, amount: number, opts?: { idempotencyKey?: string }): Promise<void>\n}\n\nexport const gateway: Gateway = createGateway(process.env.GATEWAY_URL)\n"
+    }
+  }
+}
