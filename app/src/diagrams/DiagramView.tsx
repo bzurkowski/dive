@@ -234,9 +234,17 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
               ))}
             </div>
           )}
-          <p key={focus} className="dive-pop max-w-3xl text-[15px] leading-relaxed">
-            <Inline text={note.text} />
-          </p>
+          {/* Every note in one cell: the bar keeps the tallest note's height, so the diagram above never resizes. */}
+          <div className="grid max-w-3xl">
+            {notes.map((n, i) => (
+              <p
+                key={i}
+                className={`[grid-area:1/1] text-[15px] leading-relaxed ${i === focus ? 'dive-pop' : 'invisible'}`}
+              >
+                <Inline text={n.text} />
+              </p>
+            ))}
+          </div>
         </div>
       )}
     </div>
