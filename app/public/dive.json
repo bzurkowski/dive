@@ -272,6 +272,12 @@
        "group": "refund worker"
       },
       {
+       "id": "retry",
+       "label": "retryRefund",
+       "group": "refund worker",
+       "change": "changed"
+      },
+      {
        "id": "store",
        "label": "RefundStore",
        "group": "refund worker"
@@ -280,12 +286,6 @@
        "id": "pg",
        "label": "Postgres",
        "group": "database"
-      },
-      {
-       "id": "retry",
-       "label": "retryRefund",
-       "group": "refund worker",
-       "change": "changed"
       },
       {
        "id": "gateway",
@@ -478,14 +478,14 @@
        "change": "changed"
       },
       {
-       "id": "gateway",
-       "label": "Payment gateway",
-       "group": "outside"
-      },
-      {
        "id": "store",
        "label": "RefundStore",
        "group": "refund worker"
+      },
+      {
+       "id": "gateway",
+       "label": "Payment gateway",
+       "group": "outside"
       }
      ],
      "messages": [
@@ -551,14 +551,14 @@
        "change": "changed"
       },
       {
-       "id": "gateway",
-       "label": "Payment gateway",
-       "group": "outside"
-      },
-      {
        "id": "store",
        "label": "RefundStore",
        "group": "refund worker"
+      },
+      {
+       "id": "gateway",
+       "label": "Payment gateway",
+       "group": "outside"
       }
      ],
      "messages": [
@@ -682,14 +682,14 @@
        "change": "changed"
       },
       {
-       "id": "gateway",
-       "label": "Payment gateway",
-       "group": "outside"
-      },
-      {
        "id": "store",
        "label": "RefundStore",
        "group": "refund worker"
+      },
+      {
+       "id": "gateway",
+       "label": "Payment gateway",
+       "group": "outside"
       }
      ],
      "messages": [
