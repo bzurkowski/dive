@@ -121,7 +121,7 @@ eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'a flow right before it
 eq(skipEdges(tail, tailFlat, { c: 0, s: 2, f: 0 }), END, 'the last edge of the dive skips to the end')
 
 // Reading time: prose is empty below, so any counted id, enum or path shows as extra seconds.
-const note = { file: 'a b.ts', lines: [1, 2], side: 'old', text: '' }
+const note = { file: 'a b.ts', lines: [1, 2], side: 'old', focus: ['a b'], text: '' }
 const actor = { id: 'a', label: '', group: 'g h', change: 'added' }
 const message = { from: 'a', to: 'a', label: '', note: '', type: 'return', step: 'x', change: 'removed' }
 for (const [st, sec] of [
@@ -129,7 +129,11 @@ for (const [st, sec] of [
   [{ kind: 'terms', title: '', terms: [{ term: '', meaning: '', code: 'Refund Job' }] }, 0],
   [{ kind: 'code', id: 'c', title: '', say: '', notes: [note] }, 20],
   [{ kind: 'flow', id: 'f', title: '', say: '', actors: [actor], messages: [message] }, 9],
-  [{ kind: 'diagram', title: '', say: '', nodes: [{ id: 'a', label: '', group: 'g h' }], edges: [], notes: [] }, 8],
+  [
+    { kind: 'diagram', title: '', say: '', nodes: [{ id: 'a', label: '', group: 'g h' }], edges: [], notes: [note] },
+    12,
+  ],
   [{ kind: 'quiz', title: '', question: '', options: [{ text: '', correct: true, why: '' }] }, 15],
 ] as [Step, number][])
   eq(stepSeconds(st), sec, `${st.kind} seconds`)
+console.log('nav ok')
