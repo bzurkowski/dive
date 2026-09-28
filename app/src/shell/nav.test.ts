@@ -13,7 +13,7 @@ const dive = {
   title: 't',
   summary: 's',
   source: { kind: 'pr', ref: '1' },
-  chapters: [{ id: 'why', title: 'Why', steps: [card, card] }],
+  chapters: [{ id: 'intro', title: 'Intro', steps: [card, card] }],
 } as Dive
 const flat = flatten(dive)
 

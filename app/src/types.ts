@@ -21,7 +21,7 @@ export interface Source {
   links?: Link[] // knowledge-base pages and tickets used as sources
 }
 
-export type ChapterId = 'why' | 'glossary' | 'big-picture' | 'walkthrough' | 'edge-cases' | 'review-focus' | 'recap'
+export type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus' | 'recap'
 
 export interface Chapter {
   id: ChapterId
@@ -43,6 +43,7 @@ export interface CardStep {
 export interface TermsStep {
   kind: 'terms'
   title: string
+  say?: string // one sentence that ties this group of terms to the one before
   terms: Term[] // also feed the glossary drawer available on every screen
 }
 
@@ -54,6 +55,7 @@ export interface Term {
 
 export interface CodeStep {
   kind: 'code'
+  id?: string // target of Message.step; required in a flow
   title: string // names the piece of logic, never a file
   say: string
   notes: CodeNote[] // in execution order, across files; → moves note to note
@@ -66,13 +68,28 @@ export interface CodeNote {
   text: string // 1-3 short sentences, like a PR self-review comment
 }
 
+// One shape, three roles:
+// - 'sequence': the overview in big-picture. Its messages may link to flows.
+// - 'flow': opens a flow in the walkthrough. The steps after it belong to the flow, up to the next 'flow':
+//   code steps, one quiz, then optional 'edge' steps.
+// - 'edge': an optional edge case of the current flow. Edge steps come last in their flow.
 export interface SequenceStep {
-  kind: 'sequence'
+  kind: 'sequence' | 'flow' | 'edge'
+  id?: string // 'flow': required, the target of overview links
   title: string
   say: string
-  actors: { id: string; label: string }[]
+  actors: Actor[]
   messages: Message[] // revealed one by one with →
 }
+
+export interface Actor {
+  id: string
+  label: string // the code unit ("EnterEarnActionService") or the system ("Postgres")
+  group?: string // deployable app or "outside"; drawn as a band, collapsible into one lane
+  change?: Change // PR: a unit the change adds, changes or removes
+}
+
+export type Change = 'added' | 'changed' | 'removed'
 
 export interface Message {
   from: string // actor id
@@ -80,6 +97,8 @@ export interface Message {
   label: string // "POST /refunds"
   note: string // one short sentence shown when this message is active
   type?: 'call' | 'return' | 'async' | 'error' // default 'call'
+  step?: string // id of the step that shows this message: a code step in the same flow, or a flow (overview)
+  change?: Change // PR: how this hop differs from base
 }
 
 export interface DiagramStep {
@@ -130,6 +149,8 @@ export function stepSize(step: Step): number {
     case 'code':
       return Math.max(1, step.notes.length)
     case 'sequence':
+    case 'flow':
+    case 'edge':
       return Math.max(1, step.messages.length)
     case 'diagram':
       return Math.max(1, step.notes?.length ?? 0)
@@ -143,4 +164,5 @@ export interface StepViewProps<S extends Step> {
   step: S
   focus: number // active position, 0-based, < stepSize(step)
   onFocus: (i: number) => void // user clicked a note or message
+  onJump?: (id: string) => void // open the step with this id (Message.step)
 }

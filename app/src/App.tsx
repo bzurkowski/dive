@@ -169,7 +169,7 @@ export default function App({ dive }: { dive: Dive }) {
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
                 <div className="max-w-5xl">
                   <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
-                  {'say' in step && (
+                  {'say' in step && step.say && (
                     <p className="mt-1 text-[17px] leading-snug">
                       <Inline text={step.say} />
                     </p>
