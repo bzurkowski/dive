@@ -115,20 +115,9 @@ function FileBody({
     }
   }, [file, parsed])
 
-  // Which note owns each row: the active note wins, then the first covering note.
-  const owner = useMemo(() => {
-    const o = new Int16Array(parsed.rows.length).fill(-1)
-    spans.forEach((s, i) => {
-      if (s) for (let r = s[0]; r <= s[1]; r++) if (o[r] < 0 || i === focus) o[r] = i
-    })
-    return o
-  }, [parsed, spans, focus])
-
-  const cardsAfter = useMemo(() => {
-    const m = new Map<number, number[]>()
-    spans.forEach((s, i) => s && m.set(s[1], [...(m.get(s[1]) ?? []), i]))
-    return m
-  }, [spans])
+  const covers = (s: [number, number] | null, r: number) => !!s && s[0] <= r && r <= s[1]
+  // The active note owns its rows; any other row goes to the first note covering it.
+  const owner = (r: number) => (covers(spans[focus], r) ? focus : spans.findIndex((s) => covers(s, r)))
   const unplaced = step.notes.flatMap((n, i) => (n.file === path && !spans[i] ? [i] : []))
 
   const active = step.notes[focus]
@@ -178,61 +167,59 @@ function FileBody({
       </header>
       <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
         {unplaced.map(card)}
-        {items.flatMap((it) =>
-          it.kind === 'gap' ? (
-            <button
-              key={`g${it.start}`}
-              onClick={() => setOpen((s) => new Set(s).add(it.start))}
-              className="my-1 block w-full bg-bg py-1 text-center font-sans text-xs text-muted hover:text-accent"
-            >
-              ⋯ {it.end - it.start} unchanged lines
-            </button>
-          ) : (
-            [
-              <RowView
-                key={it.i}
-                row={parsed.rows[it.i]}
-                tokens={tokens}
-                diff={file.diff}
-                note={owner[it.i]}
-                band={owner[it.i] < 0 ? 0 : owner[it.i] === focus ? 2 : 1}
-                dim={owner[it.i] !== focus}
-                anchor={spans[focus]?.[0] === it.i ? focus : undefined}
-              />,
-              ...(cardsAfter.get(it.i) ?? []).map(card),
-            ]
-          ),
-        )}
+        {items.flatMap((it) => {
+          if (it.kind === 'gap')
+            return (
+              <button
+                key={`g${it.start}`}
+                onClick={() => setOpen((s) => new Set(s).add(it.start))}
+                className="my-1 block w-full bg-bg py-1 text-center font-sans text-xs text-muted hover:text-accent"
+              >
+                ⋯ {it.end - it.start} unchanged lines
+              </button>
+            )
+          const note = owner(it.i)
+          return [
+            <RowView
+              key={it.i}
+              row={parsed.rows[it.i]}
+              tokens={tokens}
+              diff={file.diff}
+              note={note}
+              active={note === focus}
+              anchor={spans[focus]?.[0] === it.i ? focus : undefined}
+            />,
+            ...spans.flatMap((s, i) => (s?.[1] === it.i ? [card(i)] : [])),
+          ]
+        })}
       </div>
     </section>
   )
 }
 
-const BAND = [
-  '',
-  'shadow-[inset_3px_0_0_color-mix(in_srgb,var(--color-accent)_40%,transparent)]',
-  'shadow-[inset_4px_0_0_var(--color-accent)]',
-]
-
 const RowView = memo(function RowView(p: {
   row: Row
   tokens: Tokens | null
   diff: boolean
-  note: number
-  band: number
-  dim: boolean
+  note: number // owning note, -1 for none
+  active: boolean // owned by the focused note
   anchor?: number
 }) {
   const { row } = p
   if (row.type === 'hunk') return <div className="bg-bg px-4 text-xs leading-6 text-muted">{row.text}</div>
   const line = row.type === 'del' ? p.tokens?.old?.[row.o!] : p.tokens?.new?.[row.n!]
-  const bg = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : p.band === 2 ? 'bg-mark' : ''
+  const bg = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : p.active ? 'bg-mark' : ''
+  const band = p.active
+    ? 'shadow-[inset_4px_0_0_var(--color-accent)]'
+    : p.note >= 0
+      ? 'shadow-[inset_3px_0_0_color-mix(in_srgb,var(--color-accent)_40%,transparent)]'
+      : ''
   const num = 'select-none pr-3 text-right text-muted tabular-nums'
   return (
     <div
       data-note={p.note >= 0 ? p.note : undefined}
       data-anchor={p.anchor}
-      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${BAND[p.band]} ${p.dim ? 'opacity-55' : ''} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
+      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
     >
       {p.diff && <span className={num}>{row.old ?? ''}</span>}
       <span className={num}>{row.new ?? ''}</span>
