@@ -5,7 +5,7 @@ description: Builds a dive, an interactive story-driven walkthrough that explain
 
 # Dive
 
-A dive tells the story of a PR, module, or domain in small steps, so a tired developer understands it in about 10 minutes. The output is one self-contained file: `docs/dives/<slug>/index.html`.
+A dive tells the story of a PR, module, or domain in small steps. Its reader did not write the code and has already read a lot of code today, so each step asks for little attention. The whole dive takes about 10 minutes. The output is one self-contained file: `docs/dives/<slug>/index.html`.
 
 You orchestrate. Scouts discover in parallel, you outline the story, writers fill chapters in parallel, a script builds the page, and an editor cuts what the story does not need. Keep your own context small: read the scouts' notes, not the whole codebase.
 
@@ -22,8 +22,6 @@ The argument may end with words about how well the user knows the domain, such a
 | GitHub PR number or URL | `pr` | `pr-<n>-<2-4 title words>` |
 | path that exists in the repo | `module` | `module-<path, / as ->` |
 | anything else | `question` | `q-<2-4 words>` |
-
-A dive explains code in this repo. When the argument is a knowledge page URL (Notion, Confluence, …), ask the user which code or question the page is about.
 
 Delete `docs/dives/<slug>/` if it exists: a rerun starts fresh. Then, by kind:
 

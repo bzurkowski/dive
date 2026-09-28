@@ -1,6 +1,6 @@
 # Writing rules
 
-Every string in a dive follows these rules. The reader is a tired developer who has read many PRs today. Each sentence says one thing, once, in plain words.
+Every string in a dive follows these rules. The reader has already read a lot of code today, so every sentence must be easy to take in. Each sentence says one thing, once, in plain words.
 
 Based on ASD-STE100 Simplified Technical English, as distilled by [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) (MIT). This is a clarity guide, not certified STE.
 
@@ -49,7 +49,7 @@ Delete these, or replace them with the fact they hide.
 
 ## The dive voice
 
-Write like the author of the change, who reviews their own PR for a tired colleague. Outside a PR, write like the owner of the code, who shows it to a new teammate.
+Write like the author of the change, reviewing their own PR for a colleague who has already read a lot of code today. Outside a PR, write like the owner of the code, who shows it to a new teammate.
 
 - Concrete over abstract. Name the file, function, field or value: "`MAX_ATTEMPTS` is 5", not "a limit".
 - Numbers over adjectives: "waits up to 32 s", not "waits a long time".
