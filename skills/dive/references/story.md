@@ -26,7 +26,7 @@ The story plan gives the reader's level: `new` means they barely know this domai
 | id | PR | Module or question | Typical steps |
 |---|---|---|---|
 | `why` | The problem and the decision behind it, with sources | What the code is for and who calls it. For a question, the answer in 2-3 sentences | 1-2 cards with links to the PR, tickets, pages |
-| `glossary` | The words the rest of the dive uses | same | 1 terms step, 3-10 terms |
+| `glossary` | The words the rest of the dive uses | same | 1 terms step |
 | `big-picture` | The layers or regions and how they depend on each other. Show the code around the scope as context: its callers (the notes' Entry points) and what it calls (Calls out). Diagram nodes, not code notes | same | 1 diagram per layer or region, sequence, quiz |
 | `walkthrough` | The diff, top-down (see **Order**) | The main flow, top-down (see **Order**). Not every line: only what the story needs | code steps, quiz |
 | `edge-cases` | Designed behavior for failures, limits, odd inputs | same | code steps, sequence, quiz |
@@ -57,16 +57,15 @@ Importance, not brevity: never drop a detail the reader needs.
 
 ## Step kinds
 
-- `card`: problem, decision, answer, review focus, recap. At most 5 bullets.
-- `terms`: the glossary. Give the identifier in code for each term.
-- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author (PR) or owner (module, question) would say about them: what they do and why. Never cite line numbers in text: give those lines their own note. 1-3 sentences per note, about 15 lines per range at most.
-- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. At most about 10 messages: show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
-- `diagram`: static structure of one layer or region: which parts exist and what depends on what. 3-10 nodes. Use notes to walk through it. Draw one for a simple scope. Add one per extra layer or region of a complex scope, and no more.
+- `card`: problem, decision, answer, review focus, recap.
+- `terms`: the glossary. Give each term's identifier in `code` when it has one.
+- `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author (PR) or owner (module, question) would say about them: what they do and why. Never cite line numbers in text: give those lines their own note.
+- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. Show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
+- `diagram`: static structure of one layer or region: which parts exist and what depends on what. Use notes to walk through it. Draw one for a simple scope. Add one per extra layer or region of a complex scope, and no more.
 - `quiz`: one at the end of `big-picture`, `walkthrough`, and `edge-cases`.
 
 ## Quizzes
 
 - Test understanding: a consequence, a cause, or the result of a given input. Never trivia such as names or line numbers.
-- 3-4 options. Each wrong option is a mistake a smart reader could make, so every option sounds plausible. Keep options similar in length and form.
-- Exactly one correct option. Each option has a one-sentence `why`.
+- Each wrong option is a mistake a smart reader could make, so every option sounds plausible. Keep options similar in length and form.
 - Earlier steps of the dive contain the answer.

@@ -1,6 +1,6 @@
 # Format
 
-You write `dive.json` in step 3: the frame, with `"chapters": []`. Writers put each chapter in `parts/<id>.json`, or `parts/<id>.1.json`, `parts/<id>.2.json` when a chapter is split. `dive.py build` merges the parts into `dive.json`, fills `source.repo`, `base`, and `head`, and embeds the code. JSON only: no comments, no trailing commas.
+You write `dive.json` in step 3: the frame, with `"chapters": []`. Writers put each chapter in `parts/<id>.json`, or `parts/<id>.1.json`, `parts/<id>.2.json` when a chapter is split. `dive.py build` merges the parts into `dive.json`, fills `source.repo`, `base`, and `head`, and embeds the code. JSON only: no comments, no trailing commas. The length limits for step fields are in writing.md.
 
 ```ts
 // dive.json
@@ -24,20 +24,20 @@ interface Chapter {
 }
 
 type Step = Card | Terms | Code | Sequence | Diagram | Quiz
-// `say` is the narration above the visual: 1-3 short sentences.
+// `say` is the narration above the visual.
 
 interface Card { kind: 'card'; title: string; body: string; links?: Link[] }
-// body: short text; "- " lines are bullets, `backticks` are code
+// body: "- " lines are bullets, `backticks` are code
 
 interface Terms { kind: 'terms'; title: string; terms: { term: string; meaning: string; code?: string }[] }
-// meaning: one sentence; code: the identifier, e.g. "RefundJob"
+// code: the identifier, e.g. "RefundJob"
 
 interface Code { kind: 'code'; title: string; say: string; notes: CodeNote[] }
 interface CodeNote {
   file: string // repo path; repeat it on each note in the same file
   lines: [number, number] // inclusive; head (new-file) line numbers
   side?: 'new' | 'old' // 'old' for deleted lines, with base line numbers
-  text: string // 1-3 sentences, like a PR self-review comment
+  text: string // like a PR self-review comment
 }
 // notes: in execution order, across files when the logic crosses them.
 // A PR shows each file's diff; otherwise the file.
@@ -57,7 +57,7 @@ interface Diagram {
 
 interface Quiz {
   kind: 'quiz'; title: string; question: string
-  options: { text: string; correct?: boolean; why: string }[] // 3-4 options, exactly one correct
+  options: { text: string; correct?: boolean; why: string }[]
 }
 
 interface Link { title: string; url: string }

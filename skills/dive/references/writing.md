@@ -63,10 +63,14 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 | Step `title` | 6 words or fewer. A plain noun phrase or statement. No colons, no puns. |
 | `say` | 1-3 sentences. The one point of this step. |
 | Code note `text` | 1-3 sentences. What this block does, then why it matters. |
+| Code note `lines` | About 15 lines at most. |
 | Card `body` | 5 bullets or fewer, one idea each. Or 2-3 short sentences. |
+| Glossary `terms` | 3-10. |
 | Term `meaning` | 1 sentence. What it is in this codebase, not in general. |
-| Quiz `question` | 1 sentence. Test behavior ("what happens when…"), not recall of names. |
-| Quiz `options` | 3-4. Each one plausible to a reader who skimmed. Exactly one correct. Similar length. No "all of the above". |
+| Sequence `messages` | About 10 at most. |
+| Diagram `nodes` | 3-10. |
+| Quiz `question` | 1 sentence. |
+| Quiz `options` | 3-4. Exactly one correct. No "all of the above". |
 | Quiz `why` | 1 sentence per option: why it is right, or the exact reason it is wrong. |
 
 ## Before and after
@@ -97,7 +101,7 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 
 ## Self-check before you save a part
 
-1. Each sentence holds one idea and has 25 words or fewer.
+1. Each sentence holds one idea and fits the word limits in **Sentences**.
 2. Active voice, simple tense, no semicolons.
 3. One name per concept, the same as in the glossary and the code.
 4. No word from the slop table. No hype, no emojis.
