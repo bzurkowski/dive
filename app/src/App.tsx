@@ -122,11 +122,9 @@ export default function App({ dive }: { dive: Dive }) {
       </>
     )
 
-  const i = flatIndex(flat, pos)
   const size = stepSize(step)
   const last = pos.f === size - 1
-  const atEnd = i === flat.length - 1 && last
-  const nextChapter = pos.s === chapter.steps.length - 1 && last ? dive.chapters[flat[i + 1]?.c]?.title : undefined
+  const next = move(dive, flat, pos, 1)
 
   const edge = step.kind === 'edge'
   const flow = flowAt(flows(chapter.steps), pos.s)
@@ -187,7 +185,7 @@ export default function App({ dive }: { dive: Dive }) {
           <div className="absolute inset-x-0 -bottom-px h-0.5 bg-line" aria-hidden>
             <div
               className="h-full bg-accent motion-safe:transition-[width]"
-              style={{ width: `${((i + 1) / flat.length) * 100}%` }}
+              style={{ width: `${((flatIndex(flat, pos) + 1) / flat.length) * 100}%` }}
             />
           </div>
         </header>
@@ -239,18 +237,13 @@ export default function App({ dive }: { dive: Dive }) {
               Skip to {skipTo}
             </button>
           )}
-          <button
-            type="button"
-            className={btn}
-            onClick={() => go(move(dive, flat, pos, 1))}
-            aria-keyshortcuts="ArrowRight"
-          >
-            {atEnd
+          <button type="button" className={btn} onClick={() => go(next)} aria-keyshortcuts="ArrowRight">
+            {next.c === END.c
               ? 'Finish'
               : skip && !edge && last
                 ? 'Next: edge cases (optional)'
-                : nextChapter
-                  ? `Next chapter: ${nextChapter}`
+                : next.c !== pos.c
+                  ? `Next chapter: ${dive.chapters[next.c].title}`
                   : 'Next'}
           </button>
         </footer>
