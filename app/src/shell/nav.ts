@@ -14,14 +14,16 @@ export type Flat = { c: number; s: number }[]
 
 export const flatten = (dive: Dive): Flat => dive.chapters.flatMap((ch, c) => ch.steps.map((_, s) => ({ c, s })))
 
+// #/end, or #/c[/s[/f]] with step and focus clamped; anything else is the cover.
 export function parseHash(dive: Dive, hash: string): Pos {
-  const path = hash.replace(/^#\/?/, '')
+  const path = hash.replace(/^#\/?|\/$/g, '')
   if (path === 'end') return END
-  const [c, s, f] = path.split('/').map((x) => Number(x) || 0)
+  if (!/^\d+(\/\d+){0,2}$/.test(path)) return COVER
+  const [c, s = 0, f = 0] = path.split('/').map(Number)
   const steps = dive.chapters[c]?.steps
-  if (!path || !steps?.length) return COVER
-  const si = Math.min(Math.max(0, s), steps.length - 1)
-  return { c, s: si, f: Math.min(Math.max(0, f), stepSize(steps[si]) - 1) }
+  if (!steps?.length) return COVER
+  const si = Math.min(s, steps.length - 1)
+  return { c, s: si, f: Math.min(f, stepSize(steps[si]) - 1) }
 }
 
 export const toHash = (p: Pos) => (p.c === END.c ? '#/end' : p.c < 0 ? '#/' : `#/${p.c}/${p.s}/${p.f}`)
