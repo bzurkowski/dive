@@ -169,7 +169,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const dir = self ? -1 : Math.sign(x2 - x1)
               const dash = removed ? '2 4' : m.type === 'return' ? '5 4' : undefined
               const open = m.type === 'async'
-              const line = self ? `M${x1} ${y} h${LOOP} v${DROP} H${x1 + 8}` : `M${x1} ${y} H${x2 - dir * 8}`
+              // A filled head covers the last 8px of the line; an open one needs the line up to its tip.
+              const end = x2 - dir * (open ? 0 : 8)
+              const line = self ? `M${x1} ${y} h${LOOP} v${DROP} H${end}` : `M${x1} ${y} H${end}`
               const head = open
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
