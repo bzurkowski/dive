@@ -137,7 +137,7 @@ function FileBody({
           )}
           {link && (
             <a className="text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
-              Open on GitHub ↗
+              Open on GitHub <span aria-hidden>↗</span>
             </a>
           )}
         </span>
