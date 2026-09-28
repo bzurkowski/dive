@@ -19,26 +19,24 @@ eq(move(dive, flat, { c: 0, s: 0, f: 0 }, -1), COVER, 'first step moves back to 
 eq(parseHash(dive, toHash(END)), END, 'end hash round trip')
 eq(parseHash(dive, '#/'), COVER, 'cover hash')
 
-// Hashes: an intro with a 3-message sequence, an empty chapter, a recap.
+// Hashes: an intro with a 3-message sequence, then a recap.
 const msg = { from: 'a', to: 'b', label: 'l', note: 'n' }
 const seq = { kind: 'sequence', title: 's', say: '', actors: [], messages: [msg, msg, msg] } as const
 const three = {
   ...dive,
   chapters: [
     { id: 'intro', title: 'Intro', steps: [card, seq] },
-    { id: 'glossary', title: 'Glossary', steps: [] },
     { id: 'recap', title: 'Recap', steps: [seq, card] },
   ],
 } as Dive
-for (const p of [COVER, END, { c: 0, s: 1, f: 2 }, { c: 2, s: 0, f: 1 }])
+for (const p of [COVER, END, { c: 0, s: 1, f: 2 }, { c: 1, s: 0, f: 1 }])
   eq(parseHash(three, toHash(p)), p, `round trip ${toHash(p)}`)
-eq(parseHash(three, '#/2'), { c: 2, s: 0, f: 0 }, 'chapter only')
+eq(parseHash(three, '#/1'), { c: 1, s: 0, f: 0 }, 'chapter only')
 eq(parseHash(three, '#/0/1'), { c: 0, s: 1, f: 0 }, 'no focus')
 eq(parseHash(three, '#/0/1/2/'), { c: 0, s: 1, f: 2 }, 'trailing slash')
 eq(parseHash(three, '#/end/'), END, 'end with a trailing slash')
 eq(parseHash(three, '#/0/9/9'), { c: 0, s: 1, f: 2 }, 'step and focus clamp')
 eq(parseHash(three, `#/0/${'9'.repeat(400)}/0`), { c: 0, s: 1, f: 0 }, 'huge step clamps')
-eq(parseHash(three, '#/1/0/0'), COVER, 'empty chapter')
 eq(parseHash(three, '#/9/0/0'), COVER, 'missing chapter')
 for (const h of [
   '',
@@ -59,10 +57,10 @@ const tflat = flatten(three)
 eq(move(three, tflat, { c: 0, s: 1, f: 0 }, 1), { c: 0, s: 1, f: 1 }, 'focus moves inside a step')
 eq(move(three, tflat, { c: 0, s: 1, f: 1 }, -1), { c: 0, s: 1, f: 0 }, 'focus moves back inside a step')
 eq(move(three, tflat, { c: 0, s: 1, f: 0 }, -1), { c: 0, s: 0, f: 0 }, 'first focus moves to the previous step')
-eq(move(three, tflat, { c: 0, s: 1, f: 2 }, 1), { c: 2, s: 0, f: 0 }, 'last focus skips the empty chapter')
-eq(move(three, tflat, { c: 2, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lands on the last focus')
+eq(move(three, tflat, { c: 0, s: 1, f: 2 }, 1), { c: 1, s: 0, f: 0 }, 'last focus moves to the next chapter')
+eq(move(three, tflat, { c: 1, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lands on the last focus')
 eq(move(three, tflat, { c: 0, s: 0, f: 5 }, 1), { c: 0, s: 1, f: 0 }, 'focus past the step size moves on')
-eq(move(three, tflat, END, -1), { c: 2, s: 1, f: 0 }, 'end moves back across chapters')
+eq(move(three, tflat, END, -1), { c: 1, s: 1, f: 0 }, 'end moves back across chapters')
 eq(move(three, tflat, COVER, -1), COVER, 'cover stays')
 // The cover's start button goes to { c: 0 } even when the dive has no steps.
 const empty = { ...dive, chapters: [] } as Dive
@@ -76,7 +74,7 @@ const step = (kind: string) => ({
   title: kind,
   say: '',
   actors: [],
-  messages: [],
+  messages: [msg],
   question: '',
   options: [],
 })

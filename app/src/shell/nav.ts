@@ -11,13 +11,13 @@ export interface Pos {
 export function stepSize(step: Step): number {
   switch (step.kind) {
     case 'code':
-      return Math.max(1, step.notes.length)
+      return step.notes.length
     case 'sequence':
     case 'flow':
     case 'edge':
-      return Math.max(1, step.messages.length)
+      return step.messages.length
     case 'diagram':
-      return Math.max(1, step.notes?.length ?? 0)
+      return step.notes?.length || 1
     default:
       return 1
   }
@@ -37,7 +37,7 @@ export function parseHash(dive: Dive, hash: string): Pos {
   if (!/^\d+(\/\d+){0,2}$/.test(path)) return COVER
   const [c, s = 0, f = 0] = path.split('/').map(Number)
   const steps = dive.chapters[c]?.steps
-  if (!steps?.length) return COVER
+  if (!steps) return COVER
   const si = Math.min(s, steps.length - 1)
   return { c, s: si, f: Math.min(f, stepSize(steps[si]) - 1) }
 }
