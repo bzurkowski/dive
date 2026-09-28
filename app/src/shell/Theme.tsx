@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-// index.html sets data-theme before first paint: the saved choice, else the OS setting.
+// index.html applies the saved 'dive-theme', else the OS setting, before first paint.
 const root = document.documentElement
 
 export function ThemeButton({ className = '' }: { className?: string }) {
@@ -12,7 +12,7 @@ export function ThemeButton({ className = '' }: { className?: string }) {
     try {
       localStorage.setItem('dive-theme', theme)
     } catch {
-      // Storage can be blocked (private mode, some file:// setups); the switch still works for this visit.
+      // Storage blocked: the theme holds for this visit only.
     }
     setDark(!dark)
   }
