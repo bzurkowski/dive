@@ -43,8 +43,8 @@ export function parse(file: FileData): Parsed {
       continue
     }
     const mark = line[0]
-    const text = line.slice(1)
     if (mark === '\\') continue // "\ No newline at end of file"
+    const text = /^[-+ ]/.test(line) ? line.slice(1) : line // unprefixed lines are context
     if (mark === '+') {
       rows.push({ type: 'add', new: n++, text, n: newL.length })
       newL.push(text)
