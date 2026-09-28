@@ -1,7 +1,7 @@
 // Data contract for a dive. Single source of truth.
 // Agents author `dive.json` (everything except `files`).
 // `dive.py build` adds `files` and bakes the result into index.html.
-// Mirror authored changes in skills/dive/references/format.md.
+// Mirror authored changes in every copy that AGENTS.md lists under "Data contract".
 
 export interface Dive {
   title: string // "Retry failed refunds"

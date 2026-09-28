@@ -52,6 +52,8 @@ Rebuild the template only at checkpoints and commit it. The template holds
 
 The build's checks are listed for agents twice: format.md `## Structure` and the `(build)` lines of outline.md `## Checklist`. When a check in `dive.py` changes, change both.
 
+`references/briefs.md` repeats three rules word for word, because a subagent sees only its prompt: the edge-case definition (outline.md `## From call chains to flows`), the actor definition (story.md `## Sequences`), and the hop rule (story.md Messages, with "hop" for "message"). Change them together.
+
 ## Commits
 
 Conventional commits: `feat(app): ...`, `feat(skill): ...`, `fix(...)`, `chore: ...`, `docs: ...`. No AI co-author trailers.

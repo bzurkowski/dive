@@ -54,7 +54,7 @@ interface CodeStep {
 }
 
 interface CodeNote {
-  file: string // repo path, key into Dive.files
+  file: string // repo path; the build embeds this file
   lines: [number, number] // inclusive range; new-file numbers unless side = 'old'
   side?: 'new' | 'old' // 'old' for deleted lines
   text: string // 1-3 short sentences, like a PR self-review comment

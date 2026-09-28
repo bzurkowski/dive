@@ -97,11 +97,11 @@ Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund
   "chapters": [] }
 ```
 
-Write `docs/dives/<slug>/dive.json` as strict JSON. Leave out `url` outside a PR. `links` holds each issue, ticket and page from `## Linked` in context.md and from knowledge.md. The build fills `chapters` from the part files, and `repo`, `base` and `head` itself. The frame copies `Dive` and `Source` from format.md: change them together.
+Write `docs/dives/<slug>/dive.json` as strict JSON. Leave out `url` outside a PR. `links` holds each issue, ticket and page from `## Linked` in context.md and from knowledge.md. The build fills `chapters` from the part files, and `repo`, `base` and `head` itself.
 
 ## Checklist
 
-The outline is done when every line holds for `outline.md` and `dive.json`, checked against the scout-note summaries. The build rejects a dive that breaks a line marked (build), so catch it here.
+The outline is done when every line holds for `docs/dives/<slug>/outline.md` and `dive.json`, checked against the scout-note summaries. The build rejects a dive that breaks a line marked (build), so catch it here.
 
 - Every hop of every call chain is a message in a flow or an edge step, or in Left out: a `detail` hop, or a hop of a flow you cut.
 - Every `## Edge cases` item is in a place that **From call chains to flows** lists.
