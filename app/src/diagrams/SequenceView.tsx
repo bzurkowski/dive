@@ -187,7 +187,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                       ? mark.tone
                       : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
-              const link = m.step ? LINK : ''
+              const link = m.step && onJump ? LINK : ''
               const lw = textWidth((mark?.sign ?? '') + m.label + link, LABEL_PX, 600, true)
               // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
