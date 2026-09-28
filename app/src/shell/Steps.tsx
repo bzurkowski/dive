@@ -135,9 +135,9 @@ export function QuizView({ step }: { step: QuizStep }) {
             <li key={i}>
               <button
                 type="button"
-                disabled={done}
+                aria-disabled={done}
                 aria-pressed={i === picked}
-                onClick={() => setPicked(i)}
+                onClick={() => setPicked((p) => p ?? i)}
                 className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 <span className="flex items-start gap-3">
