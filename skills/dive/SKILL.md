@@ -49,7 +49,37 @@ Fill in each brief from [references/scouts.md](references/scouts.md). Scouts wri
 
 Read every note: its Terms, its Flow items tagged `[<layer>, <core|detail>]`, and the context. Think how to explain the change (PR) or the code (module, question) most clearly to a human: which layers or regions, in what order, and how few steps reveal the important parts.
 
-Write `docs/dives/<slug>/outline.md`, its `## Story plan` first, before any step. Write `docs/dives/<slug>/dive.json` (title, summary, source, `"chapters": []`). Follow [references/story.md](references/story.md) and [references/format.md](references/format.md). The outline is done when every step serves the story plan, and every Flow, Edge cases, and Mechanical item in the notes is in a step, in "Also changed", or in the plan's Left out list.
+Write `docs/dives/<slug>/outline.md`. Design the story first, in a `## Story plan` section before any step:
+
+1. In one sentence: the change (PR), what the code does (module), or the answer (question).
+2. The level and its reason, from `dive.py level`.
+3. The layers the reader passes through, top-down: the entry point and request flow → services and how they depend on each other → data model and migrations. List only the layers this scope has. Use the `[<layer>, <core|detail>]` tags on the notes' Flow items.
+4. The big-picture diagrams, one line each: the layer or region it shows.
+5. Left out: one line per group of dropped note items, with the reason.
+
+Then one line per step: kind, code refs in note order, one-line intent, and the notes to read.
+
+```md
+# Retry failed refunds with backoff
+Failed refunds now retry with growing, random waits and stop after 5 attempts.
+
+## Story plan
+- Change: the worker replaces fixed 60-second retries with capped random backoff and an idempotency key.
+- Level: familiar (14 of your commits touch src/refunds in the last year)
+- Layers: the worker loop → `retryRefund` → the gateway
+- Diagrams: the worker, `retryRefund` and the gateway
+- Left out: gateway client internals (unchanged); log wording (no behavior change)
+
+## walkthrough
+- code src/refunds/worker.ts:7-8 → src/refunds/retry.ts:9 → src/refunds/retry.ts:19 - one attempt: count it, `nextDelay` picks a wait under the cap, send with an idempotency key - notes/refunds.md
+- code src/refunds/retry.ts:3-5 - the limits that attempt uses: `MAX_ATTEMPTS` and the wait cap that `nextDelay` doubles - notes/refunds.md
+- quiz - a timeout after the gateway already refunded
+
+## recap
+- card: Also changed - `package-lock.json`, `src/refunds/index.ts` (rename)
+```
+
+Write `docs/dives/<slug>/dive.json` (title, summary, source, `"chapters": []`). Follow [references/story.md](references/story.md) and [references/format.md](references/format.md). The outline is done when every step serves the story plan, and every Flow, Edge cases, and Mechanical item in the notes is in a step, in "Also changed", or in the plan's Left out list.
 
 ## 4. Write (parallel)
 
