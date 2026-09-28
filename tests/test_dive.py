@@ -103,6 +103,23 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn('no remote', r.stderr)
 
+    def test_build_embeds_only_repo_files(self):
+        work, git = pr_repo()
+        (work.parent / 'secret.txt').write_text('token\n')
+        d = work / 'd'
+        d.mkdir()
+        note = {'file': '../secret.txt', 'lines': [1, 1], 'text': 'x'}
+        step = {'kind': 'code', 'title': 'T', 'say': 'S', 'notes': [note]}
+        dive = {'title': 'T', 'summary': 'S', 'source': {'kind': 'module', 'ref': '.'},
+                'chapters': [{'id': 'walkthrough', 'title': 'W', 'steps': [step]}]}
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run(work, 'build', str(d))
+        self.assertIn('file not found: ../secret.txt', r.stdout)
+        note['file'] = 'app.py'
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run(work, 'build', str(d))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

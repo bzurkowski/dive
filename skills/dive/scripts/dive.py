@@ -178,8 +178,9 @@ def embed_files(dive, diff):
         if diff:
             text = git('show', f"{diff['head']}:{p}", check=False)
         else:
-            path = Path(git('rev-parse', '--show-toplevel').strip()) / p
-            text = path.read_text(encoding='utf-8', errors='replace') if path.is_file() else None
+            root = Path(git('rev-parse', '--show-toplevel').strip()).resolve()
+            path = (root / p).resolve()  # a note must not embed files outside the repo
+            text = path.read_text(encoding='utf-8', errors='replace') if path.is_file() and path.is_relative_to(root) else None
         if text is not None:
             files[p] = {'lang': lang(p), 'diff': False, 'text': text}
     return files, skipped
