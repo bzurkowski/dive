@@ -5,9 +5,9 @@ import App from './App.tsx'
 import { loadDive } from './data.ts'
 
 const root = createRoot(document.getElementById('root')!)
-// Diagrams measure text on a canvas, so the fonts must be loaded first.
-const fonts = ['Next', 'Mono'].map((f) =>
-  document.fonts.load(`1em "Atkinson Hyperlegible ${f} Variable"`).catch(() => {}),
+// Diagrams measure text on a canvas, so the fonts of index.css must be loaded first.
+const fonts = ['Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Mono Variable'].map((f) =>
+  document.fonts.load(`1em "${f}"`).catch(() => {}),
 )
 Promise.all([loadDive(), ...fonts])
   .then(([dive]) =>
