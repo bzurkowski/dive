@@ -1,49 +1,36 @@
 {
   "title": "NetworkError and stricter retries",
-  "summary": "Ky now wraps fetch network failures in a typed NetworkError. It retries only errors it knows, and throws everything else at once.",
+  "summary": "Ky now wraps a recognized fetch network failure in a typed NetworkError. By default it retries only errors it knows and throws every other error at once.",
   "source": {
     "kind": "pr",
     "ref": "842",
     "url": "https://github.com/sindresorhus/ky/pull/842",
-    "links": [
-      {
-        "title": "Issue #545: Best way to handle fetch errors",
-        "url": "https://github.com/sindresorhus/ky/issues/545"
-      },
-      {
-        "title": "#545: design proposal (wrap + allowlist or denylist)",
-        "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-2282900749"
-      },
-      {
-        "title": "#545: maintainer picks the allowlist",
-        "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-2284297812"
-      },
-      {
-        "title": "PR #842: why the detector is inlined",
-        "url": "https://github.com/sindresorhus/ky/pull/842#issuecomment-4125351489"
-      }
-    ],
     "repo": "sindresorhus/ky",
     "base": "191057d135c1cfe07f9fa16978c2482969ccac20",
     "head": "5703d624c6990817662a827be06dd006870acde8"
   },
   "chapters": [
     {
-      "id": "why",
-      "title": "Why",
+      "id": "intro",
+      "title": "Intro",
       "steps": [
         {
           "kind": "card",
-          "title": "Ky retried bugs like network failures",
-          "body": "- When the network fails, fetch rejects with a plain `TypeError`.\n- The message differs per runtime: `Failed to fetch` in Chrome, `fetch failed` in Node.js, `Load failed` in Safari.\n- Callers could not tell a network failure from a bug.\n- On a retriable method, Ky retried every error that the fetch call threw.\n- A bug in a custom `fetch` got retries with backoff, like a network failure (#545).",
+          "title": "Fetch errors are vague",
+          "body": "- When a request fails at the network level, `fetch` rejects with a plain `TypeError`.\n- Each runtime words this error differently. Chrome says \"Failed to fetch\". Firefox says \"NetworkError when attempting to fetch resource.\". Node.js says \"fetch failed\". Safari 17 and later say \"Load failed\".\n- A programming bug can throw a `TypeError` too, such as \"Cannot read properties of undefined\".\n- So the error type alone does not show a network failure. Only the message can show it."
+        },
+        {
+          "kind": "card",
+          "title": "Ky retried every error",
+          "body": "- Before this PR, `#calculateRetryDelay` decided about retries. It had rules for two error types only: `TimeoutError` and `HTTPError`.\n- Any other error on a retriable method reached the last line, which returned a delay. So Ky retried that error up to the retry limit.\n- A network failure and a bug in a custom `fetch` got the same retries.\n- Issue #545 asked how to retry only real network errors. In that issue, sholladay confirmed that Ky retried all fetch errors, \"whether they are network errors or not\".\n- The workaround in the issue was a `beforeRetry` hook that throws any error that is not a network error.",
           "links": [
             {
-              "title": "PR #842",
-              "url": "https://github.com/sindresorhus/ky/pull/842"
+              "title": "Issue #545: Best way to handle Fetch errors",
+              "url": "https://github.com/sindresorhus/ky/issues/545"
             },
             {
-              "title": "Issue #545: Best way to handle fetch errors",
-              "url": "https://github.com/sindresorhus/ky/issues/545"
+              "title": "#545: the beforeRetry workaround",
+              "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-1815967114"
             },
             {
               "title": "#545: Ky retries all fetch errors",
@@ -53,28 +40,39 @@
         },
         {
           "kind": "card",
-          "title": "Retry only errors Ky recognizes",
-          "body": "- `#fetch` wraps a fetch `TypeError` with a known network message in the new `NetworkError`. The original `TypeError` stays in `cause`.\n- By default, Ky retries only `HTTPError`, `TimeoutError`, `NetworkError` and `ForceRetryError`. It throws any other error at once.\n- sindresorhus picked this allowlist over a denylist of known non-retriable errors. A runtime with an unknown message gets no retries: \"New runtimes don't come along every day.\"\n- `shouldRetry` can still force a retry of any error. The readme points to it for unrecognized runtimes.\n- Ky copies `is-network-error` into its own source. Ky stays a package with no dependencies.",
+          "title": "The decision",
+          "body": "sholladay proposed this plan in #545. sindresorhus called the retry part \"the most pragmatic solution\".\n- `#fetch` wraps a recognized network error in a new `NetworkError`. sholladay wanted this \"to normalize them and make it more obvious what's going on\".\n- `#calculateRetryDelay` retries only the error types Ky knows: `NetworkError`, `HTTPError` with a retriable status, and `TimeoutError` when `retryOnTimeout` is set. It throws any other error at once.\n- The cost: Ky no longer retries a network error with a message it does not know, such as one from a new runtime. sholladay preferred retries in that case.\n- sindresorhus accepted the cost: \"New runtimes don't come along every day.\"\n- `shouldRetry` covers the gap. It runs before the error-type checks. The readme now points users to it for errors that Ky does not recognize.",
           "links": [
             {
-              "title": "#545: the proposal, wrap and allowlist or denylist",
+              "title": "#545: sholladay's proposal",
               "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-2282900749"
             },
             {
-              "title": "#545: sindresorhus picks the allowlist",
+              "title": "#545: sindresorhus's reply",
               "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-2284297812"
             },
             {
-              "title": "#545: the first idea for shouldRetry",
-              "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-1815967114"
-            },
-            {
-              "title": "PR #842: why is-network-error is inlined",
-              "url": "https://github.com/sindresorhus/ky/pull/842#issuecomment-4125351489"
-            },
+              "title": "PR #842",
+              "url": "https://github.com/sindresorhus/ky/pull/842"
+            }
+          ]
+        },
+        {
+          "kind": "card",
+          "title": "Why the detector is inlined",
+          "body": "- Ky must recognize a network failure by its message. The package `is-network-error` already does that.\n- The PR copies `is-network-error` v1.3.1 into `source/utils/is-network-error.ts`. It does not add the package as a dependency.\n- The copy has the name `isRawNetworkError`, so it does not clash with the new public guard `isNetworkError`.\n- sholladay found inlining \"a bit silly\", because Ky already has a compile step.\n- sindresorhus replied that a compile step for a dependency is \"not worth the effort for a single one that won't update very often.\"",
+          "links": [
             {
               "title": "is-network-error",
               "url": "https://github.com/sindresorhus/is-network-error"
+            },
+            {
+              "title": "#842: sholladay on inlining",
+              "url": "https://github.com/sindresorhus/ky/pull/842#issuecomment-4124136417"
+            },
+            {
+              "title": "#842: sindresorhus's reply",
+              "url": "https://github.com/sindresorhus/ky/pull/842#issuecomment-4125351489"
             }
           ]
         }
@@ -86,47 +84,92 @@
       "steps": [
         {
           "kind": "terms",
-          "title": "Words this dive uses",
+          "title": "Errors from fetch",
+          "say": "A network failure first reaches Ky as a raw error from `fetch`.",
           "terms": [
             {
+              "term": "raw network error",
+              "code": "isRawNetworkError",
+              "meaning": "A `TypeError` from `fetch` with a message that a runtime uses for a network failure, such as \"Failed to fetch\". `isRawNetworkError`, the inlined copy of `is-network-error` v1.3.1, detects it."
+            },
+            {
+              "term": "runtime message list",
+              "code": "errorMessages",
+              "meaning": "The set of exact messages that `isRawNetworkError` looks up, with a comment that names the runtime of each. A few messages, such as \"Failed to fetch\", have their own checks before this lookup."
+            }
+          ]
+        },
+        {
+          "kind": "terms",
+          "title": "Ky's error types",
+          "say": "`#fetch` now turns a raw network error into one of Ky's own error types.",
+          "terms": [
+            {
+              "term": "KyError",
+              "code": "KyError",
+              "meaning": "The base class of all Ky errors. `HTTPError`, `NetworkError`, `TimeoutError` and `ForceRetryError` extend it."
+            },
+            {
               "term": "NetworkError",
-              "meaning": "The new `KyError` subclass that `#fetch` throws in place of a raw network error.",
-              "code": "NetworkError"
-            },
-            {
-              "term": "Raw network error",
-              "meaning": "A fetch `TypeError` whose message `isRawNetworkError` finds in a list of known runtime messages, such as `Failed to fetch` or `fetch failed`.",
-              "code": "isRawNetworkError"
-            },
-            {
-              "term": "isNetworkError",
-              "meaning": "The exported type guard that returns true for a `NetworkError` instance or for any error whose `name` is `NetworkError`.",
-              "code": "isNetworkError"
+              "code": "NetworkError",
+              "meaning": "The new `KyError` that `#fetch` throws for a raw network error. It has `request`, and its message names the method and the URL."
             },
             {
               "term": "cause",
-              "meaning": "The standard error property where `NetworkError` keeps the raw network error that fetch rejected with.",
-              "code": "error.cause"
+              "code": "cause",
+              "meaning": "The standard `Error` property that holds the error behind this one. A `NetworkError` keeps the raw `TypeError` in `cause`."
             },
             {
-              "term": "Retry decision",
-              "meaning": "The method that gets each failed attempt's error and returns a delay to retry, or throws the error to stop.",
-              "code": "#calculateRetryDelay"
+              "term": "isNetworkError",
+              "code": "isNetworkError",
+              "meaning": "The new public type guard for a `NetworkError`. It is true for an instance of `NetworkError` or for any error whose `name` is `'NetworkError'`."
+            },
+            {
+              "term": "HTTPError",
+              "code": "HTTPError",
+              "meaning": "The `KyError` that Ky throws for a response with a non-2xx status when `throwHttpErrors` is on. It has `response` and `request`."
+            },
+            {
+              "term": "TimeoutError",
+              "code": "TimeoutError",
+              "meaning": "The `KyError` that Ky throws when the request times out. Ky retries it only when the `retryOnTimeout` option is `true`."
+            }
+          ]
+        },
+        {
+          "kind": "terms",
+          "title": "The retry decision",
+          "say": "After an attempt fails with one of these errors, the retry decision chooses a retry or a throw.",
+          "terms": [
+            {
+              "term": "retry decision",
+              "code": "#calculateRetryDelay",
+              "meaning": "The private method `Ky#calculateRetryDelay`. After a failed attempt, it returns a delay in ms to retry, or it throws the error to stop."
+            },
+            {
+              "term": "retry limit",
+              "code": "retry.limit",
+              "meaning": "The most retries after the first attempt. The default is 2, so a request makes at most 3 attempts."
+            },
+            {
+              "term": "retriable method",
+              "code": "retry.methods",
+              "meaning": "An HTTP method in `retry.methods`. The defaults are GET, PUT, HEAD, DELETE, OPTIONS and TRACE, so Ky does not retry a POST."
             },
             {
               "term": "shouldRetry",
-              "meaning": "A user callback that returns `true` to force a retry, `false` to stop, or `undefined` to use the default rules.",
-              "code": "retry.shouldRetry"
+              "code": "retry.shouldRetry",
+              "meaning": "An optional user function that the retry decision calls after the limit and method checks. It returns `true` to force a retry, `false` to stop, or `undefined` to leave the choice to the error-type checks."
             },
             {
-              "term": "Retriable method",
-              "meaning": "An HTTP method that Ky may retry, by default `get`, `put`, `head`, `delete`, `options` and `trace`, so not `post` or `patch`.",
-              "code": "retry.methods"
+              "term": "beforeRetry hook",
+              "code": "hooks.beforeRetry",
+              "meaning": "A user hook that runs before each retry and gets the error. For a network failure, that error is now a `NetworkError`."
             },
             {
-              "term": "Retry limit",
-              "meaning": "The largest number of retries after the first attempt, 2 by default.",
-              "code": "retry.limit"
+              "term": "beforeError hook",
+              "code": "hooks.beforeError",
+              "meaning": "A user hook that can change an error right before Ky throws it to the caller. For a network failure, it now gets a `NetworkError`."
             }
           ]
         }
@@ -138,232 +181,166 @@
       "steps": [
         {
           "kind": "diagram",
-          "title": "The request path",
-          "say": "Every Ky attempt runs through `#fetch`. The PR wraps network failures there in `NetworkError`. It also ends the retry decision with a check for `NetworkError`.",
+          "title": "Which errors retry now",
+          "say": "An attempt failed. Which errors does Ky retry now?",
           "nodes": [
             {
-              "id": "caller",
-              "label": "Caller",
-              "group": "user code"
+              "id": "failed",
+              "label": "Failed attempt"
+            },
+            {
+              "id": "checks",
+              "label": "Limit, method, shouldRetry"
+            },
+            {
+              "id": "timeout",
+              "label": "TimeoutError"
+            },
+            {
+              "id": "http",
+              "label": "HTTPError"
+            },
+            {
+              "id": "network",
+              "label": "NetworkError"
+            },
+            {
+              "id": "other",
+              "label": "Other error"
             },
             {
               "id": "retry",
-              "label": "#retry",
-              "group": "Ky.ts"
+              "label": "Retry"
             },
             {
-              "id": "fetch",
-              "label": "#fetch",
-              "group": "Ky.ts"
-            },
-            {
-              "id": "impl",
-              "label": "options.fetch",
-              "group": "fetch implementation"
-            },
-            {
-              "id": "raw",
-              "label": "isRawNetworkError",
-              "group": "new in this PR"
-            },
-            {
-              "id": "neterr",
-              "label": "NetworkError",
-              "group": "new in this PR"
-            },
-            {
-              "id": "decide",
-              "label": "#calculateRetryDelay",
-              "group": "Ky.ts"
-            },
-            {
-              "id": "should",
-              "label": "shouldRetry",
-              "group": "user code"
+              "id": "throw",
+              "label": "Throw"
             }
           ],
           "edges": [
             {
-              "from": "caller",
+              "from": "failed",
+              "to": "checks"
+            },
+            {
+              "from": "checks",
+              "to": "throw",
+              "label": "limit, method, false"
+            },
+            {
+              "from": "checks",
               "to": "retry",
-              "label": "ky.get(url)"
+              "label": "true"
             },
             {
-              "from": "retry",
-              "to": "fetch",
-              "label": "each attempt"
+              "from": "checks",
+              "to": "timeout"
             },
             {
-              "from": "fetch",
-              "to": "impl",
-              "label": "calls"
+              "from": "checks",
+              "to": "http"
             },
             {
-              "from": "fetch",
-              "to": "raw",
-              "label": "on rejection"
+              "from": "checks",
+              "to": "network"
             },
             {
-              "from": "fetch",
-              "to": "neterr",
-              "label": "throws"
+              "from": "checks",
+              "to": "other"
             },
             {
-              "from": "retry",
-              "to": "decide",
-              "label": "on error"
+              "from": "timeout",
+              "to": "retry",
+              "label": "retryOnTimeout"
             },
             {
-              "from": "decide",
-              "to": "should",
-              "label": "if set"
+              "from": "timeout",
+              "to": "throw",
+              "label": "default"
             },
             {
-              "from": "decide",
-              "to": "neterr",
-              "label": "isNetworkError"
+              "from": "http",
+              "to": "retry",
+              "label": "retriable status"
+            },
+            {
+              "from": "http",
+              "to": "throw",
+              "label": "other status"
+            },
+            {
+              "from": "network",
+              "to": "retry",
+              "label": "new"
+            },
+            {
+              "from": "other",
+              "to": "throw",
+              "label": "new"
             }
           ],
           "notes": [
             {
               "focus": [
-                "caller",
-                "retry",
-                "fetch",
-                "impl"
+                "failed"
               ],
-              "text": "`Ky.create` runs every request through `#retry`. Each attempt calls `#fetch`. Only `#fetch` calls `options.fetch`."
+              "text": "An attempt failed. `#retry` passes the error to `#calculateRetryDelay`. This method returns a delay to retry, or it throws the error."
             },
             {
               "focus": [
-                "fetch",
-                "raw",
-                "neterr"
+                "checks",
+                "throw",
+                "retry"
               ],
-              "text": "When `options.fetch` rejects, `#fetch` asks `isRawNetworkError` whether the error is a raw network error. On a match, `#fetch` throws a `NetworkError`. `#fetch` rethrows any other error unchanged."
+              "text": "Three unchanged checks run first. Ky throws at the retry limit, or when `retry.methods` does not include the method. When set, `shouldRetry` forces a retry with `true`, throws with `false`, and hands the error on with `undefined`."
             },
             {
               "focus": [
-                "retry",
-                "decide",
-                "should"
+                "timeout"
               ],
-              "text": "`#retry` passes each error through `#retryFromError` to the retry decision, `#calculateRetryDelay`. The retry decision asks `shouldRetry` when the caller set one. A returned delay means Ky waits, then starts another attempt."
-            }
-          ]
-        },
-        {
-          "kind": "sequence",
-          "title": "One network failure, then success",
-          "say": "A GET fails once with `TypeError('Failed to fetch')`, then succeeds. Ky wraps the failure in a `NetworkError` and retries. The caller gets the second response.",
-          "actors": [
-            {
-              "id": "caller",
-              "label": "Caller"
+              "text": "A `TimeoutError` retries only when `retryOnTimeout` is `true`. The default is `false`, so a timeout throws."
             },
             {
-              "id": "retry",
-              "label": "#retry"
+              "focus": [
+                "http"
+              ],
+              "text": "An `HTTPError` retries when `retry.statusCodes` includes its status. Any other status throws."
             },
             {
-              "id": "fetch",
-              "label": "#fetch"
+              "focus": [
+                "network"
+              ],
+              "text": "A `NetworkError` now retries. `#fetch` throws this error when fetch fails with a known runtime message."
             },
             {
-              "id": "impl",
-              "label": "fetch"
-            },
-            {
-              "id": "decide",
-              "label": "#calculateRetryDelay"
-            }
-          ],
-          "messages": [
-            {
-              "from": "caller",
-              "to": "retry",
-              "label": "ky.get(url)",
-              "type": "call"
-            },
-            {
-              "from": "retry",
-              "to": "fetch",
-              "label": "#fetch()",
-              "type": "call"
-            },
-            {
-              "from": "fetch",
-              "to": "impl",
-              "label": "fetch(request)",
-              "type": "call"
-            },
-            {
-              "from": "impl",
-              "to": "fetch",
-              "label": "TypeError: Failed to fetch",
-              "type": "error",
-              "note": "`isRawNetworkError` recognizes this message as a raw network error."
-            },
-            {
-              "from": "fetch",
-              "to": "retry",
-              "label": "NetworkError",
-              "type": "error"
-            },
-            {
-              "from": "retry",
-              "to": "decide",
-              "label": "#calculateRetryDelay(error)",
-              "type": "call"
-            },
-            {
-              "from": "decide",
-              "to": "retry",
-              "label": "delay (ms)",
-              "type": "return",
-              "note": "GET is a retriable method. The error is a `NetworkError`, so the retry decision returns a delay."
-            },
-            {
-              "from": "retry",
-              "to": "fetch",
-              "label": "#fetch()",
-              "type": "call"
-            },
-            {
-              "from": "fetch",
-              "to": "retry",
-              "label": "Response",
-              "type": "return"
-            },
-            {
-              "from": "retry",
-              "to": "caller",
-              "label": "Response",
-              "type": "return"
+              "focus": [
+                "other"
+              ],
+              "text": "Any other error now throws at once, such as a `TypeError` from a bug in a custom `fetch`. Before, the last line of `#calculateRetryDelay` returned a delay. So Ky retried every error that reached that line."
             }
           ]
         },
         {
           "kind": "quiz",
           "title": "Check",
-          "question": "What happens when a GET with a retry limit of 2 uses a custom `fetch` that always throws `TypeError('Failed to fetch')`?",
+          "question": "With a retry limit of 2, how many attempts does a GET make when fetch fails with a non-network `TypeError` and `shouldRetry` returns `undefined`?",
           "options": [
             {
-              "text": "Ky calls `fetch` 3 times. The caller catches a `NetworkError` with the `TypeError` in `cause`.",
+              "text": "1, because the `TypeError` is not a `NetworkError`.",
               "correct": true,
-              "why": "Each failure becomes a `NetworkError`, which the retry decision retries twice on a GET before it throws."
+              "why": "`undefined` hands the error to the error type checks, and the last check throws any error that is not a `NetworkError`."
             },
             {
-              "text": "Ky calls `fetch` 3 times. The caller catches the raw `TypeError('Failed to fetch')`.",
-              "why": "`#fetch` wraps the last failure too, so the caller gets a `NetworkError`, not the raw `TypeError`."
+              "text": "3, because only `false` from `shouldRetry` stops a retry.",
+              "why": "`undefined` does not force a retry, so the error type checks still throw the `TypeError`."
             },
             {
-              "text": "Ky calls `fetch` once. The caller catches the raw `TypeError`, because Ky throws unknown errors at once.",
-              "why": "`isRawNetworkError` recognizes `Failed to fetch` from a custom `fetch` too, so the error is a `NetworkError` and gets retried."
+              "text": "3, because `retry.methods` includes GET.",
+              "why": "The method check only lets the error go on, and the error type checks then throw the `TypeError`."
             },
             {
-              "text": "Ky calls `fetch` 2 times. The caller catches a `NetworkError` with the `TypeError` in `cause`.",
-              "why": "The retry limit counts retries after the first attempt, so a limit of 2 gives 3 calls."
+              "text": "2, because the retry limit counts the first attempt.",
+              "why": "The limit counts retries, and here the error type checks throw before the first retry."
             }
           ]
         }
@@ -374,48 +351,277 @@
       "title": "Walkthrough",
       "steps": [
         {
-          "kind": "code",
-          "title": "A typed error for network failures",
-          "say": "`NetworkError` is the new error that Ky throws when fetch fails at the network level. `isNetworkError` recognizes it. `isKyError` now counts it as a Ky error.",
-          "notes": [
+          "kind": "flow",
+          "id": "retry",
+          "title": "Wrap and retry a failed fetch",
+          "say": "The first fetch of `ky.get(url)` fails with a network `TypeError`. `Ky#fetch` now wraps the error in a `NetworkError`. The retry decision retries it because it is a `NetworkError`.",
+          "actors": [
             {
-              "file": "source/errors/NetworkError.ts",
-              "lines": [
-                9,
-                17
-              ],
-              "text": "`NetworkError` copies the shape of `TimeoutError`: a `KyError` subclass with a `request` property and a message with the method and URL. The constructor passes the raw fetch error to the standard `cause` option."
+              "id": "app",
+              "label": "App",
+              "group": "your code"
             },
             {
-              "file": "source/utils/type-guards.ts",
-              "lines": [
-                75,
-                77
-              ],
-              "text": "`isNetworkError` matches an `instanceof` check or the `name` `'NetworkError'`, like `isHTTPError` above it. The `name` check recognizes an error from another realm or another copy of Ky."
+              "id": "should",
+              "label": "retry.shouldRetry",
+              "group": "your code"
             },
             {
-              "file": "source/utils/type-guards.ts",
-              "lines": [
-                31,
-                33
-              ],
-              "text": "`isKyError` now also returns `true` for a `NetworkError`. Before, a network failure was a raw `TypeError`, so `isKyError` returned `false` for it."
+              "id": "before",
+              "label": "hooks.beforeRetry",
+              "group": "your code"
+            },
+            {
+              "id": "create",
+              "label": "Ky.create",
+              "group": "Ky"
+            },
+            {
+              "id": "kyretry",
+              "label": "Ky#retry",
+              "group": "Ky"
+            },
+            {
+              "id": "fetch",
+              "label": "Ky#fetch",
+              "group": "Ky",
+              "change": "changed"
+            },
+            {
+              "id": "calc",
+              "label": "Ky#calculateRetryDelay",
+              "group": "Ky",
+              "change": "changed"
+            },
+            {
+              "id": "timeout",
+              "label": "timeout",
+              "group": "ky utils"
+            },
+            {
+              "id": "raw",
+              "label": "isRawNetworkError",
+              "group": "ky utils",
+              "change": "added"
+            },
+            {
+              "id": "guard",
+              "label": "isNetworkError",
+              "group": "ky utils",
+              "change": "added"
+            },
+            {
+              "id": "fetchapi",
+              "label": "Fetch API",
+              "group": "runtime"
+            }
+          ],
+          "messages": [
+            {
+              "from": "app",
+              "to": "create",
+              "label": "ky.get(url)",
+              "note": "Each method shortcut calls `Ky.create`, so the change covers every Ky method."
+            },
+            {
+              "from": "create",
+              "to": "kyretry",
+              "label": "#retry(() => #fetch())",
+              "note": "After the `beforeRequest` hooks, the request lifecycle runs the fetch through `#retry`."
+            },
+            {
+              "from": "kyretry",
+              "to": "fetch",
+              "label": "one attempt",
+              "note": "`#retry` awaits the attempt inside a `try` block."
+            },
+            {
+              "from": "fetch",
+              "to": "timeout",
+              "label": "timeout(request, init)",
+              "note": "The send now sits inside a new `try` block in `#fetch`.",
+              "step": "send",
+              "change": "changed"
+            },
+            {
+              "from": "timeout",
+              "to": "fetchapi",
+              "label": "fetch(request, init)",
+              "note": "A timer races the fetch and rejects with a `TimeoutError` if the budget ends first."
+            },
+            {
+              "from": "fetchapi",
+              "to": "timeout",
+              "label": "TypeError",
+              "type": "error",
+              "note": "The runtime rejects with a raw `TypeError`, such as `fetch failed` in Node.js."
+            },
+            {
+              "from": "timeout",
+              "to": "fetch",
+              "label": "rejection",
+              "type": "error",
+              "note": "The `await` brings the forwarded rejection into the new `catch`.",
+              "step": "send",
+              "change": "changed"
+            },
+            {
+              "from": "fetch",
+              "to": "raw",
+              "label": "isRawNetworkError(error)",
+              "note": "The `catch` checks whether the send failed at the network level.",
+              "step": "detect",
+              "change": "added"
+            },
+            {
+              "from": "raw",
+              "to": "fetch",
+              "label": "true",
+              "type": "return",
+              "note": "The error is a `TypeError` with a known runtime message.",
+              "change": "added"
+            },
+            {
+              "from": "fetch",
+              "to": "kyretry",
+              "label": "throw NetworkError",
+              "type": "error",
+              "note": "The `NetworkError` keeps the raw `TypeError` in `cause`.",
+              "step": "wrap",
+              "change": "added"
+            },
+            {
+              "from": "kyretry",
+              "to": "calc",
+              "label": "#calculateRetryDelay(error)",
+              "note": "`#retryFromError` gets the error from the `catch` in `#retry` and asks for a delay."
+            },
+            {
+              "from": "calc",
+              "to": "should",
+              "label": "shouldRetry({error})",
+              "note": "If the app sets `shouldRetry`, it now gets the `NetworkError`, not the raw `TypeError`."
+            },
+            {
+              "from": "should",
+              "to": "calc",
+              "label": "undefined",
+              "type": "return",
+              "note": "With no verdict from the app, the default checks decide."
+            },
+            {
+              "from": "calc",
+              "to": "guard",
+              "label": "isNetworkError(error)",
+              "note": "The error is neither a `TimeoutError` nor an `HTTPError`, so it reaches the new tail.",
+              "step": "decide",
+              "change": "added"
+            },
+            {
+              "from": "guard",
+              "to": "calc",
+              "label": "true",
+              "type": "return",
+              "note": "The error is an instance of `NetworkError`.",
+              "change": "added"
+            },
+            {
+              "from": "calc",
+              "to": "kyretry",
+              "label": "delay in ms",
+              "type": "return",
+              "note": "The delay comes from `#calculateDelay()`, the unchanged backoff.",
+              "step": "decide",
+              "change": "changed"
+            },
+            {
+              "from": "kyretry",
+              "to": "kyretry",
+              "label": "wait the delay",
+              "note": "The wait counts against the total `timeout` budget."
+            },
+            {
+              "from": "kyretry",
+              "to": "before",
+              "label": "beforeRetry({error})",
+              "note": "Each `beforeRetry` hook now gets the `NetworkError` as `error`."
+            },
+            {
+              "from": "kyretry",
+              "to": "fetch",
+              "label": "next attempt",
+              "note": "`#retryFromError` adds one to the retry count and calls `#retry` again."
+            },
+            {
+              "from": "fetch",
+              "to": "create",
+              "label": "Response",
+              "type": "return",
+              "note": "The next attempt succeeds, so `#retry` resolves with its `Response`."
+            },
+            {
+              "from": "create",
+              "to": "app",
+              "label": "Response",
+              "type": "return",
+              "note": "The `afterResponse` hooks run before the app gets the `Response`."
             }
           ]
         },
         {
           "kind": "code",
-          "title": "A fetch failure becomes a NetworkError",
-          "say": "`#fetch` now catches every rejection from the fetch call. A raw network error leaves `#fetch` as a `NetworkError`.",
+          "id": "send",
+          "title": "Both send paths reach the catch",
+          "say": "`#fetch` now wraps both send paths in one `try` block. Each path awaits its promise, so a rejection reaches the `catch`.",
           "notes": [
             {
-              "file": "source/utils/is-network-error.ts",
+              "file": "source/core/Ky.ts",
               "lines": [
-                7,
-                16
+                800,
+                812
               ],
-              "text": "This file is an inlined copy of `is-network-error` v1.3.1. `errorMessages` lists the exact messages that runtimes put on a fetch `TypeError` when the network fails, such as `fetch failed` from undici."
+              "side": "old",
+              "text": "Before, `#fetch` had no `try` block. It returned each send promise as it was, so a rejection went straight to `#retry`."
+            },
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                813,
+                816
+              ],
+              "text": "The `try` now covers the `timeout: false` path too. That path calls `options.fetch` directly, so it needs its own `return await`."
+            },
+            {
+              "file": "test/retry.ts",
+              "lines": [
+                1807,
+                1821
+              ],
+              "text": "With the timeout turned off, the test still gets a `NetworkError` with the `TypeError` in `cause`."
+            },
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                823,
+                826
+              ],
+              "text": "The `timeout()` path also awaits its promise. A bare `return` in an async function hands the promise to the caller, so its rejection would skip the `catch`."
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "id": "detect",
+          "title": "The catch spots raw network errors",
+          "say": "The `catch` asks `isRawNetworkError` whether the error is a raw network error. The check reads only the error name and message, because the runtimes give no shared error code.",
+          "notes": [
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                828,
+                828
+              ],
+              "text": "The `catch` calls `isRawNetworkError` on every error from the send. The name keeps it apart from the public `isNetworkError` guard. That guard checks for a `NetworkError` instead."
             },
             {
               "file": "source/utils/is-network-error.ts",
@@ -423,23 +629,47 @@
                 48,
                 48
               ],
-              "text": "`isRawNetworkError` ends with an exact lookup in `errorMessages`. Only an error named `TypeError` gets this far. Chrome's `Failed to fetch`, Safari's `Load failed` and Deno's messages have their own checks above."
+              "text": "A message without its own rule must match an entry in the list exactly. The rules above this line match Chrome's `Failed to fetch`, Safari's `Load failed`, and Deno's message."
             },
+            {
+              "file": "source/utils/is-network-error.ts",
+              "lines": [
+                7,
+                16
+              ],
+              "text": "`errorMessages` holds the network error messages of Chrome, Firefox, Safari 16, Node.js, Bun, Cloudflare Workers, and `cross-fetch`. The file is a copy of `is-network-error` v1.3.1, inlined so Ky adds no dependency."
+            }
+          ]
+        },
+        {
+          "kind": "code",
+          "id": "wrap",
+          "title": "A fetch failure becomes a NetworkError",
+          "say": "A raw network error leaves `#fetch` as a `NetworkError`, with the raw error in `cause`. Every other error leaves `#fetch` as it was.",
+          "notes": [
             {
               "file": "source/core/Ky.ts",
               "lines": [
-                813,
-                826
+                829,
+                832
               ],
-              "text": "The `try` covers both fetch paths: the direct call when `timeout` is `false`, and the `timeout()` race. Both paths now use `return await`, so a rejection lands in this `catch`. Before, they returned the promise without `await`."
+              "text": "A raw network error becomes a `NetworkError` for `this.request`, with the raw `TypeError` as `cause`. `#fetch` rethrows any other error as it is. Examples are a `TypeError` with another message and a `TimeoutError` from the timer or the spent budget."
             },
             {
-              "file": "source/core/Ky.ts",
+              "file": "source/errors/NetworkError.ts",
               "lines": [
-                827,
-                830
+                9,
+                12
               ],
-              "text": "The `catch` wraps a raw network error in a `NetworkError` and passes the raw error as `cause`."
+              "text": "`NetworkError` extends `KyError`, the base class of Ky's errors. Its `name` is `'NetworkError'`. `request` holds the request that failed."
+            },
+            {
+              "file": "source/errors/NetworkError.ts",
+              "lines": [
+                13,
+                16
+              ],
+              "text": "The message ends with the method and the URL, such as `GET https://example.com/`. The constructor passes `options` on to `Error`, so `cause` is the standard `Error.cause`."
             },
             {
               "file": "test/headers.ts",
@@ -447,30 +677,49 @@
                 140,
                 143
               ],
-              "text": "undici rejects this request with `TypeError('fetch failed')`, so Ky now wraps that `TypeError`. The undici code moves one level deeper, to `error.cause.cause.code`."
+              "text": "In Node.js, the `code` from undici now sits one level deeper, at `error.cause.cause.code`. Code that reads `error.cause.code` no longer finds it."
             }
           ]
         },
         {
           "kind": "code",
-          "title": "Retry decision ends in an allowlist",
-          "say": "`#calculateRetryDelay` still checks the retry limit, `ForceRetryError`, the retriable method and `shouldRetry` first, in that order. After them, each known error type now returns its own delay.",
+          "id": "decide",
+          "title": "Only known error types retry",
+          "say": "The checks for the retry limit, the retriable method, and `shouldRetry` still run first. After them, only a `TimeoutError`, an `HTTPError`, or a `NetworkError` can get a delay. Every other error now throws.",
           "notes": [
             {
               "file": "source/core/Ky.ts",
               "lines": [
-                440,
-                447
+                439,
+                441
               ],
-              "text": "The timeout branch now returns its own delay when `retryOnTimeout` is on. Before, a `TimeoutError` fell through to one shared `return` at the end of the method. That `return` now sits behind the `NetworkError` check, so the branch needs its own."
+              "side": "old",
+              "text": "Before, a `TimeoutError` with `retryOnTimeout` set fell through to the shared return at the end."
             },
             {
               "file": "source/core/Ky.ts",
               "lines": [
-                478,
-                483
+                441,
+                447
               ],
-              "text": "The HTTP branch ends with the same explicit `return`, for the same reason."
+              "text": "The timeout branch now returns its own delay. Without this `return`, a `TimeoutError` would reach the new tail and throw."
+            },
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                482,
+                482
+              ],
+              "text": "A retriable `HTTPError` that reaches this line now returns its backoff delay here. Before, it also fell through to the shared return."
+            },
+            {
+              "file": "source/core/Ky.ts",
+              "lines": [
+                475,
+                477
+              ],
+              "side": "old",
+              "text": "Before, the shared return gave a delay to every error that reached it. That included programming bugs, such as a `TypeError` from a custom `fetch`."
             },
             {
               "file": "source/core/Ky.ts",
@@ -478,52 +727,23 @@
                 485,
                 490
               ],
-              "text": "Only a `NetworkError` gets a delay here. `#calculateRetryDelay` throws any other error at once, with no retry."
-            }
-          ]
-        },
-        {
-          "kind": "quiz",
-          "title": "Check",
-          "question": "What happens when a POST's fetch rejects with `TypeError('Failed to fetch')` and the retry limit is 2?",
-          "options": [
-            {
-              "text": "Fetch runs once, and the caller catches a `NetworkError`.",
-              "correct": true,
-              "why": "`#fetch` wraps the error, then the retriable method check throws it because POST is not in the default `retry.methods`."
+              "text": "Now only a `NetworkError` gets the delay. Any other error throws, so Ky makes no further attempt."
             },
             {
-              "text": "Fetch runs 3 times, and the caller catches a `NetworkError`.",
-              "why": "The retriable method check runs before the type check, so a POST gets no retry."
-            },
-            {
-              "text": "Fetch runs once, and the caller catches the raw `TypeError`.",
-              "why": "`#fetch` wraps a recognized `TypeError` before the retry decision runs, so the caller gets a `NetworkError`."
-            },
-            {
-              "text": "Fetch runs 3 times, and the caller catches the raw `TypeError`.",
-              "why": "`#fetch` wraps the recognized `TypeError`, and the method check stops any retry for POST."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "edge-cases",
-      "title": "Edge cases",
-      "steps": [
-        {
-          "kind": "code",
-          "title": "A bug fails on the first try",
-          "say": "A `TypeError` with an unknown message, such as a bug in a custom `fetch`, fails on the first attempt. The retry decision throws it, because it is not a `NetworkError`.",
-          "notes": [
-            {
-              "file": "source/core/Ky.ts",
+              "file": "source/utils/type-guards.ts",
               "lines": [
-                832,
-                832
+                75,
+                77
               ],
-              "text": "An error that `isRawNetworkError` does not recognize leaves the catch unchanged. A bug `TypeError`, a `TimeoutError` or an `AbortError` reaches the retry decision with its own type."
+              "text": "`isNetworkError` checks `instanceof`, or the `name` for an error from another realm. The other Ky guards use the same pattern."
+            },
+            {
+              "file": "source/utils/type-guards.ts",
+              "lines": [
+                31,
+                33
+              ],
+              "text": "`isKyError` now also accepts an error that passes `isNetworkError`. A `NetworkError` from another realm now counts as a `KyError` too."
             },
             {
               "file": "test/retry.ts",
@@ -531,54 +751,264 @@
                 1633,
                 1651
               ],
-              "text": "The custom `fetch` throws `TypeError('Cannot read properties of undefined')` with retry limit 2. Ky calls `fetch` exactly once. The caller catches a `TypeError`."
-            }
-          ]
-        },
-        {
-          "kind": "code",
-          "title": "The user can still force retries",
-          "say": "`isRawNetworkError` knows a fixed set of runtime messages. For any other error, `shouldRetry` is the way to get retries back.",
-          "notes": [
-            {
-              "file": "test/retry.ts",
-              "lines": [
-                1717,
-                1738
-              ],
-              "text": "`#fetch` wraps the error before the retry decision calls `shouldRetry`. The test checks that `shouldRetry` gets a `NetworkError` with the raw `TypeError` in `cause`."
-            },
-            {
-              "file": "test/retry.ts",
-              "lines": [
-                1653,
-                1673
-              ],
-              "text": "`shouldRetry: () => true` makes the retry decision return a delay before its type checks run. A bug `TypeError('Cannot read properties of undefined')` gets 3 fetch calls with retry limit 2."
+              "text": "A custom `fetch` throws `TypeError('Cannot read properties of undefined')` with a retry limit of 2. `fetch` runs once. The caller gets the raw `TypeError`."
             }
           ]
         },
         {
           "kind": "quiz",
           "title": "Check",
-          "question": "What happens when a custom `fetch` on a GET throws `new Error('socket hang up')` with default retry options?",
+          "question": "What happens when a GET with a retry limit of 2 and no `shouldRetry` uses a custom `fetch` that always rejects with `TypeError('Failed to fetch')`?",
           "options": [
             {
-              "text": "Ky calls `fetch` once, and the caller catches the original `Error`.",
+              "text": "`fetch` runs 3 times, and the caller catches a `NetworkError` with the `TypeError` in `cause`.",
               "correct": true,
-              "why": "`#fetch` leaves an error named `Error` unwrapped, so the retry decision throws it at once."
+              "why": "`Failed to fetch` is a known message, so each failure is a `NetworkError` that retries until the limit of 2 stops it."
             },
             {
-              "text": "Ky wraps it in a `NetworkError` and retries it up to the retry limit.",
-              "why": "`isRawNetworkError` accepts only errors named `TypeError`, so Ky does not wrap this one."
+              "text": "`fetch` runs once, and the caller catches the raw `TypeError`.",
+              "why": "Only an unknown message stops after one call, and `Failed to fetch` is a known message."
             },
             {
-              "text": "Ky retries the raw `Error` up to the retry limit, because GET is retriable.",
-              "why": "Without a `shouldRetry` that returns `true`, the retry decision throws any error of an unknown type."
+              "text": "`fetch` runs 3 times, and the caller catches the raw `TypeError`.",
+              "why": "`#fetch` wraps every recognized failure, so the raw `TypeError` is only in `cause`."
             },
             {
-              "text": "Ky calls `fetch` once, and the caller catches a `NetworkError` with the `Error` in `cause`.",
-              "why": "Only a `TypeError` with a known message gets wrapped, so the caller sees the original `Error`."
+              "text": "`fetch` runs once, and the caller catches a `NetworkError`.",
+              "why": "GET is a retriable method, so a `NetworkError` gets a delay and Ky retries it twice."
+            }
+          ]
+        },
+        {
+          "kind": "edge",
+          "title": "A non-network TypeError fails at once",
+          "say": "A bug in a custom `fetch` rejects with a `TypeError` whose message matches no rule. Before, Ky retried it like a network failure. Now the app gets the raw `TypeError` after one attempt.",
+          "actors": [
+            {
+              "id": "app",
+              "label": "App",
+              "group": "your code"
+            },
+            {
+              "id": "fetchapi",
+              "label": "custom fetch",
+              "group": "your code"
+            },
+            {
+              "id": "create",
+              "label": "Ky.create",
+              "group": "Ky"
+            },
+            {
+              "id": "kyretry",
+              "label": "Ky#retry",
+              "group": "Ky"
+            },
+            {
+              "id": "fetch",
+              "label": "Ky#fetch",
+              "group": "Ky",
+              "change": "changed"
+            },
+            {
+              "id": "calc",
+              "label": "Ky#calculateRetryDelay",
+              "group": "Ky",
+              "change": "changed"
+            },
+            {
+              "id": "timeout",
+              "label": "timeout",
+              "group": "ky utils"
+            },
+            {
+              "id": "raw",
+              "label": "isRawNetworkError",
+              "group": "ky utils",
+              "change": "added"
+            },
+            {
+              "id": "guard",
+              "label": "isNetworkError",
+              "group": "ky utils",
+              "change": "added"
+            }
+          ],
+          "messages": [
+            {
+              "from": "fetchapi",
+              "to": "timeout",
+              "label": "TypeError (a bug)",
+              "type": "error",
+              "note": "The message `Cannot read properties of undefined` is not a runtime network message."
+            },
+            {
+              "from": "timeout",
+              "to": "fetch",
+              "label": "rejection",
+              "type": "error",
+              "note": "The `await` brings this rejection into the new `catch` too.",
+              "step": "send",
+              "change": "changed"
+            },
+            {
+              "from": "fetch",
+              "to": "raw",
+              "label": "isRawNetworkError(error)",
+              "note": "The name is `TypeError`, so only the message decides.",
+              "step": "detect",
+              "change": "added"
+            },
+            {
+              "from": "raw",
+              "to": "fetch",
+              "label": "false",
+              "type": "return",
+              "note": "The message matches no rule and no entry in `errorMessages`.",
+              "change": "added"
+            },
+            {
+              "from": "fetch",
+              "to": "kyretry",
+              "label": "rethrow raw TypeError",
+              "type": "error",
+              "note": "The error keeps its type and its message.",
+              "step": "wrap",
+              "change": "changed"
+            },
+            {
+              "from": "kyretry",
+              "to": "calc",
+              "label": "#calculateRetryDelay(error)",
+              "note": "The limit and method checks pass for the first attempt of a GET."
+            },
+            {
+              "from": "calc",
+              "to": "guard",
+              "label": "isNetworkError(error)",
+              "note": "No earlier branch matched the `TypeError`, so the new tail checks it.",
+              "step": "decide",
+              "change": "added"
+            },
+            {
+              "from": "guard",
+              "to": "calc",
+              "label": "false",
+              "type": "return",
+              "note": "A `TypeError` is not a `NetworkError`.",
+              "change": "added"
+            },
+            {
+              "from": "calc",
+              "to": "kyretry",
+              "label": "throw error",
+              "type": "error",
+              "note": "Before, the shared return gave this error a delay, so Ky retried it.",
+              "step": "decide",
+              "change": "changed"
+            },
+            {
+              "from": "kyretry",
+              "to": "create",
+              "label": "error leaves #retry",
+              "type": "error",
+              "note": "The throw rejects the `await` in the request lifecycle."
+            },
+            {
+              "from": "create",
+              "to": "app",
+              "label": "rejects with TypeError",
+              "type": "error",
+              "note": "After the `beforeError` hooks run, the app gets the raw `TypeError` from one fetch call."
+            }
+          ]
+        },
+        {
+          "kind": "edge",
+          "title": "A POST throws NetworkError at once",
+          "say": "A POST is not a retriable method, so its first `NetworkError` is final. The method check is unchanged. The app now gets a `NetworkError` instead of the raw `TypeError`.",
+          "actors": [
+            {
+              "id": "app",
+              "label": "App",
+              "group": "your code"
+            },
+            {
+              "id": "beforeError",
+              "label": "hooks.beforeError",
+              "group": "your code"
+            },
+            {
+              "id": "create",
+              "label": "Ky.create",
+              "group": "Ky"
+            },
+            {
+              "id": "kyretry",
+              "label": "Ky#retry",
+              "group": "Ky"
+            },
+            {
+              "id": "fetch",
+              "label": "Ky#fetch",
+              "group": "Ky",
+              "change": "changed"
+            },
+            {
+              "id": "calc",
+              "label": "Ky#calculateRetryDelay",
+              "group": "Ky"
+            }
+          ],
+          "messages": [
+            {
+              "from": "fetch",
+              "to": "kyretry",
+              "label": "throw NetworkError",
+              "type": "error",
+              "note": "`#fetch` wraps the network failure of the first attempt.",
+              "step": "wrap",
+              "change": "added"
+            },
+            {
+              "from": "kyretry",
+              "to": "calc",
+              "label": "#calculateRetryDelay(error)",
+              "note": "The retry limit check passes on the first attempt."
+            },
+            {
+              "from": "calc",
+              "to": "kyretry",
+              "label": "throw, POST not retriable",
+              "type": "error",
+              "note": "The method check runs before any error type check, so `post` stops here."
+            },
+            {
+              "from": "kyretry",
+              "to": "create",
+              "label": "error leaves #retry",
+              "type": "error",
+              "note": "The `NetworkError` rejects the `await` in the request lifecycle."
+            },
+            {
+              "from": "create",
+              "to": "beforeError",
+              "label": "beforeError({error})",
+              "note": "Each `beforeError` hook now gets the `NetworkError`."
+            },
+            {
+              "from": "beforeError",
+              "to": "create",
+              "label": "error",
+              "type": "return",
+              "note": "A hook that returns an `Error` replaces the error, and any other value keeps it."
+            },
+            {
+              "from": "create",
+              "to": "app",
+              "label": "rejects with NetworkError",
+              "type": "error",
+              "note": "The app can narrow the error with `isNetworkError` and read the raw `TypeError` from `cause`."
             }
           ]
         }
@@ -590,12 +1020,16 @@
       "steps": [
         {
           "kind": "card",
-          "title": "What to check",
-          "body": "- The PR does not say if this ships as a breaking change. Code that checks `instanceof TypeError`, matches `'Failed to fetch'` or reads `error.cause.code` no longer matches. The `is-network-error` package returns `false` for a `NetworkError`, so the #545 `beforeRetry` workaround may stop retries.\n- A network failure with an unknown message is no longer retried. Examples are a custom `fetch`, a polyfill, or a browser that changes its message. Nothing warns the user.\n- undici uses `fetch failed` for client bugs too, such as a content-length mismatch or an `invalid:` URL. Ky wraps them in `NetworkError`. A GET retries them with backoff. The readme says that programming bugs are thrown immediately.\n- `isNetworkError` and `isKyError` accept any error named `NetworkError`. `DOMException` uses that name too. A foreign error with that name has no `request`. The retry decision still retries it like a real `NetworkError`.\n- `#fetch` wraps only the fetch call. If the connection drops while `.json()` reads the body, the caller gets a raw `TypeError` with no retry. This includes undici's `terminated`, which is in the message set.",
+          "title": "What to check before merge",
+          "body": "- Retries now depend on the detector. Before, the default logic retried any error it did not know. Now an error that is not a `TimeoutError` or an `HTTPError` retries only as a `NetworkError`.\n- The detector misses some real network failures: node-fetch's `FetchError` (its name is not `TypeError`), Safari `Load failed` with a stack, and runtime messages that change later. These failures lose their retries. Only a readme caveat and `shouldRetry` cover them. Nothing syncs the inlined v1.3.1 copy with upstream.\n- The wrap covers only the send in `#fetch`. undici may throw `terminated` later, while `.json()` reads the body. That error stays a raw `TypeError`, and Ky does not retry it. The readme says that network errors are retried.\n- undici's `fetch failed` is generic. undici also uses it for client-side mistakes. The tests show two: an `invalid:` URL and a `content-length` mismatch. These now become a `NetworkError`, so Ky retries them on a retriable method such as GET.\n- Callers that read the raw error break. Checks on `instanceof TypeError`, `error.message` or `error.cause.code` now see a `NetworkError`. The raw error sits one level deeper, in `cause`.\n- The workaround from #545 now stops retries. Its `beforeRetry` hook throws unless the `is-network-error` package matches the error. The package needs the name `TypeError`, so every `NetworkError` fails. The v2.0.0-0 release notes list this PR under \"New\", not under \"Breaking\".\n- `isNetworkError` also matches by `name`. Any error named `NetworkError` passes, such as a `DOMException` with that name. `#calculateRetryDelay` retries such an error. The guard types it as having `request`, but it has none.",
           "links": [
             {
-              "title": "#545: the beforeRetry workaround with is-network-error",
-              "url": "https://github.com/sindresorhus/ky/issues/545#issuecomment-1815967114"
+              "title": "Issue #545",
+              "url": "https://github.com/sindresorhus/ky/issues/545"
+            },
+            {
+              "title": "Release v2.0.0-0",
+              "url": "https://github.com/sindresorhus/ky/releases/tag/v2.0.0-0"
             }
           ]
         }
@@ -608,7 +1042,23 @@
         {
           "kind": "card",
           "title": "Also changed",
-          "body": "- `readme.md` documents the new retry policy and adds a `NetworkError` section. The hook and error docs now name `NetworkError`.\n- `source/index.ts` exports `NetworkError` and `isNetworkError`.\n- Doc comments change in `source/types/options.ts`, `source/types/retry.ts`, `source/types/hooks.ts`, `source/errors/KyError.ts` and `source/errors/HTTPError.ts`. The retry docs drop the stale line \"Retries are not triggered following a timeout\".\n- `test/hooks.ts` and `test/memory-leak.ts` now expect a `NetworkError`. The fake fetch failures in `test/hooks.ts` throw `TypeError('Failed to fetch')`. Most old fake errors do not match `isRawNetworkError`, so Ky would throw them before `beforeRetry` runs.\n- Other new tests in `test/retry.ts` check the `NetworkError` shape, the default retry, POST and `timeout: false`. They also check `shouldRetry` returning `undefined`, `beforeError`, and a non-network `TypeError` that stays unwrapped."
+          "body": "- `source/core/Ky.ts`: new imports.\n- `source/index.ts`: exports `NetworkError` and `isNetworkError`.\n- `source/errors/KyError.ts`: the doc comment lists `NetworkError` as a subclass.\n- `source/errors/HTTPError.ts`: the doc comment now names the `options` property. This edit is not about network errors.\n- `source/types/hooks.ts`: the `beforeRetry` and `beforeError` docs now name `NetworkError`.\n- `source/types/options.ts`: the `retry` doc lists every retry field and adds a paragraph on network retries. It fixes the `maxRetryAfter` wording. It drops the stale line \"Retries are not triggered following a timeout\".\n- `source/types/retry.ts`: the `maxRetryAfter` doc now says it caps the wait. Before, it said the request is canceled. The `shouldRetry` doc says that `undefined` does not retry unknown errors.\n- `readme.md`: mirrors the JSDoc and adds a `NetworkError` section with a caveat about runtime heuristics.\n- `test/hooks.ts`: fake fetch failures now throw `TypeError('Failed to fetch')`, so they still retry. Checks for a raw `TypeError` now use `isNetworkError`.\n- `test/memory-leak.ts`: expects a `NetworkError` instead of `TypeError('fetch failed')`.\n- `test/retry.ts`: new imports of `NetworkError`, `isKyError` and `isNetworkError`."
+        },
+        {
+          "kind": "card",
+          "title": "Other tests",
+          "body": "`test/retry.ts` also pins these behaviors:\n- A `TypeError('Failed to fetch')` becomes a `NetworkError` with `request`, `cause` and the message `Request failed due to a network error: GET https://example.com/`.\n- Two `Failed to fetch` failures and then a `Response` resolve to `ok` after 3 calls.\n- A POST makes 1 call and rejects with a `NetworkError`.\n- `shouldRetry` and a `beforeError` hook both get the `NetworkError`, with the `TypeError` in `cause`.\n- When `shouldRetry` returns `undefined`, the default retry still runs.\n- When `shouldRetry` returns `true`, Ky retries a non-network `TypeError` up to the limit."
+        },
+        {
+          "kind": "card",
+          "title": "Where to read next",
+          "body": "- `#calculateRetryDelay` in `source/core/Ky.ts`: the whole retry decision, with `ForceRetryError` and the `Retry-After` headers.\n- `source/utils/is-network-error.ts`: the runtime rules this dive left out. They cover Safari `Load failed`, the Deno message prefix and Chrome's `Failed to fetch (host)` form.\n- The `NetworkError` section of `readme.md`: the public docs and the caveat about runtime heuristics.",
+          "links": [
+            {
+              "title": "is-network-error upstream",
+              "url": "https://github.com/sindresorhus/is-network-error"
+            }
+          ]
         }
       ]
     }
