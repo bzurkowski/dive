@@ -1,6 +1,6 @@
 # Writing rules
 
-Every string in a dive follows these rules. The reader has already read a lot of code today, so every sentence must be easy to take in. Each sentence says one thing, once, in plain words.
+Every string in a dive follows these rules, written for the reader in story.md. Each sentence says one thing, once, in plain words.
 
 Based on ASD-STE100 Simplified Technical English, as distilled by [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) (MIT). This is a clarity guide, not certified STE.
 

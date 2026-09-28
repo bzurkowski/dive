@@ -5,7 +5,7 @@ description: Builds a dive, an interactive story-driven walkthrough that explain
 
 # Dive
 
-A dive tells the story of a PR, module, or domain in small steps. Its reader did not write the code and has already read a lot of code today, so each step asks for little attention. The whole dive takes about 10 minutes. The output is one self-contained file: `docs/dives/<slug>/index.html`.
+A dive tells the story of a PR, module, or domain in small steps, for a reader who has already read a lot of code today (see the reader in [references/story.md](references/story.md)). The whole dive takes about 10 minutes. The output is one self-contained file: `docs/dives/<slug>/index.html`.
 
 You orchestrate. Scouts discover in parallel, you outline the story, writers fill chapters in parallel, a script builds the page, and an editor cuts what the story does not need. Keep your own context small: read the scouts' notes, not the whole codebase.
 

@@ -1,5 +1,17 @@
 # Story
 
+## The reader
+
+The reader has already read a lot of code today. They want to know what this code really does, and they check each claim against the code. They have little attention to spare, so walk them through it:
+
+- one small step at a time, with one new idea per step,
+- in plain words and short sentences,
+- with each claim on the lines that show it.
+
+With too much text or too many new ideas at once, they stop following.
+
+## What a dive explains
+
 A dive explains one of two things:
 
 - **PR**: the change. Tell it as the author of the change who explains it to a reviewer.
