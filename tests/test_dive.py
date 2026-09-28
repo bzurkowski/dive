@@ -91,6 +91,18 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(changed(work / 'd'), ['c.py'])
 
+    def test_prep_pr_url_picks_remote(self):
+        work, git = pr_repo()
+        up, fork = work.parent / 'github.com' / 'o' / 'r.git', work.parent / 'github.com' / 'me' / 'r.git'
+        sh(work, 'git', 'clone', '-q', '--bare', str(up), str(fork))  # a fork has no refs/pull
+        git('remote', 'rename', 'origin', 'upstream'); git('remote', 'add', 'origin', str(fork))
+        r = run(work, 'prep', str(work / 'd'), '--pr', 'https://github.com/o/r/pull/1', '--base', 'main')
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(changed(work / 'd'), ['app.py', 'util.py'])
+        r = run(work, 'prep', str(work / 'd'), '--pr', 'https://github.com/x/y/pull/1')
+        self.assertEqual(r.returncode, 1)
+        self.assertIn('no remote', r.stderr)
+
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

@@ -49,17 +49,29 @@ def git(*args, check=True):
     return r.stdout
 
 
-def repo_slug():
-    url = (git('remote', 'get-url', 'origin', check=False) or '').strip()
+def repo_slug(remote='origin'):
+    url = (git('remote', 'get-url', remote, check=False) or '').strip()
     m = re.search(r'github\.com[:/]([^/]+/[^/]+?)(?:\.git)?/?$', url)
     return m.group(1) if m else None
 
 
-def default_branch():
-    ref = git('symbolic-ref', '--short', 'refs/remotes/origin/HEAD', check=False)
+def pr_remote(pr):
+    """The remote that holds the PR: the one whose repo the PR URL names, else origin."""
+    m = re.search(r'github\.com/([^/]+/[^/]+)/pull/', pr)
+    if not m:
+        return 'origin'
+    for r in git('remote').split():
+        if (repo_slug(r) or '').lower() == m.group(1).lower():
+            return r
+    sys.exit(f'The PR is in {m.group(1)}, and no remote of this repo points there. '
+             f'Run the dive in a clone of {m.group(1)}, or add it as a remote.')
+
+
+def default_branch(remote):
+    ref = git('symbolic-ref', '--short', f'refs/remotes/{remote}/HEAD', check=False)
     if ref:
         return ref.strip().split('/', 1)[1]
-    m = re.search(r'ref: refs/heads/(\S+)\tHEAD', git('ls-remote', '--symref', 'origin', 'HEAD'))
+    m = re.search(r'ref: refs/heads/(\S+)\tHEAD', git('ls-remote', '--symref', remote, 'HEAD'))
     if not m:
         sys.exit('Cannot find the default branch. Pass --base <branch>.')
     return m.group(1)
@@ -103,18 +115,18 @@ def prep(d, pr, base_ref):
     if not m:
         sys.exit(f'Not a PR number or URL: {pr}')
     n = int(m.group(1))
-    base_ref = base_ref or default_branch()
-    git('fetch', '-q', 'origin', f'+refs/pull/{n}/head:refs/dive/pr-{n}',
-        f'+refs/heads/{base_ref}:refs/remotes/origin/{base_ref}')
+    remote = pr_remote(pr)
+    base_ref = base_ref or default_branch(remote)
+    tip = f'refs/remotes/{remote}/{base_ref}'
+    git('fetch', '-q', remote, f'+refs/pull/{n}/head:refs/dive/pr-{n}', f'+refs/heads/{base_ref}:{tip}')
     head = git('rev-parse', f'refs/dive/pr-{n}').strip()
-    tip = f'refs/remotes/origin/{base_ref}'
     base = git('merge-base', tip, head).strip()
     if base == head:  # merged with a merge commit: diff against the base branch as it was at the merge
         merges = git('rev-list', '--ancestry-path', '--merges', '--reverse', f'{head}..{tip}').split()
         if not merges:
             sys.exit(f'PR #{n} is already in {base_ref} without a merge commit. Cannot find its changes.')
         base = git('merge-base', f'{merges[0]}^1', head).strip()
-    repo = repo_slug()
+    repo = repo_slug(remote)
     files = diff_files(base, head)
     diff = {'repo': repo, 'pr': n, 'url': f'https://github.com/{repo}/pull/{n}' if repo else None,
             'baseRef': base_ref, 'base': base, 'head': head, 'files': files}

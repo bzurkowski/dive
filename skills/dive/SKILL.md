@@ -17,7 +17,7 @@ The argument may end with words about how well the user knows the domain, such a
 
 | Argument | Kind | Slug |
 |---|---|---|
-| PR number or PR URL | `pr` | `pr-<n>-<2-4 title words>` |
+| GitHub PR number or URL | `pr` | `pr-<n>-<2-4 title words>` |
 | path that exists in the repo | `module` | `module-<path, / as ->` |
 | anything else | `question` | `q-<2-4 words>` |
 
@@ -25,7 +25,7 @@ A dive explains code in this repo. When the argument is a knowledge page URL (No
 
 Delete `docs/dives/<slug>/` if it exists: a rerun starts fresh. Then, by kind:
 
-- `pr`: read the title, description and base branch with `gh pr view <n> --json title,body,url,baseRefName`. Without `gh`, use `curl -s https://api.github.com/repos/<owner>/<repo>/pulls/<n>` (add `-H "Authorization: Bearer $GITHUB_TOKEN"` when it is set), where the base branch is `base.ref`. Then run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <n> --base <base branch>`. A stacked PR's base is the PR below it, not the default branch. It fetches the PR into a side ref, writes `diff.json`, and prints `base=`, `head=`, and the changed areas. Read PR code only through `git show <head>:<path>` and `git diff <base> <head> -- <path>`. The user's working tree and branch stay untouched.
+- `pr`: `<pr>` is the PR number or URL as given. Read the title, description and base branch with `gh pr view <pr> --json title,body,url,baseRefName`. Without `gh`, use `curl -s https://api.github.com/repos/<owner>/<repo>/pulls/<n>` (add `-H "Authorization: Bearer $GITHUB_TOKEN"` when it is set), where the base branch is `base.ref`. A stacked PR's base is the PR below it, not the default branch. Then run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <pr> --base <base branch>`. It fetches the PR from the remote that the URL names into a side ref, writes `diff.json`, and prints `base=`, `head=`, and the changed areas. When no remote points to the PR's repo, prep stops: tell the user to run the dive in a clone of that repo. Read PR code only through `git show <head>:<path>` and `git diff <base> <head> -- <path>`. The user's working tree and branch stay untouched.
 - `module`: measure it with `git ls-files <path> | xargs wc -l`.
 - `question`: search the code for the question's key terms (identifiers, routes, tables, messages) until you can name the files that answer it.
 
