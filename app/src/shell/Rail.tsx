@@ -13,7 +13,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
             {c < dive.chapters.length - 1 && (
               <span
                 aria-hidden
-                className={`absolute top-3 bottom-0 left-[11px] w-0.5 ${past ? 'bg-accent' : 'bg-line'}`}
+                className={`absolute top-3 -bottom-3 left-[11px] w-0.5 ${past ? 'bg-accent' : 'bg-line'}`}
               />
             )}
             <span
