@@ -1,6 +1,6 @@
 import { stepSize, type Dive, type Step } from '../types.ts'
 
-// Position in the dive. c = -1 is the cover, c = -2 the end screen.
+// Chapter, step, and focus inside the step. c = -1 is the cover, c = -2 the end screen.
 export interface Pos {
   c: number
   s: number
