@@ -15,7 +15,7 @@ from pathlib import Path
 TEMPLATE = Path(__file__).resolve().parent.parent / 'assets' / 'template.html'
 DATA_TAG = '<script id="dive-data" type="application/json">'
 PLACEHOLDER = DATA_TAG + '__DIVE_DATA__</script>'
-CHAPTERS = ['orientation', 'why', 'glossary', 'big-picture', 'happy-path', 'edge-cases', 'review-focus', 'recap']
+CHAPTERS = ['why', 'glossary', 'big-picture', 'happy-path', 'edge-cases', 'review-focus', 'recap']
 REQUIRED = {
     'card': ('title', 'body'),
     'terms': ('title', 'terms'),

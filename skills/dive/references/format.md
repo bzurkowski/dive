@@ -18,7 +18,7 @@ interface Dive {
 
 // parts/<id>.json
 interface Chapter {
-  id: 'orientation' | 'why' | 'glossary' | 'big-picture' | 'happy-path' | 'edge-cases' | 'review-focus' | 'recap'
+  id: 'why' | 'glossary' | 'big-picture' | 'happy-path' | 'edge-cases' | 'review-focus' | 'recap'
   title: string
   steps: Step[]
 }
