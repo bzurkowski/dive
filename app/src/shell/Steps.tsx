@@ -88,8 +88,15 @@ export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean })
 export function TermsView({ step }: { step: TermsStep }) {
   return (
     <article>
-      <h2 className={`${heading} mb-6`}>{step.title}</h2>
-      <TermList terms={step.terms} />
+      <h2 className={heading}>{step.title}</h2>
+      {step.say && (
+        <p className="mt-2 text-lg leading-snug text-muted">
+          <Inline text={step.say} />
+        </p>
+      )}
+      <div className="mt-6">
+        <TermList terms={step.terms} />
+      </div>
     </article>
   )
 }

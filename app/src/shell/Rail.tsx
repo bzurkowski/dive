@@ -1,5 +1,5 @@
-import type { Dive } from '../types'
-import { chapterSeconds, minutes, type Pos } from './nav'
+import type { Dive, Step } from '../types'
+import { chapterSeconds, flowAt, flows, minutes, type Flow, type Pos } from './nav'
 
 // Chapters on a vertical "depth line". The line fills in as the reader goes deeper.
 // Steps of the current chapter are listed under it.
@@ -40,25 +40,97 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
               </span>
               <span className="shrink-0 text-xs text-muted">{minutes(chapterSeconds(ch.steps))}</span>
             </button>
-            {current && (
-              <ol className="mt-2 space-y-1 border-l border-line pl-3">
-                {ch.steps.map((st, s) => (
-                  <li key={s}>
-                    <button
-                      type="button"
-                      onClick={() => go({ c, s, f: 0 })}
-                      aria-current={s === pos.s ? 'step' : undefined}
-                      className={`w-full rounded text-left text-sm leading-snug ${s === pos.s ? 'font-semibold' : 'text-muted hover:text-fg'}`}
-                    >
-                      <span className={s === pos.s ? 'mark' : ''}>{st.title}</span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            )}
+            {current && <Steps steps={ch.steps} c={c} pos={pos} go={go} />}
           </li>
         )
       })}
     </ol>
+  )
+}
+
+const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
+
+// Steps of the current chapter. With 2+ flows, each flow is a header and only
+// the current flow is expanded. Edge steps sit under their own label.
+function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
+  const fl = flows(steps)
+  const open = flowAt(fl, pos.s)
+  const item = (s: number) => (
+    <li key={s}>
+      <button
+        type="button"
+        onClick={() => go({ c, s, f: 0 })}
+        aria-current={s === pos.s ? 'step' : undefined}
+        className={`w-full rounded text-left text-sm leading-snug ${s === pos.s ? 'font-semibold' : 'text-muted hover:text-fg'}`}
+      >
+        <span className={s === pos.s ? 'mark' : ''}>{steps[s].title}</span>
+      </button>
+    </li>
+  )
+  const edges = (f?: Flow) =>
+    f &&
+    f.edge < f.end && (
+      <li className="pt-1">
+        <p className="text-xs font-medium text-edge">Edge cases · optional</p>
+        <ol className="mt-1 space-y-1 border-l border-dashed border-edge/60 pl-3">{range(f.edge, f.end).map(item)}</ol>
+      </li>
+    )
+  const list = 'mt-2 space-y-1 border-l border-line pl-3'
+
+  if (fl.length < 2)
+    return (
+      <ol className={list}>
+        {range(0, fl[0]?.edge ?? steps.length).map(item)}
+        {edges(fl[0])}
+      </ol>
+    )
+  return (
+    <ol className={list}>
+      {range(0, fl[0].s).map(item)}
+      {fl.map((f) => (
+        <li key={f.s} className="pt-1">
+          <button
+            type="button"
+            onClick={() => go({ c, s: f.s, f: 0 })}
+            aria-current={f.s === pos.s ? 'step' : undefined}
+            className={`flex w-full items-baseline gap-2 rounded text-left text-sm leading-snug ${
+              f.s === pos.s ? 'font-semibold' : f === open ? 'font-medium' : 'font-medium text-muted hover:text-fg'
+            }`}
+          >
+            <FlowGlyph />
+            <span className={`grow ${f.s === pos.s ? 'mark' : ''}`}>{steps[f.s].title}</span>
+            <span className="shrink-0 text-xs font-normal text-muted">
+              {minutes(chapterSeconds(steps.slice(f.s, f.end)))}
+            </span>
+          </button>
+          {f === open && (
+            <ol className={`${list} ml-1.5`}>
+              {range(f.s + 1, f.edge).map(item)}
+              {edges(f)}
+            </ol>
+          )}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+// Two lifelines with a call and its return: marks a flow header.
+function FlowGlyph() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className="size-3.5 shrink-0 translate-y-0.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2.5 1.5v13M13.5 1.5v13" />
+      <path d="M5 5.5h6M9 3.5l2 2-2 2" />
+      <path d="M11 10.5H5M7 8.5l-2 2 2 2" />
+    </svg>
   )
 }

@@ -46,6 +46,34 @@ export function move(dive: Dive, flat: Flat, p: Pos, dir: 1 | -1): Pos {
   return { ...t, f: dir > 0 ? 0 : stepSize(dive.chapters[t.c].steps[t.s]) - 1 }
 }
 
+// A flow in a chapter: its 'flow' step at s, its steps up to end (exclusive).
+// edge is the index of its first 'edge' step, or end when it has none.
+export interface Flow {
+  s: number
+  edge: number
+  end: number
+}
+
+export function flows(steps: Step[]): Flow[] {
+  const starts = steps.flatMap((st, s) => (st.kind === 'flow' ? [s] : []))
+  return starts.map((s, k) => {
+    const end = starts[k + 1] ?? steps.length
+    const e = steps.slice(s, end).findIndex((st) => st.kind === 'edge')
+    return { s, end, edge: e < 0 ? end : s + e }
+  })
+}
+
+export const flowAt = (fl: Flow[], s: number) => fl.find((f) => s >= f.s && s < f.end)
+
+// Target of "skip edge cases": the step after p's flow. Offered only on the
+// flow's last step before its edges and on the edges themselves, else null.
+export function skipEdges(dive: Dive, flat: Flat, p: Pos): Pos | null {
+  const steps = dive.chapters[p.c]?.steps
+  const f = steps && flowAt(flows(steps), p.s)
+  if (!f || f.edge === f.end || p.s < f.edge - 1) return null
+  return move(dive, flat, { c: p.c, s: f.end - 1, f: stepSize(steps[f.end - 1]) - 1 }, 1)
+}
+
 // Reading time: ~200 wpm plus a fixed cost to look at code and diagrams.
 // ponytail: rough constants, tune against real dives.
 const SKIP = new Set([
@@ -62,6 +90,7 @@ const SKIP = new Set([
   'lines',
   'correct',
   'code',
+  'step',
 ])
 
 function words(v: unknown): number {
@@ -75,7 +104,7 @@ export function stepSeconds(step: Step): number {
   const look =
     step.kind === 'code'
       ? 10 + 10 * step.notes.length
-      : step.kind === 'sequence'
+      : step.kind === 'sequence' || step.kind === 'flow' || step.kind === 'edge'
         ? 5 + 4 * step.messages.length
         : step.kind === 'diagram'
           ? 8 + 4 * (step.notes?.length ?? 0)

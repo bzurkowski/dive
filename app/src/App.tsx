@@ -1,17 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { Inline } from './Inline'
-import { CodeView } from './code/CodeView'
+import { CodeView, type CodeLink } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
 import { SequenceView } from './diagrams/SequenceView'
 import { Cover, End } from './shell/Cover'
 import { Guard } from './shell/Guard'
-import { flatIndex, flatten, move, parseHash, toHash, COVER, END, type Pos } from './shell/nav'
+import {
+  flatIndex,
+  flatten,
+  flowAt,
+  flows,
+  move,
+  parseHash,
+  skipEdges,
+  toHash,
+  COVER,
+  END,
+  type Pos,
+} from './shell/nav'
 import { Rail } from './shell/Rail'
 import { ThemeButton } from './shell/Theme'
 import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
 import { stepSize, type Dive, type Step, type Term } from './types'
 
-const VISUAL = new Set(['code', 'sequence', 'diagram'])
+const VISUAL = new Set(['code', 'sequence', 'flow', 'edge', 'diagram'])
 
 export default function App({ dive }: { dive: Dive }) {
   const flat = useMemo(() => flatten(dive), [dive])
@@ -20,6 +32,22 @@ export default function App({ dive }: { dive: Dive }) {
     for (const ch of dive.chapters)
       for (const st of ch.steps) if (st.kind === 'terms') for (const t of st.terms) seen.set(t.term, t)
     return [...seen.values()]
+  }, [dive])
+  // Code step id → the messages of its flow step that show it.
+  const backLinks = useMemo(() => {
+    const m = new Map<string, (CodeLink & { pos: Pos })[]>()
+    dive.chapters.forEach((ch, c) =>
+      ch.steps.forEach((st, s) => {
+        if (st.kind !== 'flow') return
+        const actor = (id: string) => st.actors.find((a) => a.id === id)?.label ?? id
+        st.messages.forEach((msg, f) => {
+          if (!msg.step) return
+          const link = { from: actor(msg.from), to: actor(msg.to), label: msg.label, pos: { c, s, f } }
+          m.set(msg.step, [...(m.get(msg.step) ?? []), link])
+        })
+      }),
+    )
+    return m
   }, [dive])
   const [pos, setPos] = useState(() => parseHash(dive, location.hash))
   const glossary = useRef<HTMLDialogElement>(null)
@@ -46,6 +74,15 @@ export default function App({ dive }: { dive: Dive }) {
     },
     [pos],
   )
+
+  // Open the step with this id (Message.step).
+  const jump = (id: string) => {
+    const t = flat.find(({ c, s }) => {
+      const st = dive.chapters[c].steps[s]
+      return 'id' in st && st.id === id
+    })
+    if (t) go({ ...t, f: 0 })
+  }
 
   const toggle = (d: HTMLDialogElement | null) => (d?.open ? d.close() : d?.showModal())
   // Content fills the dialog, so a click that hits the dialog itself is a backdrop click.
@@ -105,9 +142,40 @@ export default function App({ dive }: { dive: Dive }) {
 
   const i = flatIndex(flat, pos)
   const size = stepSize(step)
-  const atEnd = i === flat.length - 1 && pos.f === size - 1
-  const nextChapter =
-    pos.s === chapter.steps.length - 1 && pos.f === size - 1 ? dive.chapters[flat[i + 1]?.c]?.title : undefined
+  const last = pos.f === size - 1
+  const atEnd = i === flat.length - 1 && last
+  const nextChapter = pos.s === chapter.steps.length - 1 && last ? dive.chapters[flat[i + 1]?.c]?.title : undefined
+
+  // Flows: breadcrumb with 2+ flows (always on edge cases), and a way to skip edge cases.
+  const fl = flows(chapter.steps)
+  const flow = flowAt(fl, pos.s)
+  const edge = step.kind === 'edge'
+  const crumbs =
+    flow && (edge || fl.length > 1)
+      ? [chapter.title, ...(pos.s > flow.s ? [chapter.steps[flow.s].title] : []), ...(edge ? ['Edge cases'] : [])]
+      : []
+  const crumb = crumbs.length > 0 && <p className="mb-1 truncate text-sm text-muted">{crumbs.join(' › ')}</p>
+  const skip = skipEdges(dive, flat, pos)
+  const skipTo =
+    skip &&
+    (skip.c === pos.c
+      ? `next flow: ${chapter.steps[skip.s].title}`
+      : skip.c === END.c
+        ? 'the end'
+        : dive.chapters[skip.c].title)
+
+  const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
+  const view = (
+    <StepView
+      dive={dive}
+      step={step}
+      focus={pos.f}
+      onFocus={(f) => go({ ...pos, f })}
+      onJump={jump}
+      links={back}
+      onLink={(k) => back && go(back[k].pos)}
+    />
+  )
   const rail = <Rail dive={dive} pos={pos} go={go} />
   const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 
@@ -168,21 +236,28 @@ export default function App({ dive }: { dive: Dive }) {
             {VISUAL.has(step.kind) ? (
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
                 <div className="max-w-5xl">
-                  <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
+                  {crumb}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
+                    {edge && (
+                      <span className="rounded-full border border-edge/50 bg-edge/10 px-2.5 py-0.5 text-sm font-medium text-edge">
+                        Edge case · optional
+                      </span>
+                    )}
+                  </div>
                   {'say' in step && step.say && (
                     <p className="mt-1 text-[17px] leading-snug">
                       <Inline text={step.say} />
                     </p>
                   )}
                 </div>
-                <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">
-                  <StepView dive={dive} step={step} focus={pos.f} onFocus={(f) => go({ ...pos, f })} />
-                </div>
+                <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">{view}</div>
               </section>
             ) : (
               <section className="h-full overflow-y-auto">
                 <div className={`mx-auto px-6 py-12 sm:py-16 ${step.kind === 'terms' ? 'max-w-4xl' : 'max-w-2xl'}`}>
-                  <StepView dive={dive} step={step} focus={pos.f} onFocus={(f) => go({ ...pos, f })} />
+                  {crumb}
+                  {view}
                 </div>
               </section>
             )}
@@ -201,13 +276,29 @@ export default function App({ dive }: { dive: Dive }) {
           <p className="min-w-0 grow truncate text-center text-sm text-muted">
             {size > 1 && `${pos.f + 1} of ${size}`}
           </p>
+          {skip && (
+            <button
+              type="button"
+              title={`Skip to ${skipTo}`}
+              onClick={() => go(skip)}
+              className="min-w-0 truncate rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg"
+            >
+              Skip to {skipTo}
+            </button>
+          )}
           <button
             type="button"
             className={btn}
             onClick={() => go(move(dive, flat, pos, 1))}
             aria-keyshortcuts="ArrowRight"
           >
-            {atEnd ? 'Finish' : nextChapter ? `Next chapter: ${nextChapter}` : 'Next'}
+            {atEnd
+              ? 'Finish'
+              : skip && !edge && last
+                ? 'Next: edge cases (optional)'
+                : nextChapter
+                  ? `Next chapter: ${nextChapter}`
+                  : 'Next'}
           </button>
         </footer>
       </div>
@@ -248,20 +339,38 @@ function StepView({
   step,
   focus,
   onFocus,
+  onJump,
+  links,
+  onLink,
 }: {
   dive: Dive
   step: Step
   focus: number
   onFocus: (f: number) => void
+  onJump: (id: string) => void
+  links?: CodeLink[]
+  onLink: (i: number) => void
 }) {
   const { repo, head } = dive.source
   switch (step.kind) {
     case 'code': {
       const blob = repo && head ? `https://github.com/${repo}/blob/${head}/` : undefined
-      return <CodeView step={step} files={dive.files} focus={focus} onFocus={onFocus} blob={blob} />
+      return (
+        <CodeView
+          step={step}
+          files={dive.files}
+          focus={focus}
+          onFocus={onFocus}
+          blob={blob}
+          links={links}
+          onLink={onLink}
+        />
+      )
     }
     case 'sequence':
-      return <SequenceView step={step} focus={focus} onFocus={onFocus} />
+    case 'flow':
+    case 'edge':
+      return <SequenceView step={step} focus={focus} onFocus={onFocus} onJump={onJump} />
     case 'diagram':
       return <DiagramView step={step} focus={focus} onFocus={onFocus} />
     case 'card':

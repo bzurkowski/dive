@@ -4,14 +4,23 @@ import type { CodeNote, CodeStep, FileData, StepViewProps } from '../types'
 import { highlightFile, type Tokens } from './highlight'
 import { layout, noteSpan, parse, type Row } from './rows'
 
+// A flow message that shows this step, resolved to actor labels.
+export interface CodeLink {
+  from: string
+  to: string
+  label: string
+}
+
 type Props = StepViewProps<CodeStep> & {
   files?: Record<string, FileData>
   blob?: string // GitHub blob URL prefix; the file path is appended
+  links?: CodeLink[] // shown as a strip above the code
+  onLink?: (i: number) => void // user clicked links[i]
 }
 
 // One section per file, in order of first appearance in the notes.
 // `focus` and every data-note/card/anchor index are step-global note indices.
-export function CodeView({ step, files, focus, onFocus, blob }: Props) {
+export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const scrolled = useRef(false)
   useEffect(() => {
@@ -33,25 +42,45 @@ export function CodeView({ step, files, focus, onFocus, blob }: Props) {
   }
 
   return (
-    <div ref={box} onClick={pick} className="relative h-full overflow-auto bg-surface">
-      {[...new Set(step.notes.map((n) => n.file))].map((path) => {
-        const file = files?.[path]
-        if (file)
-          return <FileBody key={path} step={step} path={path} file={file} focus={focus} href={blob && blob + path} />
-        return (
-          <section key={path} className="border-line not-first:border-t">
-            <div className="p-6 text-sm text-muted">
-              File not included in this dive: <code className="font-mono">{path}</code>
-            </div>
-            {step.notes.map(
-              (n, i) =>
-                n.file === path && (
-                  <NoteCard key={i} note={n} i={i} total={step.notes.length} active={i === focus} anchor />
-                ),
-            )}
-          </section>
-        )
-      })}
+    <div className="flex h-full flex-col bg-surface">
+      {!!links?.length && (
+        <nav
+          aria-label="In the flow"
+          className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-line px-4 py-1.5 text-xs whitespace-nowrap text-muted"
+        >
+          <span>In the flow:</span>
+          {links.map((l, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onLink?.(i)}
+              className="rounded-full border border-line px-2 py-0.5 hover:border-accent hover:text-fg"
+            >
+              {l.from} → {l.to} · <span className="font-mono">{l.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+      <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto">
+        {[...new Set(step.notes.map((n) => n.file))].map((path) => {
+          const file = files?.[path]
+          if (file)
+            return <FileBody key={path} step={step} path={path} file={file} focus={focus} href={blob && blob + path} />
+          return (
+            <section key={path} className="border-line not-first:border-t">
+              <div className="p-6 text-sm text-muted">
+                File not included in this dive: <code className="font-mono">{path}</code>
+              </div>
+              {step.notes.map(
+                (n, i) =>
+                  n.file === path && (
+                    <NoteCard key={i} note={n} i={i} total={step.notes.length} active={i === focus} anchor />
+                  ),
+              )}
+            </section>
+          )
+        })}
+      </div>
     </div>
   )
 }
