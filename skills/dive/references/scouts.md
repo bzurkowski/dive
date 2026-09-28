@@ -38,6 +38,9 @@ Purpose: <one sentence>
 ## Entry points
 - <path>:<line> <who calls in, and when>
 
+## Calls out
+- <path or service outside the area> <what the area uses it for>
+
 ## Flow
 1. [<layer>, <core|detail>] <path>:<start>-<end> <what happens, and why>
 

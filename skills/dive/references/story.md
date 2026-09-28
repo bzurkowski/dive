@@ -15,7 +15,7 @@ The story plan gives the reader's level: `new` means they barely know this domai
 |---|---|---|---|
 | `why` | The problem and the decision behind it, with sources | What the code is for and who calls it. For a question, the answer in 2-3 sentences | 1-2 cards with links to the PR, tickets, pages |
 | `glossary` | The words the rest of the dive uses | same | 1 terms step, 3-10 terms |
-| `big-picture` | The layers or regions and how they depend on each other | same | 1 diagram per layer or region, sequence, quiz |
+| `big-picture` | The layers or regions and how they depend on each other. Show the code around the scope as context: its callers (the notes' Entry points) and what it calls (Calls out). Diagram nodes, not code notes | same | 1 diagram per layer or region, sequence, quiz |
 | `walkthrough` | The diff, top-down (see **Order**) | The main flow, top-down (see **Order**). Not every line: only what the story needs | code steps, quiz |
 | `edge-cases` | Designed behavior for failures, limits, odd inputs | same | code steps, sequence, quiz |
 | `review-focus` | Suspected bugs, risks, what to check before approval | Suspected bugs, traps for the next person who changes the code, docs the code contradicts | 1 card |
