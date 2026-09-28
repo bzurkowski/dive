@@ -94,26 +94,32 @@ export default function App({ dive }: { dive: Dive }) {
     return () => removeEventListener('keydown', onKey)
   }, [])
 
-  const glossaryDrawer = (
-    <Drawer
-      ref={glossary}
-      aria-label="Glossary"
-      head={<h2 className="text-2xl font-bold tracking-tight">Glossary</h2>}
-      className="right-0 left-auto w-[min(30rem,100%)] border-l border-line bg-bg"
-    >
-      {terms.length ? <TermList terms={terms} narrow /> : <p className="text-muted">This dive has no glossary.</p>}
-    </Drawer>
-  )
-
   const chapter = dive.chapters[pos.c]
   const step = chapter?.steps[pos.s]
+  // One tree on every screen, so the live region and the glossary outlive the cover and end screens:
+  // a live region only announces changes, not its own mount.
+  const frame = (screen: ReactNode) => (
+    <>
+      <p className="sr-only" aria-live="polite">
+        {step && `${chapter.title}: ${step.title}`}
+      </p>
+      {screen}
+      <Drawer
+        ref={glossary}
+        aria-label="Glossary"
+        head={<h2 className="text-2xl font-bold tracking-tight">Glossary</h2>}
+        className="right-0 left-auto w-[min(30rem,100%)] border-l border-line bg-bg"
+      >
+        {terms.length ? <TermList terms={terms} narrow /> : <p className="text-muted">This dive has no glossary.</p>}
+      </Drawer>
+    </>
+  )
   if (!step)
-    return (
+    return frame(
       <>
         {pos.c === END.c ? <End dive={dive} go={go} /> : <Cover dive={dive} go={go} />}
         <ThemeButton className="fixed top-3 right-4" />
-        {glossaryDrawer}
-      </>
+      </>,
     )
 
   const size = stepSize(step)
@@ -135,7 +141,7 @@ export default function App({ dive }: { dive: Dive }) {
   const rail = <Rail dive={dive} pos={pos} go={go} />
   const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 
-  return (
+  return frame(
     <div className="flex h-full">
       <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 lg:flex">
         <button
@@ -184,8 +190,6 @@ export default function App({ dive }: { dive: Dive }) {
           </div>
         </header>
 
-        {/* Outside the keyed main: a live region only announces changes, not its own mount. */}
-        <p className="sr-only" aria-live="polite">{`${chapter.title}: ${step.title}`}</p>
         <main className="min-h-0 flex-1" key={`${pos.c}-${pos.s}`}>
           <Guard>
             <StepView
@@ -259,8 +263,7 @@ export default function App({ dive }: { dive: Dive }) {
       >
         {rail}
       </Drawer>
-      {glossaryDrawer}
-    </div>
+    </div>,
   )
 }
 
