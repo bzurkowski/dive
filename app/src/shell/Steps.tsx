@@ -42,15 +42,21 @@ function Rich({ text }: { text: string }) {
   )
 }
 
+export function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
+      {children}
+    </a>
+  )
+}
+
 export function Links({ links }: { links?: Link[] }) {
   if (!links?.length) return null
   return (
     <ul className="mt-6 space-y-1 text-base">
       {links.map((l, i) => (
         <li key={i}>
-          <a href={l.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-            {l.title}
-          </a>
+          <ExternalLink href={l.url}>{l.title}</ExternalLink>
         </li>
       ))}
     </ul>

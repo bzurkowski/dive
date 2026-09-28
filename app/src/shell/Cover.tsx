@@ -1,18 +1,9 @@
-import type { ReactNode } from 'react'
 import type { Dive } from '../types'
 import { chapterSeconds, COVER, minutes, type Pos } from './nav'
-import { Links } from './Steps'
+import { ExternalLink, Links } from './Steps'
 
 const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
 const primary = 'rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
-
-function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-      {children}
-    </a>
-  )
-}
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const chapters = dive.chapters.map((ch, c) => ({ ch, c })).filter(({ ch }) => ch.steps.length)
