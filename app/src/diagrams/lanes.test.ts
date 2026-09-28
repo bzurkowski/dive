@@ -1,4 +1,4 @@
-// Run: node --experimental-strip-types app/src/diagrams/lanes.test.ts
+// Run: node app/src/diagrams/lanes.test.ts
 import { bands, lanes } from './lanes.ts'
 
 function eq(actual: unknown, expected: unknown, what: string) {
@@ -54,4 +54,15 @@ eq(lanes(plain, true).lanes.length, 2, 'no groups, nothing to collapse')
 // A duplicate id keeps the first actor, like the actor lookups in App.
 const dup = lanes([...plain, { id: 'a', label: 'A again' }], false)
 eq(dup.of.get('a'), 0, 'duplicate id maps to the first actor')
+
+const odd = [
+  { id: 'x', label: 'app' },
+  { id: 'y', label: 'Y', group: '' },
+  { id: 'z', label: 'Z', group: 'app' },
+]
+eq(
+  lanes(odd, true).lanes.map((l) => `${l.label}/${l.group}`),
+  ['app/undefined', 'Y/undefined', 'app/app'],
+  'empty group is no group; a group named like an actor keeps its own lane',
+)
 console.log('lanes ok')
