@@ -6,30 +6,15 @@ import './diagrams.css'
 import { textWidth, useSize } from './util'
 
 // Full class names so Tailwind picks them up.
-const FILLS = [
-  'fill-sky-500/10',
-  'fill-fuchsia-500/10',
-  'fill-emerald-500/10',
-  'fill-violet-500/10',
-  'fill-rose-500/10',
-  'fill-teal-500/10',
+const TINTS = [
+  { fill: 'fill-sky-500/10', stroke: 'stroke-sky-500/60', swatch: 'bg-sky-500/40' },
+  { fill: 'fill-fuchsia-500/10', stroke: 'stroke-fuchsia-500/60', swatch: 'bg-fuchsia-500/40' },
+  { fill: 'fill-emerald-500/10', stroke: 'stroke-emerald-500/60', swatch: 'bg-emerald-500/40' },
+  { fill: 'fill-violet-500/10', stroke: 'stroke-violet-500/60', swatch: 'bg-violet-500/40' },
+  { fill: 'fill-rose-500/10', stroke: 'stroke-rose-500/60', swatch: 'bg-rose-500/40' },
+  { fill: 'fill-teal-500/10', stroke: 'stroke-teal-500/60', swatch: 'bg-teal-500/40' },
 ]
-const STROKES = [
-  'stroke-sky-500/60',
-  'stroke-fuchsia-500/60',
-  'stroke-emerald-500/60',
-  'stroke-violet-500/60',
-  'stroke-rose-500/60',
-  'stroke-teal-500/60',
-]
-const SWATCHES = [
-  'bg-sky-500/40',
-  'bg-fuchsia-500/40',
-  'bg-emerald-500/40',
-  'bg-violet-500/40',
-  'bg-rose-500/40',
-  'bg-teal-500/40',
-]
+const PLAIN = { fill: 'fill-bg', stroke: 'stroke-muted/50' }
 
 const NODE_PX = 14
 const EDGE_PX = 11.5
@@ -114,7 +99,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const fade = (lit: boolean, ...ids: string[]) =>
     !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
-  const tint = new Map(step.nodes.map((n) => [n.id, n.group ? groups.indexOf(n.group) % FILLS.length : -1]))
+  const tint = new Map(step.nodes.map((n) => [n.id, n.group ? TINTS[groups.indexOf(n.group) % TINTS.length] : PLAIN]))
 
   const pick = (id: string) => {
     if (on.has(id)) return
@@ -129,7 +114,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
           <div className="absolute top-3 right-4 z-10 flex flex-wrap gap-3 text-xs text-muted">
             {groups.map((g, i) => (
               <span key={g} className="flex items-center gap-1.5">
-                <span className={`h-2.5 w-2.5 rounded-sm ${SWATCHES[i % SWATCHES.length]}`} />
+                <span className={`h-2.5 w-2.5 rounded-sm ${TINTS[i % TINTS.length].swatch}`} />
                 {g}
               </span>
             ))}
@@ -186,7 +171,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
             )
           })}
           {l.nodes.map((n) => {
-            const t = tint.get(n.id) ?? -1
+            const t = tint.get(n.id) ?? PLAIN
             const lit = on.has(n.id)
             const clickable = !lit && notes.some((x) => x.focus.includes(n.id))
             return (
@@ -201,7 +186,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                   height={n.h}
                   rx={10}
                   strokeWidth={lit ? 2 : 1}
-                  className={`transition-all duration-300 ${t < 0 ? 'fill-bg' : FILLS[t]} ${lit ? 'stroke-accent' : t < 0 ? 'stroke-muted/50' : STROKES[t]}`}
+                  className={`transition-all duration-300 ${t.fill} ${lit ? 'stroke-accent' : t.stroke}`}
                 />
                 <text
                   x={n.w / 2}
