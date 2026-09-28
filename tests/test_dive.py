@@ -36,7 +36,9 @@ def pr_repo():
 
 
 def run(work, *a):
-    return subprocess.run([sys.executable, str(DIVE), *a], cwd=work, capture_output=True, text=True)
+    # a read or write without encoding= breaks on Windows (cp1252 default): make it an error everywhere
+    strict = ['-X', 'warn_default_encoding', '-W', 'error::EncodingWarning']
+    return subprocess.run([sys.executable, *strict, str(DIVE), *a], cwd=work, capture_output=True, text=True)
 
 
 def changed(d):

@@ -132,7 +132,7 @@ def prep(d, pr, base_ref):
     diff = {'repo': repo, 'pr': n, 'url': f'https://github.com/{repo}/pull/{n}' if repo else None,
             'baseRef': base_ref, 'base': base, 'head': head, 'files': files}
     d.mkdir(parents=True, exist_ok=True)
-    (d / 'diff.json').write_text(json.dumps(diff, indent=1, ensure_ascii=False))
+    (d / 'diff.json').write_text(json.dumps(diff, indent=1, ensure_ascii=False), encoding='utf-8')
     adds, dels = sum(f['additions'] for f in files), sum(f['deletions'] for f in files)
     print(f'PR #{n}: {len(files)} files, +{adds} -{dels}\nbase={base} ({base_ref})\nhead={head}\nAreas (files, changed lines):')
     areas = {}
@@ -259,7 +259,7 @@ def words(x):
 
 def load(path, errs):
     try:
-        return json.loads(path.read_text())
+        return json.loads(path.read_text(encoding='utf-8'))
     except (OSError, ValueError) as e:
         errs.append(f'{path.name}: {e}')
         return None
@@ -300,16 +300,17 @@ def build(d):
         print('\n'.join(f'  {e}' for e in errs))
         sys.exit(1)
 
-    if not TEMPLATE.read_text().count(PLACEHOLDER):
+    template = TEMPLATE.read_text(encoding='utf-8')
+    if PLACEHOLDER not in template:
         sys.exit(f'{TEMPLATE} has no data placeholder.')
-    (d / 'dive.json').write_text(json.dumps(dive, indent=2, ensure_ascii=False))
+    (d / 'dive.json').write_text(json.dumps(dive, indent=2, ensure_ascii=False), encoding='utf-8')
     for p in parts:  # merged into dive.json; from now on edit dive.json
         p.unlink()
     if parts and not any((d / 'parts').iterdir()):
         (d / 'parts').rmdir()
     data = json.dumps({**dive, 'files': files}, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
     out = d / 'index.html'
-    out.write_text(TEMPLATE.read_text().replace(PLACEHOLDER, DATA_TAG + data + '</script>', 1))
+    out.write_text(template.replace(PLACEHOLDER, DATA_TAG + data + '</script>', 1), encoding='utf-8')
     steps = sum(len(c['steps']) for c in dive['chapters'])
     print(f"Built {out} ({out.stat().st_size // 1024} KB): {len(dive['chapters'])} chapters, {steps} steps.")
     if skipped:
