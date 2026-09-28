@@ -48,7 +48,6 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
     g.setNode(n.id, { ...n, lines, width, height: 20 + lines.length * LINE_H })
   }
   step.edges.forEach((e, i) => {
-    if (!g.hasNode(e.from) || !g.hasNode(e.to)) return
     const label = e.label ? { width: textWidth(e.label, EDGE_PX) + 12, height: 18, labelpos: 'c' } : {}
     g.setEdge(e.from, e.to, label, String(i))
   })
@@ -112,10 +111,8 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
 
   const notes = step.notes ?? []
   const note = notes[focus]
-  // dive.py accepts a note without focus.
-  const focusOf = notes.map((n) => n.focus ?? [])
-  const on = new Set(focusOf[focus])
-  const seen = new Set(focusOf.slice(0, focus + 1).flat())
+  const on = new Set(note?.focus)
+  const seen = new Set(notes.slice(0, focus + 1).flatMap((n) => n.focus))
   const fade = (lit: boolean, ...ids: string[]) =>
     !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
@@ -185,7 +182,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
           {l.nodes.map((n) => {
             const t = n.group ? TINTS[groups.indexOf(n.group) % TINTS.length] : PLAIN
             const lit = on.has(n.id)
-            const to = lit ? -1 : focusOf.findIndex((f) => f.includes(n.id))
+            const to = lit ? -1 : notes.findIndex((x) => x.focus.includes(n.id))
             return (
               <g
                 key={n.id}
