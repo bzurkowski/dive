@@ -81,6 +81,16 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(changed(work / 'd'), ['app.py', 'util.py'])
 
+    def test_prep_stacked_pr(self):
+        work, git = pr_repo()
+        git('fetch', '-q', 'origin', 'refs/pull/1/head'); git('checkout', '-q', 'FETCH_HEAD')
+        git('push', '-q', 'origin', 'HEAD:refs/heads/pr-1')
+        (work / 'c.py').write_text('Z = 3\n')
+        git('add', '.'); git('commit', '-qm', 'stacked'); git('push', '-q', 'origin', 'HEAD:refs/pull/2/head')
+        r = run(work, 'prep', str(work / 'd'), '--pr', '2', '--base', 'pr-1')
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(changed(work / 'd'), ['c.py'])
+
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

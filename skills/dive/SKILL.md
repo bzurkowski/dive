@@ -25,7 +25,7 @@ A dive explains code in this repo. When the argument is a knowledge page URL (No
 
 Delete `docs/dives/<slug>/` if it exists: a rerun starts fresh. Then, by kind:
 
-- `pr`: read the title and description with `gh pr view <n> --json title,body,url`. Without `gh`, use `curl -s https://api.github.com/repos/<owner>/<repo>/pulls/<n>` (add `-H "Authorization: Bearer $GITHUB_TOKEN"` when it is set). Then run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <n>`. It fetches the PR into a side ref, writes `diff.json`, and prints `base=`, `head=`, and the changed areas. Read PR code only through `git show <head>:<path>` and `git diff <base> <head> -- <path>`. The user's working tree and branch stay untouched.
+- `pr`: read the title, description and base branch with `gh pr view <n> --json title,body,url,baseRefName`. Without `gh`, use `curl -s https://api.github.com/repos/<owner>/<repo>/pulls/<n>` (add `-H "Authorization: Bearer $GITHUB_TOKEN"` when it is set), where the base branch is `base.ref`. Then run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <n> --base <base branch>`. A stacked PR's base is the PR below it, not the default branch. It fetches the PR into a side ref, writes `diff.json`, and prints `base=`, `head=`, and the changed areas. Read PR code only through `git show <head>:<path>` and `git diff <base> <head> -- <path>`. The user's working tree and branch stay untouched.
 - `module`: measure it with `git ls-files <path> | xargs wc -l`.
 - `question`: search the code for the question's key terms (identifiers, routes, tables, messages) until you can name the files that answer it.
 
