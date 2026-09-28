@@ -49,7 +49,7 @@ export interface TermsStep {
 
 export interface Term {
   term: string
-  meaning: string // one short sentence
+  meaning: string // 1-2 short sentences
   code?: string // identifier in code, e.g. "RefundJob"
 }
 

@@ -32,6 +32,10 @@ Based on ASD-STE100 Simplified Technical English, as distilled by [danyuchn/asd-
 - Clear is the goal, not short. Stop cutting when the sentence has one reading.
 - If a sentence says nothing, delete it. Polish does not fix empty content.
 
+## Build on what came before
+
+Every list and every run of steps is a chain. Each point follows from the one before it: the problem, then the constraint, then the decision, then what it means for the code. Each link gives the reader an aha moment. Before you add a point, name the point it follows from. If there is none, move the point to where it follows, or cut it.
+
 ## No AI slop
 
 Delete these, or replace them with the fact they hide.
@@ -64,12 +68,15 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 | `say` | 1-3 sentences. The one point of this step. |
 | Code note `text` | 1-3 sentences. What this block does, then why it matters. |
 | Code note `lines` | About 15 lines at most. |
-| Card `body` | 5 bullets or fewer, one idea each. Or 2-3 short sentences. |
-| Glossary `terms` | 3-10. |
-| Term `meaning` | 1 sentence. What it is in this codebase, not in general. |
-| Sequence `messages` | About 20 at most. |
+| Card `body` | One topic per card. Past about 6 bullets or sentences, split the topic into another card. |
+| Terms step `terms` | About 2-7. Use as many terms steps as the groups need. |
+| Terms step `say` | 1 sentence. |
+| Term `meaning` | 1-2 sentences. What it is in this codebase, not in general. |
+| `actors` of a sequence, flow, or edge | 30 at most (the build checks). |
+| `messages` of a sequence, flow, or edge | No cap. |
+| Message `label` | Short: about 30 characters. Put paths and long argument lists in the note. |
 | Message `note` | 1 sentence. What happens or why. Never restate the label. |
-| Diagram `nodes` | 3-10. |
+| Diagram `nodes` | 3-12. |
 | Quiz `question` | 1 sentence. |
 | Quiz `options` | 3-4. Exactly one correct. No "all of the above". |
 | Quiz `why` | 1 sentence per option: why it is right, or the exact reason it is wrong. |
@@ -96,6 +103,10 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 - Before: "The server crashes." (nobody picks it, so it tests nothing)
 - After: "The worker skips the refund because the attempt count went up." Why: "No. The count only stops retries after 5 attempts."
 
+**Chain of cards**
+- Before: "Retries stop after 5 attempts." / "The refund id is the key." / "Waits are random." (three facts in no order)
+- After: "Retries flooded the gateway" (the problem) / "A retry could refund twice" (the same retries cause a second problem) / "The decision" (one fix for each problem)
+
 **Certainty**
 - Before: "This fixes all duplicate refunds." (the PR only covers retries)
 - After: "This stops duplicate refunds from retries. It does not cover refunds started by hand."
@@ -107,4 +118,5 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 3. One name per concept, the same as in the glossary and the code.
 4. No word from the slop table. No hype, no emojis.
 5. Every claim traces to the code, the diff or a cited doc. Hedges are kept.
-6. Each slot is within its limit.
+6. Each point in a list or run of steps follows from the one before.
+7. Each slot is within its limit.

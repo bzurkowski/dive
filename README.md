@@ -1,6 +1,6 @@
 # Dive
 
-Dive is an Agent Skill that turns a pull request, a code module, or a question about your codebase into an interactive walkthrough you can read in about ten minutes.
+Dive is an Agent Skill that turns a pull request, a code module, or a question about your codebase into an interactive walkthrough of the real code.
 
 | Big picture | Code walkthrough | Sequence |
 | --- | --- | --- |
@@ -29,28 +29,27 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 
 ## How it works
 
-Dive tells the story step by step, with the real code, diagrams, a glossary, and short quizzes. To build it, the agent:
+Dive tells the story step by step, with the real code, sequence diagrams, a glossary, and short quizzes. To build it, the agent:
 
 1. Works out what you gave it and fetches the pull request, if there is one.
 2. Sends out scouts in parallel:
-   - one per area of the code,
+   - one per area of the code, which traces the call chains through it,
    - one for the context: the PR description and comments, commits, linked issues, and docs,
    - one for Notion, Confluence, Jira, or Linear, if you have them connected.
-3. Outlines the story from the scouts' notes.
-4. Hands each chapter to its own writer, in parallel.
-5. Checks every code reference against the real code and builds the page. It also prints the word count and an estimated reading time.
+3. Joins the call chains into flows and fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases.
+4. Hands each flow, and each group of the other chapters, to its own writer, in parallel.
+5. Checks every code reference and link against the real code and builds the page.
 
 ## What's in a dive
 
 Every dive follows the same outline:
 
-1. **Why** - the problem and the decision, with links to the PR, tickets, and docs. For a module or a question: what the code is for, or the answer
-2. **Glossary** - the terms the rest of the dive uses
-3. **Big picture** - the main parts and how they connect
-4. **Walkthrough** - the normal flow, in execution order
-5. **Edge cases** - failures, limits, and unusual inputs
-6. **Review focus** - suspected bugs and risks: what to check before you approve a PR, or traps to know before you change the code
-7. **Recap** - what to remember, plus a list of other changed files (PR) or where to read next
+1. **Intro** - the problem and the decision, with links to the PR, tickets, and docs. For a module or a question: what the code is for and who uses it, or the answer
+2. **Glossary** - the terms the rest of the dive uses, each one building on the ones before
+3. **Big picture** - the story from far above: a map of the flows, then the ideas they depend on
+4. **Walkthrough** - one or more flows. Each flow is a sequence diagram of the normal path, then the code behind its messages, then optional edge cases
+5. **Review focus** - suspected bugs and risks: what to check before you approve a PR, or traps to know before you change the code
+6. **Recap** - what to remember, other changed files (PR), where to read next, and the flows the dive left out
 
 The writing is meant to be easy to read: short sentences, one name for each concept, and nothing that isn't backed by the code or a linked doc.
 
