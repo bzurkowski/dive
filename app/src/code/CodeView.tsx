@@ -120,20 +120,31 @@ function FileBody({
   return (
     <section className="border-line not-first:border-t">
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-surface px-4 py-2 text-sm">
-        <span className="truncate font-mono font-medium">{path}</span>
-        {file.status && <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>}
-        {file.oldPath && <span className="truncate text-xs text-muted">from {file.oldPath}</span>}
-        {file.diff && (
-          <span className="font-mono text-xs">
-            <span className="text-green-700 dark:text-green-400">+{parsed.adds}</span>{' '}
-            <span className="text-red-700 dark:text-red-400">−{parsed.dels}</span>
+        {/* rtl + bdi: a long path loses its start, never the file name */}
+        <span dir="rtl" title={path} className="truncate text-left font-mono font-medium">
+          <bdi>{path}</bdi>
+        </span>
+        {file.oldPath && (
+          <span title={file.oldPath} className="truncate text-xs text-muted">
+            from {file.oldPath}
           </span>
         )}
-        {link && (
-          <a className="ml-auto shrink-0 text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
-            Open on GitHub ↗
-          </a>
-        )}
+        <span className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
+          {link && (
+            <a className="text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
+              Open on GitHub ↗
+            </a>
+          )}
+          {file.status && (
+            <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>
+          )}
+          {file.diff && (
+            <span className="font-mono text-xs">
+              <span className="text-green-700 dark:text-green-400">+{parsed.adds}</span>{' '}
+              <span className="text-red-700 dark:text-red-400">−{parsed.dels}</span>
+            </span>
+          )}
+        </span>
       </header>
       <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
         {unplaced.map(card)}
