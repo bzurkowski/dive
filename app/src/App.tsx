@@ -90,9 +90,9 @@ export default function App({ dive }: { dive: Dive }) {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const t = e.target as HTMLElement
       if (t.closest('input, textarea, select, [contenteditable]')) return
-      if (e.key === 'g') return toggle(glossary.current)
-      if (document.querySelector('dialog[open]')) return
-      if (e.key === ' ' && t.closest('button, a')) return
+      const open = document.querySelector('dialog[open]')
+      if (e.key === 'g' && (!open || open === glossary.current)) return toggle(glossary.current)
+      if (open || (e.key === ' ' && t.closest('button, a'))) return
       const fwd = ['ArrowRight', 'j'].includes(e.key) || (e.key === ' ' && !e.shiftKey)
       const back = ['ArrowLeft', 'k'].includes(e.key) || (e.key === ' ' && e.shiftKey)
       if (!fwd && !back) return
