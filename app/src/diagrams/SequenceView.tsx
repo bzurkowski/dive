@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Change, Message, SequenceStep, StepViewProps } from '../types'
+import type { Change, SequenceStep, StepViewProps } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
 import { bands, lanes } from './lanes'
@@ -8,6 +8,7 @@ import { textWidth, useSize } from './util'
 const ROW = 56 // height of a message row
 const SELF_ROW = 72 // height of a self-message row
 const LOOP = 36 // self-message loop width
+const DROP = 22 // self-message loop height
 const TOP = 12
 const BOTTOM = 170 // room for the callout under the last message
 const MIN_COL = 120
@@ -64,27 +65,27 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 42)
   const width = cw * n
   const x = (id: string) => (view.of.get(id)! + 0.5) * cw
-  // Within one lane (same actor, or one collapsed group) a message loops back.
-  const isSelf = (m: Message) => view.of.get(m.from) === view.of.get(m.to)
 
-  const ys: number[] = []
+  // y is the message line, ey the arrow tip.
+  const rows = []
   let bottom = TOP
   for (const m of step.messages) {
-    ys.push(bottom + 34)
-    bottom += isSelf(m) ? SELF_ROW : ROW
+    const x1 = x(m.from)
+    const x2 = x(m.to)
+    // Within one lane (same actor, or one collapsed group) a message loops back.
+    const self = x1 === x2
+    const y = bottom + 34
+    rows.push({ m, x1, x2, self, y, ey: self ? y + DROP : y, mid: self ? x1 + LOOP / 2 : (x1 + x2) / 2 })
+    bottom += self ? SELF_ROW : ROW
   }
   const height = bottom + BOTTOM
 
-  const active = step.messages[focus]
-  const aself = isSelf(active)
-  const ax1 = x(active.from)
-  const ax2 = x(active.to)
-  const ay = ys[focus] + (aself ? 22 : 0)
-  const anchorLeft = Math.min(ax1, ax2) - cw / 2
+  const active = rows[focus]
+  const anchorLeft = Math.min(active.x1, active.x2) - cw / 2
   const noteW = Math.min(NOTE_W, width - 16)
-  const mid = aself ? ax1 + LOOP / 2 : (ax1 + ax2) / 2
-  const noteLeft = Math.max(8, Math.min(mid - noteW / 2, width - noteW - 8))
-  const jump = active.step && onJump ? active.step : undefined
+  const noteLeft = Math.max(8, Math.min(active.mid - noteW / 2, width - noteW - 8))
+  const jump = active.m.step && onJump ? active.m.step : undefined
+  const tw = (s: string) => textWidth(s, LABEL_PX, 600, true)
 
   useEffect(() => {
     anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
@@ -160,19 +161,14 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                 strokeDasharray="4 4"
               />
             ))}
-            {step.messages.map((m, i) => {
+            {rows.map(({ m, x1, x2, self, y, ey }, i) => {
               const on = i === focus
-              const self = isSelf(m)
               const mark = m.change && CHANGE[m.change]
               const removed = m.change === 'removed'
-              const x1 = x(m.from)
-              const x2 = x(m.to)
-              const y = ys[i]
               const dir = self ? -1 : Math.sign(x2 - x1)
-              const ey = self ? y + 22 : y // arrow tip
               const dash = removed ? '2 4' : m.type === 'return' ? '5 4' : undefined
               const open = m.type === 'async'
-              const line = self ? `M${x1} ${y} h${LOOP} v22 H${x1 + 8}` : `M${x1} ${y} H${x2 - dir * 8}`
+              const line = self ? `M${x1} ${y} h${LOOP} v${DROP} H${x1 + 8}` : `M${x1} ${y} H${x2 - dir * 8}`
               const head = open
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
@@ -180,7 +176,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const tone = m.type === 'error' ? 'text-bad' : on ? 'text-accent' : mark ? mark.tone : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const link = m.step && onJump ? LINK : ''
-              const lw = textWidth((mark?.sign ?? '') + m.label + link, LABEL_PX, 600, true)
+              const lw = tw((mark?.sign ?? '') + m.label + link)
               // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
               const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min((x1 + x2) / 2 - lw / 2, width - lw - 4))
@@ -243,7 +239,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                   {removed && (
                     <line
                       x1={tx}
-                      x2={tx + textWidth(m.label, LABEL_PX, 600, true)}
+                      x2={tx + tw(m.label)}
                       y1={ty - 4}
                       y2={ty - 4}
                       stroke="currentColor"
@@ -259,7 +255,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           <div
             ref={anchor}
             className="pointer-events-none absolute scroll-mt-28 scroll-mb-8 pt-12"
-            style={{ left: anchorLeft, top: ay - 34, width: Math.abs(ax2 - ax1) + cw }}
+            style={{ left: anchorLeft, top: active.ey - 34, width: Math.abs(active.x2 - active.x1) + cw }}
           >
             <div
               key={focus}
@@ -268,9 +264,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
             >
               <div
                 className="absolute -top-[7px] h-3 w-3 rotate-45 border-t border-l border-line bg-surface"
-                style={{ left: Math.max(12, Math.min(mid - noteLeft - 6, noteW - 24)) }}
+                style={{ left: Math.max(12, Math.min(active.mid - noteLeft - 6, noteW - 24)) }}
               />
-              <Inline text={active.note} />
+              <Inline text={active.m.note} />
               {jump && (
                 <button
                   type="button"
