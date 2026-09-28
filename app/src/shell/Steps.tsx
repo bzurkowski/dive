@@ -68,7 +68,7 @@ const heading = 'text-3xl leading-tight font-bold tracking-tight text-balance'
 export function CardView({ step }: { step: CardStep }) {
   return (
     <article className="text-lg leading-relaxed">
-      <h2 className={heading}>{step.title}</h2>
+      <h1 className={heading}>{step.title}</h1>
       <Rich text={step.body} />
       <Links links={step.links} />
     </article>
@@ -96,7 +96,7 @@ export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean })
 export function TermsView({ step }: { step: TermsStep }) {
   return (
     <article>
-      <h2 className={heading}>{step.title}</h2>
+      <h1 className={heading}>{step.title}</h1>
       {step.say && (
         <p className="mt-2 text-lg leading-snug text-muted">
           <Inline text={step.say} />
@@ -124,9 +124,9 @@ export function QuizView({ step }: { step: QuizStep }) {
   const done = picked !== null
   return (
     <article>
-      <h2 className={heading}>
+      <h1 className={heading}>
         <Inline text={step.question} />
-      </h2>
+      </h1>
       <p className="mt-2 text-muted">Pick one answer.</p>
       <ul className="mt-6 space-y-3">
         {options.map((o, i) => {

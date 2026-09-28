@@ -313,7 +313,7 @@ function StepView({
       <div className="max-w-5xl">
         {crumb}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
+          <h1 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h1>
           {step.kind === 'edge' && (
             <span className="rounded-full border border-edge/50 bg-edge/10 px-2.5 py-0.5 text-sm font-medium text-edge">
               Edge case · optional
