@@ -181,6 +181,8 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
               const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min(mid - lw / 2, width - lw - 4))
               const ty = beside ? y + 15 : y - 9
+              // The hit area spans the line and its label.
+              const hx = Math.min(x1, x2, tx) - 6
               return (
                 <g
                   key={i}
@@ -189,9 +191,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                 >
                   <title>{m.label}</title>
                   <rect
-                    x={Math.min(x1, x2) - 6}
+                    x={hx}
                     y={y - 26}
-                    width={self ? LOOP + lw + 24 : Math.abs(x2 - x1) + 12}
+                    width={Math.max(self ? x1 + LOOP : x2, x1, tx + lw) + 6 - hx}
                     height={self ? 56 : 36}
                     fill="transparent"
                   />
