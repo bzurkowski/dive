@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Inline } from '../Inline'
 import type { CodeNote, CodeStep, FileData, StepViewProps } from '../types'
 import { highlightFile, type Tokens } from './highlight'
@@ -23,7 +23,7 @@ type Props = StepViewProps<CodeStep> & {
 export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const scrolled = useRef(false)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const b = box.current
     const el = b?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
     const card = b?.querySelector<HTMLElement>(`[data-card="${focus}"]`)
@@ -33,7 +33,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
     const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
     b.scrollTo({ top, behavior: scrolled.current ? 'smooth' : 'auto' })
     scrolled.current = true
-  }, [focus])
+  }, [step, focus])
 
   const pick = (e: MouseEvent) => {
     if (!window.getSelection()?.isCollapsed) return // let people select code
