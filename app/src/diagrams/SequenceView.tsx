@@ -81,9 +81,10 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const height = bottom + BOTTOM
 
   const active = rows[focus]
-  const anchorLeft = Math.min(active.x1, active.x2) - cw / 2
   const noteW = Math.min(NOTE_W, width - 16)
   const noteLeft = Math.max(8, Math.min(active.mid - noteW / 2, width - noteW - 8))
+  const anchorLeft = Math.min(active.x1 - cw / 2, active.x2 - cw / 2, noteLeft)
+  const anchorW = Math.max(active.x1 + cw / 2, active.x2 + cw / 2, noteLeft + noteW) - anchorLeft
   const jump = active.m.step && onJump ? active.m.step : undefined
   const tw = (s: string) => textWidth(s, LABEL_PX, 600, true)
 
@@ -253,11 +254,11 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
             })}
           </svg>
 
-          {/* Scroll target: the lanes of the active message, from its row to the end of its callout. */}
+          {/* Scroll target: the lanes of the active message and its callout, from its row to the callout's end. */}
           <div
             ref={anchor}
             className="pointer-events-none absolute scroll-mt-28 scroll-mb-8 pt-12"
-            style={{ left: anchorLeft, top: active.ey - 34, width: Math.abs(active.x2 - active.x1) + cw }}
+            style={{ left: anchorLeft, top: active.ey - 34, width: anchorW }}
           >
             <div
               key={focus}
