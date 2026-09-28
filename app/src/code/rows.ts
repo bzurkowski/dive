@@ -1,4 +1,4 @@
-import type { CodeNote, FileData } from '../types'
+import type { CodeNote, FileData } from '../types.ts'
 
 export interface Row {
   type: 'ctx' | 'add' | 'del' | 'hunk'

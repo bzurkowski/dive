@@ -1,4 +1,4 @@
-import type { Actor } from '../types'
+import type { Actor } from '../types.ts'
 
 export interface Lane {
   label: string // the actor's label, or the name of a collapsed group

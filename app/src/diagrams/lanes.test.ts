@@ -1,11 +1,5 @@
-// Run: node app/src/diagrams/lanes.test.ts
+import { deepStrictEqual as eq } from 'node:assert/strict'
 import { bands, lanes } from './lanes.ts'
-
-function eq(actual: unknown, expected: unknown, what: string) {
-  const a = JSON.stringify(actual)
-  const e = JSON.stringify(expected)
-  if (a !== e) throw new Error(`${what}: got ${a}, want ${e}`)
-}
 
 const actors = [
   { id: 'worker', label: 'runWorker', group: 'app' },
@@ -65,4 +59,3 @@ eq(
   ['app/undefined', 'Y/undefined', 'app/app'],
   'empty group is no group; a group named like an actor keeps its own lane',
 )
-console.log('lanes ok')

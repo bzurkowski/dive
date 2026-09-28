@@ -1,11 +1,5 @@
-// Run: node app/src/code/rows.test.ts
+import { deepStrictEqual as eq } from 'node:assert/strict'
 import { layout, noteSpan, parse } from './rows.ts'
-
-function eq(actual: unknown, expected: unknown, what: string) {
-  const a = JSON.stringify(actual)
-  const e = JSON.stringify(expected)
-  if (a !== e) throw new Error(`${what}: got ${a}, want ${e}`)
-}
 
 const diff = [' a', '-b', '+B', '+C', ' d', ...Array.from({ length: 20 }, (_, i) => ` x${i}`)].join('\n')
 const p = parse({ lang: 'ts', diff: true, text: diff + '\n' })
@@ -34,7 +28,7 @@ eq(
     ['ctx', 'a', 1, 1],
     ['ctx', '', 2, 2],
     ['ctx', 'stray', 3, 3],
-    ['add', 'b', null, 4],
+    ['add', 'b', undefined, 4],
   ],
   'odd diff lines',
 )
@@ -51,4 +45,3 @@ eq(
   'note span keeps its context, a run of 2 far rows stays visible',
 )
 eq(noteSpan(long.rows, { lines: [5, 3], text: '' }), null, 'reversed span')
-console.log('rows ok')

@@ -31,6 +31,7 @@ cd app
 npm run dev      # serves public/dive.json as the data
 npm run build    # writes ../skills/dive/assets/template.html
 npm run format   # prettier; index.html is ignored (dive.py matches its data tag verbatim)
+npm test         # node --test: the *.test.ts files next to the logic they cover
 ```
 
 Rebuild the template only at checkpoints and commit it. The template holds

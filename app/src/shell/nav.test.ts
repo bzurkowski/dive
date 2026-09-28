@@ -1,12 +1,6 @@
-// Run: node app/src/shell/nav.test.ts
+import { deepStrictEqual as eq } from 'node:assert/strict'
 import type { Dive, Step } from '../types.ts'
 import { COVER, END, flatten, flows, move, parseHash, skipEdges, stepSeconds, toHash } from './nav.ts'
-
-function eq(actual: unknown, expected: unknown, what: string) {
-  const a = JSON.stringify(actual)
-  const e = JSON.stringify(expected)
-  if (a !== e) throw new Error(`${what}: got ${a}, want ${e}`)
-}
 
 const card = { kind: 'card', title: 't', body: 'b' } as const
 const dive = {
@@ -136,4 +130,3 @@ for (const [st, sec] of [
   [{ kind: 'quiz', title: '', question: '', options: [{ text: '', correct: true, why: '' }] }, 15],
 ] as [Step, number][])
   eq(stepSeconds(st), sec, `${st.kind} seconds`)
-console.log('nav ok')
