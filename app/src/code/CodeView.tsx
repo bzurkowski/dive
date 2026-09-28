@@ -64,8 +64,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
       <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto">
         {[...new Set(step.notes.map((n) => n.file))].map((path) => {
           const file = files?.[path]
-          if (file)
-            return <FileBody key={path} step={step} path={path} file={file} focus={focus} href={blob && blob + path} />
+          if (file) return <FileBody key={path} step={step} path={path} file={file} focus={focus} blob={blob} />
           return (
             <section key={path} className="border-line not-first:border-t">
               <div className="p-6 text-sm text-muted">
@@ -90,13 +89,13 @@ function FileBody({
   path,
   file,
   focus,
-  href,
+  blob,
 }: {
   step: CodeStep
   path: string
   file: FileData
   focus: number
-  href?: string
+  blob?: string
 }) {
   const parsed = useMemo(() => parse(file), [file])
   // Global note index → row span in this file; notes in other files get null.
@@ -133,6 +132,8 @@ function FileBody({
   const unplaced = step.notes.flatMap((n, i) => (n.file === path && !spans[i] ? [i] : []))
 
   const active = step.notes[focus]
+  // A deleted file has no blob at head.
+  const href = blob && file.status !== 'deleted' ? blob + path.split('/').map(encodeURIComponent).join('/') : ''
   const link =
     href && active?.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
   const card = (i: number) => (
