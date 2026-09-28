@@ -38,7 +38,7 @@ Set the **level**, `new` or `familiar`. If the user's words said how well they k
 
 ## 2. Discover (parallel)
 
-In one message, spawn one **area scout** per area, one **context scout**, and, only when a knowledge tool (Notion, Confluence, Google Drive, Jira, Linear, …) is connected, one **knowledge scout**. Build each prompt from [references/briefs.md](references/briefs.md): the `## Preamble`, then the scout's brief (`## Area scout`, `## Context scout`, or `## Knowledge scout`). An area scout also gets `## Notes format`.
+In one message, spawn one **area scout** per area, one **context scout**, and, only when a knowledge tool (Notion, Confluence, Google Drive, Jira, Linear, Slack, …) is connected (you can call its search now, not only its sign-in), one **knowledge scout**. Build each prompt from [references/briefs.md](references/briefs.md): the `## Preamble`, then the scout's brief (`## Area scout`, `## Context scout`, or `## Knowledge scout`). An area scout also gets `## Notes format`.
 
 **Done when** every scout has returned and its scout note exists in `docs/dives/<slug>/notes/`: `<area>.md` for each area, `context.md`, and `knowledge.md` when you spawned that scout. Respawn a scout whose note is missing.
 
