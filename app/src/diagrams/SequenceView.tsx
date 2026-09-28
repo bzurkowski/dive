@@ -86,6 +86,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const ax1 = active ? x(active.from) : 0
   const ax2 = active ? x(active.to) : 0
   const ay = (ys[focus] ?? 0) + (aself ? 22 : 0)
+  const anchorLeft = Math.min(ax1, ax2) - cw / 2
   const noteW = Math.min(NOTE_W, width - 16)
   const mid = aself ? ax1 + LOOP / 2 : (ax1 + ax2) / 2
   const noteLeft = Math.max(8, Math.min(mid - noteW / 2, width - noteW - 8))
@@ -272,36 +273,33 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           </svg>
 
           {active && (
+            // Scroll target: the lanes of the active message, from its row to the end of its callout.
             <div
               ref={anchor}
-              className="pointer-events-none absolute scroll-mt-28"
-              style={{
-                left: Math.min(ax1, ax2) - cw / 2,
-                top: ay - 34,
-                width: Math.abs(ax2 - ax1) + cw,
-                height: 48 + (active.note ? 82 : 0) + (jump ? 30 : 0),
-              }}
-            />
-          )}
-          {active && (active.note || jump) && (
-            <div
-              key={focus}
-              className="dive-pop absolute z-[5] rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[14px] leading-snug shadow-lg"
-              style={{ left: noteLeft, top: ay + 14, width: noteW }}
+              className="pointer-events-none absolute scroll-mt-28 scroll-mb-8 pt-12"
+              style={{ left: anchorLeft, top: ay - 34, width: Math.abs(ax2 - ax1) + cw }}
             >
-              <div
-                className="absolute -top-[7px] h-3 w-3 rotate-45 border-t border-l border-line bg-surface"
-                style={{ left: Math.max(12, Math.min(mid - noteLeft - 6, noteW - 24)) }}
-              />
-              <Inline text={active.note} />
-              {jump && (
-                <button
-                  type="button"
-                  onClick={() => onJump?.(jump)}
-                  className="mt-1.5 block text-[13px] font-semibold text-accent hover:underline"
+              {(active.note || jump) && (
+                <div
+                  key={focus}
+                  className="dive-pop pointer-events-auto relative z-[5] rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[14px] leading-snug shadow-lg"
+                  style={{ marginLeft: noteLeft - anchorLeft, width: noteW }}
                 >
-                  {step.kind === 'sequence' ? 'Go to flow →' : 'Show code →'}
-                </button>
+                  <div
+                    className="absolute -top-[7px] h-3 w-3 rotate-45 border-t border-l border-line bg-surface"
+                    style={{ left: Math.max(12, Math.min(mid - noteLeft - 6, noteW - 24)) }}
+                  />
+                  <Inline text={active.note} />
+                  {jump && (
+                    <button
+                      type="button"
+                      onClick={() => onJump?.(jump)}
+                      className="mt-1.5 block text-[13px] font-semibold text-accent hover:underline"
+                    >
+                      {step.kind === 'sequence' ? 'Go to flow →' : 'Show code →'}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
