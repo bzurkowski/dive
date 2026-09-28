@@ -15,8 +15,13 @@ Simple and fast. If the skill is slow or long, people do not use it.
 ```
 skills/dive/                  the skill (this is what ships)
   SKILL.md                    entry point: the workflow
-  references/                 loaded on demand (scouts, story, format, writing)
-  scripts/dive.py             prep (fetch PR, diff.json) + build (validate, bake index.html, reading time)
+  references/                 loaded on demand
+    briefs.md                 every subagent prompt: scouts, writers, the scout-note format
+    outline.md                step 3, the architect: flows, outline format, dive.json frame, checklist
+    story.md                  story rules: chapters, flows, sequences, code steps (architect and writers)
+    format.md                 part-file JSON and the rules the build rejects (writers)
+    writing.md                prose rules (writers)
+  scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind); never shipped
   src/types.ts                data contract: single source of truth for dive.json
@@ -39,7 +44,13 @@ Rebuild the template only at checkpoints and commit it. The template holds
 
 ## Data contract
 
-`app/src/types.ts` is the contract. `skills/dive/references/format.md` mirrors the authored part for agents. Change both together.
+`app/src/types.ts` is the contract. Change its copies with it:
+
+- `skills/dive/references/format.md`: the authored part, as TS, for writers.
+- `## The dive.json frame` in `skills/dive/references/outline.md`: `Dive` and `Source`, for the architect.
+- `CHAPTERS`, `REQUIRED` and `CHANGES` in `skills/dive/scripts/dive.py`, which the build checks.
+
+The build's checks are listed for agents twice: format.md `## Structure` and the `(build)` lines of outline.md `## Checklist`. When a check in `dive.py` changes, change both.
 
 ## Commits
 
