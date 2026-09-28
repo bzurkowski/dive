@@ -26,7 +26,7 @@ type Laid = {
   width: number
   height: number
   nodes: Node[]
-  edges: { i: number; pts: Pt[]; lx?: number; ly?: number }[]
+  edges: { i: number; pts: Pt[]; label?: Pt & { width: number } }[]
 }
 
 // Split a long label into two lines at the space nearest the middle.
@@ -42,7 +42,6 @@ function wrap(label: string): string[] {
 function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   const g = new dagre.graphlib.Graph({ multigraph: true })
   g.setGraph({ rankdir, nodesep: 24, ranksep: 48, edgesep: 12, marginx: 12, marginy: 12 })
-  g.setDefaultEdgeLabel(() => ({}))
   for (const n of step.nodes) {
     const lines = wrap(n.label)
     const width = Math.max(96, ...lines.map((l) => textWidth(l, NODE_PX, 500) + 28))
@@ -55,13 +54,17 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   })
   dagre.layout(g)
   return {
-    width: g.graph().width ?? 0,
-    height: g.graph().height ?? 0,
+    width: g.graph().width,
+    height: g.graph().height,
     // One per id: a repeated id overwrites the earlier node.
     nodes: g.nodes().map((id) => g.node(id)),
     edges: g.edges().map((e) => {
       const d = g.edge(e)
-      return { i: Number(e.name), pts: e.v === e.w ? loop(g.node(e.v), d, rankdir) : d.points, lx: d.x, ly: d.y }
+      return {
+        i: Number(e.name),
+        pts: e.v === e.w ? loop(g.node(e.v), d, rankdir) : d.points,
+        label: d.width ? { x: d.x, y: d.y, width: d.width } : undefined,
+      }
     }),
   }
 }
@@ -140,9 +143,8 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
           role="img"
           aria-label={step.title}
         >
-          {l.edges.map(({ i, pts, lx, ly }) => {
+          {l.edges.map(({ i, pts, label }) => {
             const e = step.edges[i]
-            if (pts.length < 2) return null
             const lit = on.has(e.from) && on.has(e.to)
             const [a, b] = pts.slice(-2)
             const deg = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI
@@ -157,19 +159,19 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                   fill="currentColor"
                   transform={`translate(${b.x} ${b.y}) rotate(${deg})`}
                 />
-                {e.label && lx !== undefined && ly !== undefined && (
+                {label && (
                   <>
                     <rect
-                      x={lx - textWidth(e.label, EDGE_PX) / 2 - 4}
-                      y={ly - 9}
-                      width={textWidth(e.label, EDGE_PX) + 8}
+                      x={label.x - label.width / 2}
+                      y={label.y - 9}
+                      width={label.width}
                       height={18}
                       rx={4}
                       className="fill-surface"
                     />
                     <text
-                      x={lx}
-                      y={ly}
+                      x={label.x}
+                      y={label.y}
                       textAnchor="middle"
                       dominantBaseline="central"
                       fill="currentColor"
