@@ -70,8 +70,6 @@ export function skipEdges(dive: Dive, flat: Flat, p: Pos): Pos | null {
   return move(dive, flat, { c: p.c, s: f.end - 1, f: stepSize(steps[f.end - 1]) - 1 }, 1)
 }
 
-// Reading time: ~200 wpm plus a fixed cost to look at code and diagrams.
-// ponytail: rough constants, tune against real dives.
 // Only these keys hold prose, as PROSE in dive.py; ids, enums and paths are not read.
 const PROSE = new Set(['title', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'])
 
@@ -84,18 +82,24 @@ function words(v: unknown): number {
   )
 }
 
+// Reading time: ~200 wpm plus a fixed cost to look at code, diagrams and quizzes.
+// ponytail: rough constants, tune against real dives.
 export function stepSeconds(step: Step): number {
-  const look =
-    step.kind === 'code'
-      ? 10 + 10 * step.notes.length
-      : step.kind === 'sequence' || step.kind === 'flow' || step.kind === 'edge'
-        ? 5 + 4 * step.messages.length
-        : step.kind === 'diagram'
-          ? 8 + 4 * (step.notes?.length ?? 0)
-          : step.kind === 'quiz'
-            ? 15
-            : 0
-  return (words(step) / 200) * 60 + look
+  const read = (words(step) / 200) * 60
+  switch (step.kind) {
+    case 'code':
+      return read + 10 + 10 * step.notes.length
+    case 'sequence':
+    case 'flow':
+    case 'edge':
+      return read + 5 + 4 * step.messages.length
+    case 'diagram':
+      return read + 8 + 4 * (step.notes?.length ?? 0)
+    case 'quiz':
+      return read + 15
+    default:
+      return read
+  }
 }
 
 export const chapterSeconds = (steps: Step[]) => steps.reduce((n, s) => n + stepSeconds(s), 0)
