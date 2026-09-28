@@ -61,7 +61,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
           ))}
         </nav>
       )}
-      <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto motion-safe:scroll-smooth">
+      <div ref={box} onClick={pick} className="min-h-0 flex-1 overflow-auto motion-safe:scroll-smooth">
         {/* dive.py build embeds every note's file */}
         {[...new Set(step.notes.map((n) => n.file))].map((path) => (
           <FileBody key={path} step={step} path={path} file={files![path]} focus={focus} blob={blob} />
@@ -85,7 +85,6 @@ function FileBody({
   blob?: string
 }) {
   const parsed = useMemo(() => parse(file), [file])
-  // Global note index → row span in this file; notes in other files get null.
   const spans = useMemo(
     () => step.notes.map((n) => (n.file === path ? noteSpan(parsed.rows, n) : null)),
     [parsed, step.notes, path],
