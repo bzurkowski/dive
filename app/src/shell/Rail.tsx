@@ -95,7 +95,7 @@ function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: 
               {minutes(chapterSeconds(steps.slice(f.s, f.end)))}
             </span>
           </button>
-          {f === open && (
+          {f === open && f.s + 1 < f.end && (
             <ol className="mt-1.5 ml-[7px] space-y-1 border-l border-line pl-6">
               {range(f.s + 1, f.edge).map(item)}
               {edges(f)}
