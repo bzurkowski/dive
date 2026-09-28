@@ -2,6 +2,8 @@
 
 Tell the story as the author of the change who explains it to a reviewer. Start from the fundamentals and add one layer at a time: the happy path first, then the edge cases. Split a complex domain into layers or regions that the reader takes in one at a time. Show only what matters.
 
+The story plan gives the reader's level: `new` means they barely know this domain, `familiar` means they work in it. Explain as much as that reader needs.
+
 ## Skeleton
 
 | id | Purpose | Typical steps |
@@ -56,9 +58,10 @@ Importance, not brevity: never drop a detail the reader needs to understand the 
 Design the story first, in a `## Story plan` section before any step:
 
 1. The change in one sentence.
-2. The layers the reader must learn, bottom-up: types and constants → data model → migrations → services and how they depend on each other → the request flow. List only the layers this change has. Use the `[<layer>, <core|detail>]` tags on the notes' Flow items.
-3. The big-picture diagrams, one line each: the layer or region it shows.
-4. Left out: one line per group of dropped note items, with the reason.
+2. The level and its reason, from `dive.py level`.
+3. The layers the reader must learn, bottom-up: types and constants → data model → migrations → services and how they depend on each other → the request flow. List only the layers this change has. Use the `[<layer>, <core|detail>]` tags on the notes' Flow items.
+4. The big-picture diagrams, one line each: the layer or region it shows.
+5. Left out: one line per group of dropped note items, with the reason.
 
 Then one line per step: kind, code refs in note order, one-line intent, and the notes to read.
 
@@ -68,6 +71,7 @@ Failed refunds now retry with growing, random waits and stop after 5 attempts.
 
 ## Story plan
 - Change: the worker replaces fixed 60-second retries with capped random backoff and an idempotency key.
+- Level: familiar (14 of your commits touch src/refunds in the last year)
 - Layers: `MAX_ATTEMPTS` and the wait cap → `retryRefund` → the worker loop
 - Diagrams: the worker, `retryRefund` and the gateway
 - Left out: gateway client internals (unchanged); log wording (no behavior change)
