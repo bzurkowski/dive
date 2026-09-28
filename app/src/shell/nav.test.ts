@@ -70,6 +70,10 @@ eq(move(three, tflat, { c: 2, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lan
 eq(move(three, tflat, { c: 0, s: 0, f: 5 }, 1), { c: 0, s: 1, f: 0 }, 'focus past the step size moves on')
 eq(move(three, tflat, END, -1), { c: 2, s: 1, f: 0 }, 'end moves back across chapters')
 eq(move(three, tflat, COVER, -1), COVER, 'cover stays')
+// The cover's start button goes to { c: 0 } even when the dive has no steps.
+const empty = { ...dive, chapters: [] } as Dive
+eq(move(empty, [], { c: 0, s: 0, f: 0 }, 1), END, 'a position outside the dive moves on')
+eq(move(empty, [], { c: 0, s: 0, f: 0 }, -1), COVER, 'a position outside the dive moves back')
 
 // Flows and skipping edge cases.
 const step = (kind: string) => ({

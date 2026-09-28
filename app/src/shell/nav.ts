@@ -30,22 +30,16 @@ export const toHash = (p: Pos) => (p.c === END.c ? '#/end' : p.c < 0 ? '#/' : `#
 
 export const flatIndex = (flat: Flat, p: Pos) => flat.findIndex((x) => x.c === p.c && x.s === p.s)
 
-// Next or previous position: focus inside the step first, then steps, then chapters.
-// Past the last step is the end screen.
+// Next or previous position: focus inside the step first, then the next step.
+// Before the first step is the cover, past the last the end screen.
 export function move(dive: Dive, flat: Flat, p: Pos, dir: 1 | -1): Pos {
-  if (p.c === COVER.c) return dir > 0 && flat[0] ? { ...flat[0], f: 0 } : p
-  let i = flat.length
-  if (p.c !== END.c) {
-    const size = stepSize(dive.chapters[p.c].steps[p.s])
-    if (dir > 0 && p.f + 1 < size) return { ...p, f: p.f + 1 }
-    if (dir < 0 && p.f > 0) return { ...p, f: p.f - 1 }
-    i = flatIndex(flat, p)
-  }
-  i += dir
-  if (i < 0) return COVER
+  const step = dive.chapters[p.c]?.steps[p.s]
+  const f = p.f + dir
+  if (step && f >= 0 && f < stepSize(step)) return { ...p, f }
+  const i = (p.c === END.c ? flat.length : flatIndex(flat, p)) + dir
   const t = flat[i]
-  if (!t) return END
-  return { ...t, f: dir > 0 ? 0 : stepSize(dive.chapters[t.c].steps[t.s]) - 1 }
+  if (t) return { ...t, f: dir > 0 ? 0 : stepSize(dive.chapters[t.c].steps[t.s]) - 1 }
+  return i < 0 ? COVER : END
 }
 
 // A flow in a chapter: its 'flow' step at s, its steps up to end (exclusive).
