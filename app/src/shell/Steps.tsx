@@ -46,8 +46,8 @@ export function Links({ links }: { links?: Link[] }) {
   if (!links?.length) return null
   return (
     <ul className="mt-6 space-y-1 text-base">
-      {links.map((l) => (
-        <li key={l.url}>
+      {links.map((l, i) => (
+        <li key={i}>
           <a href={l.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
             {l.title}
           </a>
@@ -72,8 +72,8 @@ export function CardView({ step }: { step: CardStep }) {
 export function TermList({ terms, narrow }: { terms: Term[]; narrow?: boolean }) {
   return (
     <dl className={`grid gap-x-10 ${narrow ? '' : 'sm:grid-cols-2'}`}>
-      {terms.map((t) => (
-        <div key={t.term} className="border-t border-line py-4">
+      {terms.map((t, i) => (
+        <div key={i} className="border-t border-line py-4">
           <dt className="flex flex-wrap items-baseline gap-x-3">
             <span className="text-xl font-bold tracking-tight">{t.term}</span>
             {t.code && <code className="font-mono text-sm text-muted">{t.code}</code>}
