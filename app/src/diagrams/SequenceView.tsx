@@ -27,15 +27,13 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 
-// Group by app is one choice for every sequence in the dive, remembered when storage works.
+// Group by app is one choice for every sequence in the dive. Storage can be
+// blocked; the choice then holds for this visit only.
 const KEY = 'dive-grouped'
-let groupedPref = (() => {
-  try {
-    return localStorage.getItem(KEY) === '1'
-  } catch {
-    return false
-  }
-})()
+let groupedPref = false
+try {
+  groupedPref = localStorage.getItem(KEY) === '1'
+} catch {}
 
 // Messages up to `focus` are shown; later ones are faint ghosts.
 // The active message carries its note as a callout right under it.
@@ -55,9 +53,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     groupedPref = !grouped
     try {
       localStorage.setItem(KEY, groupedPref ? '1' : '0')
-    } catch {
-      // Storage can be blocked; the choice still holds for this visit.
-    }
+    } catch {}
     setPref(groupedPref)
   }
 
@@ -171,9 +167,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const mark = m.change && CHANGE[m.change]
               const removed = m.change === 'removed'
               const x1 = x(m.from)
-              const x2 = self ? x1 : x(m.to)
+              const x2 = x(m.to)
               const y = ys[i]
-              const dir = self ? -1 : Math.sign(x2 - x1) || 1
+              const dir = self ? -1 : Math.sign(x2 - x1)
               const ey = self ? y + 22 : y // arrow tip
               const dash = removed ? '2 4' : m.type === 'return' ? '5 4' : undefined
               const open = m.type === 'async'
@@ -191,9 +187,8 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                       ? mark.tone
                       : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
-              const sign = mark ? mark.sign : ''
               const link = m.step ? LINK : ''
-              const lw = textWidth(sign + m.label + link, LABEL_PX, 600, true)
+              const lw = textWidth((mark?.sign ?? '') + m.label + link, LABEL_PX, 600, true)
               // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
               const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min((x1 + x2) / 2 - lw / 2, width - lw - 4))
@@ -241,9 +236,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                     fontSize={LABEL_PX}
                     fontWeight={on ? 600 : 400}
                   >
-                    {sign && (
-                      <tspan fill="currentColor" fontWeight={700} className={mark ? mark.tone : ''}>
-                        {sign}
+                    {mark?.sign && (
+                      <tspan fill="currentColor" fontWeight={700} className={mark.tone}>
+                        {mark.sign}
                       </tspan>
                     )}
                     {m.label}
