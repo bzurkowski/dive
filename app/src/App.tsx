@@ -67,7 +67,6 @@ export default function App({ dive }: { dive: Dive }) {
     setPos(p)
   }
 
-  // Open the step with this id (Message.step).
   const jump = (id: string) => {
     const t = flat.find(({ c, s }) => {
       const st = dive.chapters[c].steps[s]
@@ -76,11 +75,7 @@ export default function App({ dive }: { dive: Dive }) {
     if (t) go({ ...t, f: 0 })
   }
 
-  const toggleGlossary = () => {
-    const d = glossary.current
-    if (d?.open) d.close()
-    else d?.showModal()
-  }
+  const toggleGlossary = () => (glossary.current?.open ? glossary.current.close() : glossary.current?.showModal())
 
   const onKey = useEffectEvent((e: KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return
