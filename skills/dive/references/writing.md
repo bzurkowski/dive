@@ -67,7 +67,8 @@ Write like the author of the change, reviewing their own PR for a colleague who 
 | Card `body` | 5 bullets or fewer, one idea each. Or 2-3 short sentences. |
 | Glossary `terms` | 3-10. |
 | Term `meaning` | 1 sentence. What it is in this codebase, not in general. |
-| Sequence `messages` | About 10 at most. |
+| Sequence `messages` | About 20 at most. |
+| Message `note` | 1 sentence. What happens or why. Never restate the label. |
 | Diagram `nodes` | 3-10. |
 | Quiz `question` | 1 sentence. |
 | Quiz `options` | 3-4. Exactly one correct. No "all of the above". |

@@ -242,9 +242,14 @@ def validate(dive, files):
                         errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
             elif k == 'sequence':
                 ids = {a.get('id') for j, a in enumerate(s.get('actors') or [], 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
+                reached = set()  # the first sender and every receiver so far
                 for j, m in enumerate(s.get('messages') or [], 1):
-                    if not need(m, f'{w} message {j}', ('from', 'to', 'label')):
+                    if not need(m, f'{w} message {j}', ('from', 'to', 'label', 'note')):
                         continue
+                    if reached and m.get('from') not in reached:
+                        errs.append(f'{w} message {j}: no earlier message reaches "{m.get("from")}". '
+                                    'Restore the skipped message or merge actors')
+                    reached |= {m.get('from'), m.get('to')}
                     if m.get('from') not in ids or m.get('to') not in ids:
                         errs.append(f'{w} message {j}: from/to must be actor ids ({", ".join(sorted(map(str, ids)))})')
                     if m.get('type', 'call') not in ('call', 'return', 'async', 'error'):

@@ -60,7 +60,7 @@ Importance, not brevity: never drop a detail the reader needs.
 - `card`: problem, decision, answer, review focus, recap.
 - `terms`: the glossary. Give each term's identifier in `code` when it has one.
 - `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author (PR) or owner (module, question) would say about them: what they do and why. Never cite line numbers in text: give those lines their own note.
-- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. Show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
+- `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. Show one pass of a loop, not every repeat. Each message starts from an actor that has control: the one the previous message reached, or a caller still waiting on its call. Never drop a message from the middle of a chain: to shorten a flow, merge actors or split it into two sequences. Every message has a `note`. Use `return` for replies, `error` for failures, `async` for queued work. Queued work reaches its worker with an `async` message.
 - `diagram`: static structure of one layer or region: which parts exist and what depends on what. Use notes to walk through it. Draw one for a simple scope. Add one per extra layer or region of a complex scope, and no more.
 - `quiz`: one at the end of `big-picture`, `walkthrough`, and `edge-cases`.
 

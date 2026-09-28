@@ -187,7 +187,8 @@
             {
               "from": "worker",
               "to": "retry",
-              "label": "retryRefund(refund)"
+              "label": "retryRefund(refund)",
+              "note": "The worker hands each due refund to retryRefund."
             },
             {
               "from": "retry",
@@ -199,7 +200,8 @@
               "from": "gateway",
               "to": "retry",
               "label": "200 OK",
-              "type": "return"
+              "type": "return",
+              "note": "The gateway accepted the refund, so no retry is needed."
             },
             {
               "from": "retry",
@@ -373,7 +375,8 @@
             {
               "from": "retry",
               "to": "gateway",
-              "label": "refund(id, amount, key)"
+              "label": "refund(id, amount, key)",
+              "note": "The same call as on the happy path, but this card is closed."
             },
             {
               "from": "gateway",

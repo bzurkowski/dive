@@ -78,7 +78,7 @@ export interface Message {
   from: string // actor id
   to: string // actor id
   label: string // "POST /refunds"
-  note?: string // one short sentence shown when this message is active
+  note: string // one short sentence shown when this message is active
   type?: 'call' | 'return' | 'async' | 'error' // default 'call'
 }
 

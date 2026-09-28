@@ -45,7 +45,7 @@ interface CodeNote {
 interface Sequence {
   kind: 'sequence'; title: string; say: string
   actors: { id: string; label: string }[]
-  messages: { from: string; to: string; label: string; note?: string; type?: 'call' | 'return' | 'async' | 'error' }[]
+  messages: { from: string; to: string; label: string; note: string; type?: 'call' | 'return' | 'async' | 'error' }[]
 }
 
 interface Diagram {
