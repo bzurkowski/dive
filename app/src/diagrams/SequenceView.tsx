@@ -15,7 +15,6 @@ const NOTE_W = 300
 const LABEL_PX = 12.5
 const LINK = ' ↗' // after the label of a message that links to a step
 
-// PR change marks. Added and removed use the diff colors; changed gets its own tone.
 // Chips are opaque: they sit on the actor box border.
 const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: string }> = {
   added: { tone: 'text-ok', sign: '+ ', badge: 'new', chip: 'bg-add text-ok' },
@@ -44,7 +43,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const [ref, { w }] = useSize<HTMLDivElement>()
   const anchor = useRef<HTMLDivElement>(null)
   const [pref, setPref] = useState(groupedPref)
-  // Offer grouping only where it merges lanes. Message count and order never change.
+  // Offer grouping only where it merges lanes.
   const merged = lanes(step.actors, true)
   const canGroup = merged.lanes.length < step.actors.length
   const grouped = canGroup && pref
@@ -72,7 +71,6 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   // Within one lane (same actor, or one collapsed group) a message loops back.
   const isSelf = (m: Message) => view.of.get(m.from) === view.of.get(m.to)
 
-  // y of each message line.
   const ys: number[] = []
   let bottom = TOP
   for (const m of step.messages) {
@@ -196,7 +194,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const sign = mark ? mark.sign : ''
               const link = m.step ? LINK : ''
               const lw = textWidth(sign + m.label + link, LABEL_PX, 600, true)
-              // Left edge of the label. A self label that would run off the right edge sits above its loop.
+              // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
               const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min((x1 + x2) / 2 - lw / 2, width - lw - 4))
               const ty = beside ? y + 15 : y - 9
