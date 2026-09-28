@@ -140,8 +140,7 @@ function FileBody({
           )}
           {file.diff && (
             <span className="font-mono text-xs">
-              <span className="text-green-700 dark:text-green-400">+{parsed.adds}</span>{' '}
-              <span className="text-red-700 dark:text-red-400">−{parsed.dels}</span>
+              <span className="text-ok">+{parsed.adds}</span> <span className="text-bad">−{parsed.dels}</span>
             </span>
           )}
           {link && (
