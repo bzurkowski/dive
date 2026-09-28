@@ -510,10 +510,17 @@
        "note": "A timeout is retryable."
       },
       {
+       "from": "store",
+       "to": "worker",
+       "label": "due again",
+       "note": "After the delay, the next run gets the refund back.",
+       "type": "async"
+      },
+      {
        "from": "worker",
        "to": "retry",
        "label": "retryRefund(refund)",
-       "note": "The next run sends the refund again."
+       "note": "The worker sends the refund again."
       },
       {
        "from": "retry",
