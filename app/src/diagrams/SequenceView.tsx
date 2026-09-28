@@ -16,13 +16,14 @@ const LABEL_PX = 12.5
 const LINK = ' ↗' // after the label of a message that links to a step
 
 // PR change marks. Added and removed use the diff colors; changed gets its own tone.
+// Chips are opaque: they sit on the actor box border.
 const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: string }> = {
   added: { tone: 'text-ok', sign: '+ ', badge: 'new', chip: 'bg-add text-ok' },
   changed: {
     tone: 'text-blue-700 dark:text-blue-300',
     sign: '~ ',
     badge: 'changed',
-    chip: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+    chip: 'bg-chg text-blue-700 dark:text-blue-300',
   },
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }

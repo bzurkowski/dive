@@ -7,7 +7,7 @@
    the highlighter (mark) is the only color that means "read this now"; green
    and red only for diffs and answers; warm edge only for optional edge cases. Theme: data-theme on <html>, set in index.html.
    Use via Tailwind: bg-bg, bg-surface, text-fg, text-muted, border-line,
-   text-accent, bg-accent/10, bg-mark, bg-add, bg-del, text-ok, text-bad, text-edge.
+   text-accent, bg-accent/10, bg-mark, bg-add, bg-del, bg-chg, text-ok, text-bad, text-edge.
    Fonts: Atkinson Hyperlegible Next and Mono, built for telling similar
    characters apart. Embedded into the HTML, so dives still work offline. */
 @theme {
@@ -19,6 +19,7 @@
   --color-accent: #1c1f26;
   --color-add: #e3f4e6;
   --color-del: #fbe8e8;
+  --color-chg: #e0ecff;
   --color-mark: #ffee8a;
   --color-ok: #1b7a45;
   --color-bad: #c0271d;
@@ -43,6 +44,7 @@
   --color-accent: #e7e9ee;
   --color-add: #13271a;
   --color-del: #341a1b;
+  --color-chg: #1d2c44;
   --color-mark: #423a06;
   --color-ok: #5ccb8c;
   --color-bad: #f28b82;
