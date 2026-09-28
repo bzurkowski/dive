@@ -4,11 +4,10 @@ Write every string in ASD-STE100 Simplified Technical English, for the reader an
 
 ## Sentences
 
-- One idea per sentence. Split a sentence whose clauses are joined by "and", "but", "which" or "while".
+- One idea per sentence. Split a sentence whose clauses are joined by "and", "but", "which", "while", a semicolon or a dash.
 - 25 words or fewer. Most sentences are much shorter.
 - Active voice. Name who acts: "`RefundJob` retries the call", not "the call is retried". Use passive only when the actor does not matter.
 - Simple tenses: present, past, future. "The worker counted the attempt", not "has counted". Keep a compound form only when it carries meaning ("may have failed").
-- Write two sentences where you would join them with a semicolon or a dash.
 - Keep the small words: articles, subject, verb. "Files that are not saved are lost", not "files not saved lost".
 - Make "it", "this" and "they" point to one noun. If two nouns could match, repeat the noun.
 - Write 3 or more items as `- ` lines in a card `body`. Only a card body renders them as a list, and `1.` lines are not a list. Separate paragraphs in a body with a blank line: lines without one between them join into one paragraph. In every other field, a newline shows as a space, so write the items as sentences.
@@ -19,7 +18,7 @@ Write every string in ASD-STE100 Simplified Technical English, for the reader an
 - Use the one-word verb: "start", not "spin up". "Remove", not "take out". "Read", not "dive into".
 - Use the verb, not its noun: "checks the token", not "performs validation of the token".
 - Stack at most 3 nouns. "retry delay cap" is fine. "refund retry delay cap config" is not. Write "the setting that caps the retry delay".
-- One name for one thing: the name that the code and the outline (its glossary section and New names) use, in every step, note and quiz. If the code says `Refund`, write "refund", not "reimbursement".
+- One name for one thing: the name that the code and the outline (its glossary section and New names) use, in every string. If the code says `Refund`, write "refund", not "reimbursement".
 - Wrap code identifiers in backticks in `say`, `body`, `meaning`, `note`, `text`, `question` and `why`: they render as code there. Titles, labels, `term`, `code` and `summary` show backticks as literal characters, so write identifiers there without them.
 
 ## Meaning
@@ -38,13 +37,13 @@ Every list, every run of diagram notes and every run of steps is a build-up. Eac
 |---|---|
 | Step `title` | 6 words or fewer, in plain words, without a colon. |
 | `say` | 1-3 sentences. The one point of this step. |
-| Code note `text` | 1-3 sentences. What this block does, then why it matters. |
+| Code note `text` | 1-3 sentences. |
 | Code note `lines` | About 15 lines at most. |
 | Card `body` | One topic per card. Past about 6 bullets or sentences, split the topic into another card. The "Also changed" card is the exception: it lists every path. |
 | Terms step `terms` | About 2-7. Use as many terms steps as the groups need. |
 | Terms step `say` | 1 sentence. |
 | Term `meaning` | 1-2 sentences. What it is in this codebase, not in general. |
-| Message `label` | About 30 characters. Put paths and long argument lists in the note. |
+| Message `label` | About 30 characters. Put paths and long argument lists in the message note. |
 | Message `note` | 1 sentence. What happens or why, beyond what the label says. |
 | Diagram `nodes` | 3-12. |
 | Quiz `question` | 1 sentence. |
@@ -52,43 +51,19 @@ Every list, every run of diagram notes and every run of steps is a build-up. Eac
 
 ## Before and after
 
-**Code note**
-- Before: "This robust retry mechanism leverages exponential backoff to seamlessly handle transient failures, which is crucial for reliability."
-- After: "`nextDelay` doubles the wait cap after each attempt and picks a random wait below it. Retries after an outage do not all hit the gateway at once."
-
-**`say`**
-- Before: "In this step, we'll dive into how the worker has been updated to track attempts — a key part of the new flow!"
-- After: "The worker now counts each attempt before it sends the refund."
-
-**Card**
-- Before: "Overall, this PR not only improves reliability but also enhances idempotency, security, and maintainability."
-- After: "- Retries stop after 5 attempts.\n- The refund id is the idempotency key. A retry cannot refund twice."
-
-**Term**
-- Before: "Idempotency is a fundamental concept in distributed systems whereby an operation can be applied many times without changing the result."
-- After: "An id that lets the gateway ignore a refund request it already did."
-
-**Quiz option (distractor)**
-- Before: "The server crashes." (nobody picks it, so it tests nothing)
-- After: "The worker skips the refund because the attempt count went up." Why: "No. The count only stops retries after 5 attempts."
-
-**Build-up of cards**
-- Before: "Retries stop after 5 attempts." / "The refund id is the key." / "Waits are random." (three facts in no order)
-- After: "Retries flooded the gateway" (the problem) / "A retry could refund twice" (the same retries cause a second problem) / "The decision" (one fix for each problem)
-
-**Certainty**
-- Before: "This fixes all duplicate refunds." (the PR only covers retries)
-- After: "This stops duplicate refunds from retries. It does not cover refunds started by hand."
+| Slot | Before | After |
+|---|---|---|
+| Code note | "This robust retry mechanism leverages exponential backoff to seamlessly handle transient failures, which is crucial for reliability." | "`nextDelay` doubles the wait cap after each attempt and picks a random wait below it. Retries after an outage do not all hit the gateway at once." |
+| `say` | "In this step, we'll dive into how the worker has been updated to track attempts — a key part of the new flow!" | "The worker now counts each attempt before it sends the refund." |
+| Card | "Overall, this PR not only improves reliability but also enhances idempotency, security, and maintainability." | "- Retries stop after 5 attempts.\n- The refund id is the idempotency key. A retry cannot refund twice." |
+| Term | "Idempotency is a fundamental concept in distributed systems whereby an operation can be applied many times without changing the result." | "An id that lets the gateway ignore a refund request it already did." |
+| Quiz option (distractor) | "The server crashes." (nobody picks it, so it tests nothing) | "The worker skips the refund because the attempt count went up." Why: "No. The count only stops retries after 5 attempts." |
+| Build-up of cards | "Retries stop after 5 attempts." / "The refund id is the key." / "Waits are random." (three facts in no order) | "Retries flooded the gateway" (the problem) / "A retry could refund twice" (the same retries cause a second problem) / "The decision" (one fix for each problem) |
+| Certainty | "This fixes all duplicate refunds." (the PR only covers retries) | "This stops duplicate refunds from retries. It does not cover refunds started by hand." |
 
 ## Self-check
 
-Before you save a part, check every string in it:
-
-1. **Sentences** and **Words** hold.
-2. Every sentence states a fact from the code, the diff or a cited doc, with the source's certainty (**Meaning**).
-3. Each point follows from the one before (**Build-up**).
-4. Each slot is within its limit (**Slot limits**).
-5. Then scan for the patterns below. Replace each with what its first column says.
+Before you save a part, check every string in it against **Sentences**, **Words**, **Meaning**, **Build-up** and **Slot limits**. Then scan it for the patterns below, and replace each with what its first column says.
 
 | Write instead | Pattern | Examples |
 |---|---|---|

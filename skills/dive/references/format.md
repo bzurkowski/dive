@@ -129,7 +129,7 @@ interface Link { title: string; url: string }
 - **Diagrams**: every edge endpoint and every `focus` id is a node id. When a diagram has notes, every node is in the `focus` of some note.
 - **Quizzes**: 3-4 options, and exactly one has `"correct": true` (the boolean, not the string).
 
-The reader sees the code that the build embeds. In a PR, a file the PR changed shows as its full diff, and any other file shows as its text at head. Outside a PR, a file shows as it is in the working tree. The view folds unchanged lines far from a change or a note.
+The reader sees the code that the build embeds. In a PR, a file the PR changed shows as its full diff, and any other file shows as its text at head. Outside a PR, a file shows as it is in the working tree. The view folds unchanged lines far from a change or a code note.
 
 ## Example: `parts/walkthrough.1.json`
 

@@ -1,8 +1,6 @@
 # Briefs
 
-Each subagent sees only its prompt: the Preamble, then its brief, and for an area scout the Notes format too. Fill every `<placeholder>` outside the Notes format. `<base>` and `<head>` are the shas that prep prints. Keep a line marked `PR:`, `Otherwise:` or `Flow writer:` only where it applies. The subagent fills the CAPS words in commands (FILE, NOTE, TERM) and the `<...>` of the Notes format.
-
-The edge-case, actor, hop and `detail` sentences are copies from story.md and outline.md. Change them together.
+Fill every `<placeholder>` outside the Notes format. Keep a line marked `PR:`, `Otherwise:` or `Flow writer:` only where it applies. The subagent fills the CAPS words and the `<...>` of the Notes format. A subagent sees only its prompt, so the edge-case sentence copies outline.md "From call chains to flows", the actor sentence copies story.md "Sequences", and the hop rule is its message rule with "hop" for "message". Change them together.
 
 ## Preamble
 
@@ -43,17 +41,16 @@ The edge-case, actor, hop and `detail` sentences are copies from story.md and ou
 
 > You write <your share: the flow `<id>`, or the chapters <ids>> of the dive, into `docs/dives/<slug>/<part files>`.
 > Read `<skill>/references/format.md`, `<skill>/references/story.md` and `<skill>/references/writing.md`. Then read the story plan and your sections of `docs/dives/<slug>/outline.md`.
-> The outline fixes the ids, the actors, the messages and their order, and the links. You own every string: titles, labels, notes, and `say`.
-> Other writers work at the same time. Take every name from the outline: its glossary section and its New names.
+> The outline fixes the ids, the actors, the messages and their order, and the links. You own every string: titles, labels, `say`, and the code, message and diagram notes.
 > Read only the scout-note lines that the outline cites: `grep -n 'TERM' docs/dives/<slug>/notes/NOTE.md`, or `sed -n '/^### Risks/,$p' docs/dives/<slug>/notes/NOTE.md` for risks. Read `notes/context.md` and `notes/knowledge.md` whole when the outline cites them.
-> Flow writer: start your part with the `flow` step, then follow the order in story.md "Flows". For each message that links to a code step, show the clearest lines around its anchor in that step.
+> Flow writer: follow the order in story.md "Flows". For each message that links to a code step, show the clearest lines around its anchor in that step.
 > Leave the build to the orchestrator: it merges the part files and deletes them.
 > Done when every step of your outline sections is in your part files, each sequence has the outline's messages in order with their links, each code step has the id the outline gives, and every string passes the self-check in writing.md.
 > Return the part files you wrote, and each outline item you could not place, with the reason.
 
 ## Notes format
 
-An area scout writes its scout note in this form. The summary is everything above `## Detail`.
+An area scout writes its scout note in this form.
 
 ```md
 # <area>
