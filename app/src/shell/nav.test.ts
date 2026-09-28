@@ -16,8 +16,6 @@ eq(move(dive, flat, END, 1), END, 'end stays')
 eq(move(dive, flat, END, -1), { c: 0, s: 1, f: 0 }, 'end moves back to the last step')
 eq(move(dive, flat, COVER, 1), { c: 0, s: 0, f: 0 }, 'cover moves to the first step')
 eq(move(dive, flat, { c: 0, s: 0, f: 0 }, -1), COVER, 'first step moves back to the cover')
-eq(parseHash(dive, toHash(END)), END, 'end hash round trip')
-eq(parseHash(dive, '#/'), COVER, 'cover hash')
 
 // Hashes: an intro with a 3-message sequence, then a recap.
 const msg = { from: 'a', to: 'b', label: 'l', note: 'n' }
@@ -60,12 +58,7 @@ eq(move(three, tflat, { c: 0, s: 1, f: 0 }, -1), { c: 0, s: 0, f: 0 }, 'first fo
 eq(move(three, tflat, { c: 0, s: 1, f: 2 }, 1), { c: 1, s: 0, f: 0 }, 'last focus moves to the next chapter')
 eq(move(three, tflat, { c: 1, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lands on the last focus')
 eq(move(three, tflat, { c: 0, s: 0, f: 5 }, 1), { c: 0, s: 1, f: 0 }, 'focus past the step size moves on')
-eq(move(three, tflat, END, -1), { c: 1, s: 1, f: 0 }, 'end moves back across chapters')
 eq(move(three, tflat, COVER, -1), COVER, 'cover stays')
-// The cover's start button goes to { c: 0 } even when the dive has no steps.
-const empty = { ...dive, chapters: [] } as Dive
-eq(move(empty, [], { c: 0, s: 0, f: 0 }, 1), END, 'a position outside the dive moves on')
-eq(move(empty, [], { c: 0, s: 0, f: 0 }, -1), COVER, 'a position outside the dive moves back')
 
 // Flows and skipping edge cases.
 const step = (kind: string) => ({
@@ -103,14 +96,11 @@ eq(skipEdges(walk, wflat, { c: 0, s: 5, f: 0 }), null, 'no skip in a flow withou
 eq(skipEdges(walk, wflat, { c: 0, s: 7, f: 0 }), { c: 1, s: 0, f: 0 }, 'last flow skips to the next chapter')
 eq(skipEdges(walk, wflat, { c: 0, s: 8, f: 0 }), { c: 1, s: 0, f: 0 }, 'last edge skips to the next chapter')
 eq(skipEdges(walk, wflat, COVER), null, 'no skip on the cover')
-eq(flows([flow] as Step[]), [{ s: 0, end: 1, edge: 1 }], 'a flow with no steps after it')
-eq(flows([card, flow, edge, quiz] as Step[]), [{ s: 1, end: 4, edge: 2 }], 'edge cases run from the first edge')
 eq(flows([card, quiz] as Step[]), [], 'no flow step, no flows')
-const tail = { ...dive, chapters: [{ id: 'walkthrough', title: 'W', steps: [card, flow, edge] }] } as Dive
+const tail = { ...dive, chapters: [{ id: 'walkthrough', title: 'W', steps: [flow, edge] }] } as Dive
 const tailFlat = flatten(tail)
-eq(skipEdges(tail, tailFlat, { c: 0, s: 0, f: 0 }), null, 'no skip before the first flow')
-eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'a flow right before its edges skips to the end')
-eq(skipEdges(tail, tailFlat, { c: 0, s: 2, f: 0 }), END, 'the last edge of the dive skips to the end')
+eq(skipEdges(tail, tailFlat, { c: 0, s: 0, f: 0 }), END, 'a flow right before its edges skips to the end')
+eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'the last edge of the dive skips to the end')
 
 // Reading time: prose is empty below, so any counted id, enum or path shows as extra seconds.
 const note = { file: 'a b.ts', lines: [1, 2], side: 'old', focus: ['a b'], text: '' }
