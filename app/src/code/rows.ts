@@ -1,12 +1,10 @@
 import type { CodeNote, FileData } from '../types.ts'
 
 export interface Row {
-  type: 'ctx' | 'add' | 'del' | 'hunk'
+  type: 'ctx' | 'add' | 'del'
   old?: number // line number, old side
   new?: number // line number, new side
   text: string
-  o?: number // index into oldText lines (for tokens)
-  n?: number // index into newText lines (for tokens)
 }
 
 export interface Parsed {
@@ -22,7 +20,7 @@ export function parse(file: FileData): Parsed {
   const lines = file.text.split('\n')
   if (lines.at(-1) === '') lines.pop()
   if (!file.diff) {
-    const rows = lines.map((text, i): Row => ({ type: 'ctx', new: i + 1, text, n: i }))
+    const rows = lines.map((text, i): Row => ({ type: 'ctx', new: i + 1, text }))
     return { rows, oldText: '', newText: lines.join('\n'), adds: 0, dels: 0 }
   }
   const rows: Row[] = []
@@ -35,15 +33,15 @@ export function parse(file: FileData): Parsed {
   for (const line of lines) {
     const text = line.slice(1)
     if (line[0] === '+') {
-      rows.push({ type: 'add', new: n++, text, n: newL.length })
+      rows.push({ type: 'add', new: n++, text })
       newL.push(text)
       adds++
     } else if (line[0] === '-') {
-      rows.push({ type: 'del', old: o++, text, o: oldL.length })
+      rows.push({ type: 'del', old: o++, text })
       oldL.push(text)
       dels++
     } else {
-      rows.push({ type: 'ctx', old: o++, new: n++, text, o: oldL.length, n: newL.length })
+      rows.push({ type: 'ctx', old: o++, new: n++, text })
       oldL.push(text)
       newL.push(text)
     }

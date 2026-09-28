@@ -183,8 +183,7 @@ const RowView = memo(function RowView(p: {
   anchor: boolean // first row of the focused note
 }) {
   const { row } = p
-  if (row.type === 'hunk') return <div className="bg-bg px-4 text-xs leading-6 text-muted">{row.text}</div>
-  const line = row.type === 'del' ? p.tokens?.old?.[row.o!] : p.tokens?.new?.[row.n!]
+  const line = row.type === 'del' ? p.tokens?.old?.[row.old! - 1] : p.tokens?.new?.[row.new! - 1]
   const bg = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : p.active ? 'bg-mark' : ''
   const band = p.active
     ? 'shadow-[inset_4px_0_0_var(--color-accent)]'
