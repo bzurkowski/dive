@@ -13,6 +13,7 @@ import {
   move,
   parseHash,
   skipEdges,
+  stepSize,
   toHash,
   COVER,
   END,
@@ -21,7 +22,7 @@ import {
 import { Rail } from './shell/Rail'
 import { ThemeButton } from './shell/Theme'
 import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
-import { stepSize, type Dive, type Step, type Term } from './types'
+import type { Dive, Step, Term } from './types'
 
 export default function App({ dive }: { dive: Dive }) {
   const flat = useMemo(() => flatten(dive), [dive])

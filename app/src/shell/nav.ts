@@ -1,10 +1,26 @@
-import { stepSize, type Dive, type Step } from '../types.ts'
+import type { Dive, Step } from '../types.ts'
 
 // Chapter, step, and focus inside the step. c = -1 is the cover, c = -2 the end screen.
 export interface Pos {
   c: number
   s: number
   f: number
+}
+
+// Number of → positions in a step: one per note or message, else one.
+export function stepSize(step: Step): number {
+  switch (step.kind) {
+    case 'code':
+      return Math.max(1, step.notes.length)
+    case 'sequence':
+    case 'flow':
+    case 'edge':
+      return Math.max(1, step.messages.length)
+    case 'diagram':
+      return Math.max(1, step.notes?.length ?? 0)
+    default:
+      return 1
+  }
 }
 
 export const COVER: Pos = { c: -1, s: 0, f: 0 }

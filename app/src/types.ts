@@ -142,23 +142,6 @@ export interface FileData {
   oldPath?: string // for renames
 }
 
-// Number of → positions inside a step. Code, sequence and diagram steps
-// have one position per note or message; everything else has one.
-export function stepSize(step: Step): number {
-  switch (step.kind) {
-    case 'code':
-      return Math.max(1, step.notes.length)
-    case 'sequence':
-    case 'flow':
-    case 'edge':
-      return Math.max(1, step.messages.length)
-    case 'diagram':
-      return Math.max(1, step.notes?.length ?? 0)
-    default:
-      return 1
-  }
-}
-
 export interface StepViewProps<S extends Step> {
   step: S
   focus: number // active position, 0-based, < stepSize(step)
