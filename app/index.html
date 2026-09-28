@@ -6,8 +6,9 @@
     <title>Dive</title>
     <script>
       // Theme before first paint: the saved choice, else the OS setting.
+      var saved
       try {
-        var saved = localStorage.getItem('dive-theme')
+        saved = localStorage.getItem('dive-theme')
       } catch (e) {}
       document.documentElement.dataset.theme =
         saved === 'light' || saved === 'dark'
