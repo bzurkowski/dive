@@ -7,12 +7,12 @@ export function useSize<T extends HTMLElement>() {
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    // Measure before the first paint, so the first frame already fits.
+    // React renders an update from ResizeObserver only after the first paint,
+    // so measure now to fit the first frame. clientWidth includes padding.
     const cs = getComputedStyle(el)
-    const pad = (a: string, b: string) => parseFloat(cs.getPropertyValue(a)) + parseFloat(cs.getPropertyValue(b))
     setSize({
-      w: el.clientWidth - pad('padding-left', 'padding-right'),
-      h: el.clientHeight - pad('padding-top', 'padding-bottom'),
+      w: el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+      h: el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom),
     })
     const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height }))
     ro.observe(el)
