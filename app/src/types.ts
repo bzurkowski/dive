@@ -1,6 +1,7 @@
 // Data contract for a dive. Single source of truth.
-// Agents author `dive.json` (everything except `files`).
-// `dive.py build` adds `files` and bakes the result into index.html.
+// Agents author `dive.json`, except `files` and the git fields of `source` (repo, base, head).
+// `dive.py build` fills those and bakes the result into index.html. It rejects a dive where
+// a field without `?` is missing or empty ("" or []), so app code can rely on them.
 // Mirror authored changes in every copy that AGENTS.md lists under "Data contract".
 
 export interface Dive {
