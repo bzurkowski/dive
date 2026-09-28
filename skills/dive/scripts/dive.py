@@ -107,7 +107,13 @@ def prep(d, pr, base_ref):
     git('fetch', '-q', 'origin', f'+refs/pull/{n}/head:refs/dive/pr-{n}',
         f'+refs/heads/{base_ref}:refs/remotes/origin/{base_ref}')
     head = git('rev-parse', f'refs/dive/pr-{n}').strip()
-    base = git('merge-base', f'refs/remotes/origin/{base_ref}', head).strip()
+    tip = f'refs/remotes/origin/{base_ref}'
+    base = git('merge-base', tip, head).strip()
+    if base == head:  # merged with a merge commit: diff against the base branch as it was at the merge
+        merges = git('rev-list', '--ancestry-path', '--merges', '--reverse', f'{head}..{tip}').split()
+        if not merges:
+            sys.exit(f'PR #{n} is already in {base_ref} without a merge commit. Cannot find its changes.')
+        base = git('merge-base', f'{merges[0]}^1', head).strip()
     repo = repo_slug()
     files = diff_files(base, head)
     diff = {'repo': repo, 'pr': n, 'url': f'https://github.com/{repo}/pull/{n}' if repo else None,

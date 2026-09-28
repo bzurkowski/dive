@@ -17,38 +17,50 @@ def sh(cwd, *cmd):
     return subprocess.run(cmd, cwd=cwd, check=True, capture_output=True, text=True).stdout
 
 
+def pr_repo():
+    """A clone of github.com/o/r (a bare repo on disk) with PR #1 on refs/pull/1/head. The clone stays on main."""
+    tmp = Path(tempfile.mkdtemp())
+    origin, work = tmp / 'github.com' / 'o' / 'r.git', tmp / 'work'
+    sh(tmp, 'git', 'init', '-q', '--bare', '-b', 'main', str(origin))
+    sh(tmp, 'git', 'clone', '-q', str(origin), str(work))
+    git = lambda *a: sh(work, 'git', '-c', 'user.name=t', '-c', 'user.email=t@t', *a)
+    (work / 'app.py').write_text('def pay(x):\n    return x\n')
+    git('add', '.'); git('commit', '-qm', 'base'); git('push', '-q', 'origin', 'HEAD:main')
+    sh(work, 'git', 'remote', 'set-head', 'origin', 'main')
+    (work / 'app.py').write_text('def pay(x):\n    if x < 0:\n        raise ValueError(x)\n    return x\n')
+    (work / 'util.py').write_text('X = 1\n')
+    git('add', '.'); git('commit', '-qm', 'pr'); git('push', '-q', 'origin', 'HEAD:refs/pull/1/head')
+    git('reset', '-q', '--hard', 'HEAD~1')  # user's tree stays on base
+    return work, git
+
+
+def run(work, *a):
+    return subprocess.run([sys.executable, str(DIVE), *a], cwd=work, capture_output=True, text=True)
+
+
+def changed(d):
+    return [f['path'] for f in json.loads((d / 'diff.json').read_text())['files']]
+
+
 class DiveTest(unittest.TestCase):
     def test_prep_and_build(self):
-        tmp = Path(tempfile.mkdtemp())
-        origin, work = tmp / 'origin.git', tmp / 'work'
-        sh(tmp, 'git', 'init', '-q', '--bare', '-b', 'main', str(origin))
-        sh(tmp, 'git', 'clone', '-q', str(origin), str(work))
-        git = lambda *a: sh(work, 'git', '-c', 'user.name=t', '-c', 'user.email=t@t', *a)
-        (work / 'app.py').write_text('def pay(x):\n    return x\n')
-        git('add', '.'); git('commit', '-qm', 'base'); git('push', '-q', 'origin', 'HEAD:main')
-        sh(work, 'git', 'remote', 'set-head', 'origin', 'main')
-        (work / 'app.py').write_text('def pay(x):\n    if x < 0:\n        raise ValueError(x)\n    return x\n')
-        (work / 'util.py').write_text('X = 1\n')
-        git('add', '.'); git('commit', '-qm', 'pr'); git('push', '-q', 'origin', 'HEAD:refs/pull/1/head')
-        git('reset', '-q', '--hard', 'HEAD~1')  # user's tree stays on base
-
-        run = lambda *a: subprocess.run([sys.executable, str(DIVE), *a], cwd=work, capture_output=True, text=True)
+        work, git = pr_repo()
         d = work / 'docs' / 'dives' / 'pr-1'
-        r = run('prep', str(d), '--pr', 'https://github.com/o/r/pull/1')
+        r = run(work, 'prep', str(d), '--pr', 'https://github.com/o/r/pull/1')
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual([f['path'] for f in json.loads((d / 'diff.json').read_text())['files']], ['app.py', 'util.py'])
+        self.assertEqual(changed(d), ['app.py', 'util.py'])
 
         (d / 'dive.json').write_text(json.dumps({'title': 'T', 'summary': 'S', 'source': {'kind': 'pr', 'ref': '1'}, 'chapters': []}))
         (d / 'parts').mkdir()
         step = {'kind': 'code', 'title': 'Guard', 'say': 'A guard.', 'notes': [{'file': 'app.py', 'lines': [2, 9], 'text': 'x'}]}
         (d / 'parts' / 'walkthrough.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'Walkthrough', 'steps': [step]}))
-        r = run('build', str(d))
+        r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 1)
         self.assertIn('outside app.py', r.stdout)
 
         step['notes'][0]['lines'] = [2, 3]
         (d / 'parts' / 'walkthrough.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'Walkthrough', 'steps': [step]}))
-        r = run('build', str(d))
+        r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn('Reading: 7 words, 1 code notes, about 1 min.', r.stdout)
         self.assertFalse((d / 'parts' / 'walkthrough.json').exists())
@@ -58,6 +70,16 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(data['chapters'][0]['id'], 'walkthrough')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
+
+    def test_prep_merged_pr(self):
+        work, git = pr_repo()
+        (work / 'other.py').write_text('Y = 2\n')
+        git('add', '.'); git('commit', '-qm', 'other PR')
+        git('fetch', '-q', 'origin', 'refs/pull/1/head')
+        git('merge', '-q', '--no-ff', '-m', 'Merge PR 1', 'FETCH_HEAD'); git('push', '-q', 'origin', 'HEAD:main')
+        r = run(work, 'prep', str(work / 'd'), '--pr', '1')
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(changed(work / 'd'), ['app.py', 'util.py'])
 
     def test_level(self):
         work = Path(tempfile.mkdtemp())
