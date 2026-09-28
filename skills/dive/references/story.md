@@ -4,8 +4,6 @@
 
 The reader has already read a lot of code today. They want to know what this code really does, and they check each claim against the code. Walk them through it one small step at a time, with one new idea per step and each claim on the lines that show it.
 
-The story plan's `Level:` line says how well the reader knows the domain. For `new` (they barely know it), open the glossary with a primer card, such as "Stellar in five facts", and define every domain term the dive uses. For `familiar` (they work in it), define only the domain terms this scope adds.
-
 ## Voice
 
 A PR is a **self-review**: the author explains their own change to a reviewer. For a module or question, the owner of the code shows it to a new teammate. In both voices:
@@ -37,6 +35,8 @@ The chapters, in order. Leave out a chapter that has nothing true to say.
 A build-up of short cards, one topic each, that tells the whole story the walkthrough needs. For a PR: the problem, the constraint, the decision, then what the decision means for the code. For a module or question: what the code is for, who uses it, and how it is wired in (the route, job, flag or import that starts it). For a question, the answer comes first. Give a card that draws on the PR, a ticket or a page its `links`.
 
 ## Glossary
+
+The story plan's `Level:` line says how well the reader knows the domain. For `new` (they barely know it), open the glossary with a primer card, such as "Stellar in five facts", and define every domain term the dive uses. For `familiar` (they work in it), define only the domain terms this scope adds.
 
 The glossary defines the domain terms. Order them by dependency: each meaning uses only terms defined above it, or plain words. Group them by concept into small `terms` steps, such as "Stellar basics", then "An Earn action", then "Who pays". Each step's `say` ties its group to the group before. Give a term its identifier in `code` when the code has one.
 

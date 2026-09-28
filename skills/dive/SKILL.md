@@ -38,7 +38,7 @@ Set the **level**, `new` or `familiar`. If the user's words said how well they k
 
 ## 2. Discover (parallel)
 
-In one message, spawn one **area scout** per area, one **context scout**, and, only when a knowledge tool (Notion, Confluence, Google Drive, Jira, Linear, Slack, …) is connected (you can call its search now, not only its sign-in), one **knowledge scout**. Build each prompt from [references/briefs.md](references/briefs.md): the `## Preamble`, then the scout's brief (`## Area scout`, `## Context scout`, or `## Knowledge scout`). An area scout also gets `## Notes format`.
+In one message, spawn one **area scout** per area, one **context scout**, and, only when a knowledge tool (Notion, Confluence, Google Drive, Jira, Linear, Slack, …) is connected and its search works, one **knowledge scout**. Build each prompt from [references/briefs.md](references/briefs.md): the `## Preamble`, then the scout's brief (`## Area scout`, `## Context scout`, or `## Knowledge scout`). An area scout also gets `## Notes format`.
 
 **Done when** every scout has returned and its scout note exists in `docs/dives/<slug>/notes/`: `<area>.md` for each area, `context.md`, and `knowledge.md` when you spawned that scout. Respawn a scout whose note is missing.
 
@@ -66,7 +66,7 @@ In one message, spawn the writers. Skip a writer whose chapters the outline leav
 | big-picture | `parts/big-picture.json` |
 | review-focus and recap | `parts/review-focus.json`, `parts/recap.json` |
 
-**Done when** every writer you spawned has returned, its part files exist (`ls docs/dives/<slug>/parts`), and each outline item a writer could not place is placed or dropped on purpose. Respawn a writer whose part is missing.
+**Done when** every writer you spawned has returned, its part files exist (`ls docs/dives/<slug>/parts`), and each outline item a writer could not place is in a part file (you place it) or on the story plan's `Left out:` line with its reason. Respawn a writer whose part is missing.
 
 ## 5. Build
 

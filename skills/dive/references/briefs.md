@@ -1,6 +1,6 @@
 # Briefs
 
-Fill every `<placeholder>` outside the Notes format. Keep a line marked `PR:`, `Otherwise:` or `Flow writer:` only where it applies, and drop the marker. The subagent fills the CAPS words and the `<...>` of the Notes format. A subagent sees only its prompt, so the edge-case sentence copies outline.md "From call chains to flows", the actor sentence copies story.md "Sequences", and the hop rule is its message rule with "hop" for "message". Change them together.
+Fill every `<placeholder>` outside the Notes format. Keep a line marked `PR:`, `Otherwise:` or `Flow writer:` only where it applies, and drop the marker. The subagent fills the CAPS words and the `<...>` of the Notes format.
 
 ## Preamble
 
