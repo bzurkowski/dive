@@ -1,8 +1,7 @@
 import type { Dive, Step } from '../types'
-import { chapterSeconds, flowAt, flows, minutes, type Flow, type Pos } from './nav'
+import { chapterSeconds, flowAt, flows, minutes, type Pos } from './nav'
 
-// Chapters on a vertical "depth line". The line fills in as the reader goes deeper.
-// Steps of the current chapter are listed under it.
+// Chapters on a vertical "depth line" that fills in as the reader goes deeper.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
   const last = dive.chapters.findLastIndex((ch) => ch.steps.length)
   return (
@@ -50,8 +49,6 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
 
 const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
 
-// Steps of the current chapter. Each flow is a header, its steps indented past
-// the flow title; only the current flow is expanded. Edge steps sit under their own label.
 function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
   const fl = flows(steps)
   const open = flowAt(fl, pos.s)
@@ -67,17 +64,9 @@ function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: 
       </button>
     </li>
   )
-  const edges = (f: Flow) =>
-    f.edge < f.end && (
-      <li className="pt-1">
-        <p className="text-xs font-medium text-edge">Edge cases · optional</p>
-        <ol className="mt-1 space-y-1 border-l border-dashed border-edge/60 pl-3">{range(f.edge, f.end).map(item)}</ol>
-      </li>
-    )
-  const list = 'mt-2 space-y-1 border-l border-line pl-3'
 
   return (
-    <ol className={list}>
+    <ol className="mt-2 space-y-1 border-l border-line pl-3">
       {range(0, fl[0]?.s ?? steps.length).map(item)}
       {fl.map((f) => (
         <li key={f.s} className="pt-1">
@@ -98,7 +87,14 @@ function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: 
           {f === open && f.s + 1 < f.end && (
             <ol className="mt-1.5 ml-[7px] space-y-1 border-l border-line pl-6">
               {range(f.s + 1, f.edge).map(item)}
-              {edges(f)}
+              {f.edge < f.end && (
+                <li className="pt-1">
+                  <p className="text-xs font-medium text-edge">Edge cases · optional</p>
+                  <ol className="mt-1 space-y-1 border-l border-dashed border-edge/60 pl-3">
+                    {range(f.edge, f.end).map(item)}
+                  </ol>
+                </li>
+              )}
             </ol>
           )}
         </li>
