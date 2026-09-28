@@ -1,5 +1,5 @@
 // Run: node app/src/shell/nav.test.ts
-import type { Dive } from '../types.ts'
+import type { Dive, Step } from '../types.ts'
 import { COVER, END, flatten, flows, move, parseHash, skipEdges, toHash } from './nav.ts'
 
 function eq(actual: unknown, expected: unknown, what: string) {
@@ -61,6 +61,16 @@ for (const h of [
 ])
   eq(parseHash(three, h), COVER, `garbage ${JSON.stringify(h)}`)
 
+const tflat = flatten(three)
+eq(move(three, tflat, { c: 0, s: 1, f: 0 }, 1), { c: 0, s: 1, f: 1 }, 'focus moves inside a step')
+eq(move(three, tflat, { c: 0, s: 1, f: 1 }, -1), { c: 0, s: 1, f: 0 }, 'focus moves back inside a step')
+eq(move(three, tflat, { c: 0, s: 1, f: 0 }, -1), { c: 0, s: 0, f: 0 }, 'first focus moves to the previous step')
+eq(move(three, tflat, { c: 0, s: 1, f: 2 }, 1), { c: 2, s: 0, f: 0 }, 'last focus skips the empty chapter')
+eq(move(three, tflat, { c: 2, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lands on the last focus')
+eq(move(three, tflat, { c: 0, s: 0, f: 5 }, 1), { c: 0, s: 1, f: 0 }, 'focus past the step size moves on')
+eq(move(three, tflat, END, -1), { c: 2, s: 1, f: 0 }, 'end moves back across chapters')
+eq(move(three, tflat, COVER, -1), COVER, 'cover stays')
+
 // Flows and skipping edge cases.
 const step = (kind: string) => ({
   kind,
@@ -97,3 +107,11 @@ eq(skipEdges(walk, wflat, { c: 0, s: 5, f: 0 }), null, 'no skip in a flow withou
 eq(skipEdges(walk, wflat, { c: 0, s: 7, f: 0 }), { c: 1, s: 0, f: 0 }, 'last flow skips to the next chapter')
 eq(skipEdges(walk, wflat, { c: 0, s: 8, f: 0 }), { c: 1, s: 0, f: 0 }, 'last edge skips to the next chapter')
 eq(skipEdges(walk, wflat, COVER), null, 'no skip on the cover')
+eq(flows([flow] as Step[]), [{ s: 0, end: 1, edge: 1 }], 'a flow with no steps after it')
+eq(flows([card, flow, edge, quiz] as Step[]), [{ s: 1, end: 4, edge: 2 }], 'edge cases run from the first edge')
+eq(flows([card, quiz] as Step[]), [], 'no flow step, no flows')
+const tail = { ...dive, chapters: [{ id: 'walkthrough', title: 'W', steps: [card, flow, edge] }] } as Dive
+const tailFlat = flatten(tail)
+eq(skipEdges(tail, tailFlat, { c: 0, s: 0, f: 0 }), null, 'no skip before the first flow')
+eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'a flow right before its edges skips to the end')
+eq(skipEdges(tail, tailFlat, { c: 0, s: 2, f: 0 }), END, 'the last edge of the dive skips to the end')
