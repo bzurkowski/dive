@@ -66,50 +66,35 @@ export function parse(file: FileData): Parsed {
 export function noteSpan(rows: Row[], note: Omit<CodeNote, 'file'>): [number, number] | null {
   const [a, b] = note.lines
   const side = note.side === 'old' ? 'old' : 'new'
-  let first = -1
-  let last = -1
-  rows.forEach((r, i) => {
+  const covered = (r: Row) => {
     const v = r[side]
-    if (v !== undefined && v >= a && v <= b) {
-      if (first < 0) first = i
-      last = i
-    }
-  })
-  return first < 0 ? null : [first, last]
+    return v !== undefined && v >= a && v <= b
+  }
+  const first = rows.findIndex(covered)
+  return first < 0 ? null : [first, rows.findLastIndex(covered)]
 }
 
-export type Item = { kind: 'row'; i: number } | { kind: 'gap'; start: number; end: number } // end exclusive
+type Item = { kind: 'row'; i: number } | { kind: 'gap'; start: number; end: number } // end exclusive
 
-// Hide unchanged rows more than `context` rows away from a change or a note.
-// Runs shorter than 4 rows stay visible; `open` holds gap starts the user expanded.
-export function layout(rows: Row[], spans: ([number, number] | null)[], open: Set<number>, context = 8): Item[] {
-  const hot = rows.map((r) => r.type !== 'ctx')
-  for (const s of spans) if (s) hot.fill(true, s[0], s[1] + 1)
-  if (!hot.includes(true)) return rows.map((_, i) => ({ kind: 'row', i }))
+const CONTEXT = 8 // unchanged rows kept around a change or a note
+const MIN_GAP = 4 // shorter runs stay visible: folding them saves little room
 
-  const dist = rows.map(() => Infinity)
-  let last = -Infinity
-  for (let i = 0; i < rows.length; i++) {
-    if (hot[i]) last = i
-    dist[i] = i - last
-  }
-  last = Infinity
-  for (let i = rows.length - 1; i >= 0; i--) {
-    if (hot[i]) last = i
-    dist[i] = Math.min(dist[i], last - i)
-  }
+// Rows to show, with far unchanged runs folded into gaps. `open` holds the starts of gaps the user expanded.
+export function layout(rows: Row[], spans: ([number, number] | null)[], open: Set<number>): Item[] {
+  const near = rows.map(() => false)
+  const keep = (a: number, b: number) => near.fill(true, Math.max(0, a - CONTEXT), b + CONTEXT + 1)
+  rows.forEach((r, i) => r.type !== 'ctx' && keep(i, i))
+  for (const s of spans) if (s) keep(s[0], s[1])
+  if (!near.includes(true)) return rows.map((_, i) => ({ kind: 'row', i }))
 
   const items: Item[] = []
   let i = 0
   while (i < rows.length) {
-    if (dist[i] <= context) {
-      items.push({ kind: 'row', i: i++ })
-      continue
-    }
     const start = i
-    while (i < rows.length && dist[i] > context) i++
-    if (i - start < 4 || open.has(start)) for (let k = start; k < i; k++) items.push({ kind: 'row', i: k })
-    else items.push({ kind: 'gap', start, end: i })
+    while (i < rows.length && !near[i]) i++
+    if (i - start >= MIN_GAP && !open.has(start)) items.push({ kind: 'gap', start, end: i })
+    else for (let k = start; k < i; k++) items.push({ kind: 'row', i: k })
+    if (i < rows.length) items.push({ kind: 'row', i: i++ })
   }
   return items
 }

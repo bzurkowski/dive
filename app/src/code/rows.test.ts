@@ -41,4 +41,14 @@ eq(
 
 const plain = parse({ lang: 'py', diff: false, text: 'a\nb\n' })
 eq(layout(plain.rows, [], new Set()).length, 2, 'plain file without notes shows all')
+eq(layout(parse({ lang: 'py', diff: false, text: '' }).rows, [], new Set()), [], 'empty file')
+
+const long = parse({ lang: 'py', diff: false, text: Array.from({ length: 30 }, (_, i) => `l${i}`).join('\n') })
+const spanned = layout(long.rows, [null, [10, 10]], new Set())
+eq(
+  [spanned.length, spanned[0], spanned.at(-1)],
+  [20, { kind: 'row', i: 0 }, { kind: 'gap', start: 19, end: 30 }],
+  'note span keeps its context, a run of 2 far rows stays visible',
+)
+eq(noteSpan(long.rows, { lines: [5, 3], text: '' }), null, 'reversed span')
 console.log('rows ok')
