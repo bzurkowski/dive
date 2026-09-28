@@ -14,12 +14,11 @@ export interface CodeLink {
 type Props = StepViewProps<CodeStep> & {
   files?: Record<string, FileData>
   blob?: string // GitHub blob URL prefix; the file path is appended
-  links?: CodeLink[] // shown as a strip above the code
-  onLink?: (i: number) => void // user clicked links[i]
+  links?: CodeLink[]
+  onLink?: (i: number) => void
 }
 
-// One section per file, in order of first appearance in the notes.
-// `focus` and every data-note/card/anchor index are step-global note indices.
+// `focus`, data-note and data-card hold step-global note indices, across files.
 export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const scrolled = useRef(false)
