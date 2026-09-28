@@ -24,7 +24,6 @@ export function useSize<T extends HTMLElement>() {
 const ctx = document.createElement('canvas').getContext('2d')
 const families: Record<string, string> = {}
 
-// Rendered width of `text` in the page's sans or mono font.
 export function textWidth(text: string, px: number, weight = 400, mono = false): number {
   if (!ctx) return text.length * px * 0.6
   const key = mono ? 'mono' : 'sans'

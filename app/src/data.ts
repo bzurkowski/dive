@@ -1,7 +1,6 @@
 import type { Dive } from './types'
 
-// Baked dives carry their data inline. In dev the tag holds a placeholder,
-// so fall back to fetching public/<?data=name>.json (default dive.json).
+// In dev the data tag holds a placeholder: fetch public/<?data=name>.json instead.
 export async function loadDive(): Promise<Dive> {
   const inline = document.getElementById('dive-data')?.textContent ?? ''
   try {

@@ -32,7 +32,6 @@ export default function App({ dive }: { dive: Dive }) {
       for (const st of ch.steps) if (st.kind === 'terms') for (const t of st.terms) seen.set(t.term, t)
     return [...seen.values()]
   }, [dive])
-  // Code step id → the messages of its flow step that show it.
   const backLinks = useMemo(() => {
     const m = new Map<string, (CodeLink & { pos: Pos })[]>()
     dive.chapters.forEach((ch, c) =>
@@ -60,7 +59,6 @@ export default function App({ dive }: { dive: Dive }) {
     return () => removeEventListener('hashchange', sync)
   }, [dive])
 
-  // Focus moves replace the history entry; step and chapter moves push one.
   const go = (p: Pos) => {
     const hash = toHash(p)
     if (hash !== location.hash) history[p.c === pos.c && p.s === pos.s ? 'replaceState' : 'pushState'](null, '', hash)
@@ -288,7 +286,6 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
   )
 }
 
-// Code and diagrams fill the screen under a short header; the other steps read as a page.
 function StepView({
   dive,
   step,
