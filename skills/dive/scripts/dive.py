@@ -281,6 +281,8 @@ def validate(dive, files):
                 bad = {x for pair in refs for x in pair} | focus
                 if bad - ids:
                     errs.append(f'{w}: unknown node ids {sorted(map(str, bad - ids))}')
+                if s.get('notes') and ids - focus:  # the view reveals nodes note by note
+                    errs.append(f'{w}: nodes {sorted(map(str, ids - focus))} are in no note\'s focus, so they never show')
             elif k == 'quiz':
                 opts = s.get('options') or []
                 if not 3 <= len(opts) <= 4:
