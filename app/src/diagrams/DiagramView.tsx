@@ -21,10 +21,11 @@ const EDGE_PX = 11.5
 const LINE_H = 18
 
 type Pt = { x: number; y: number }
+type Node = DiagramStep['nodes'][number] & { lines: string[]; x: number; y: number; width: number; height: number }
 type Laid = {
   width: number
   height: number
-  nodes: { id: string; x: number; y: number; w: number; h: number; lines: string[] }[]
+  nodes: Node[]
   edges: { i: number; pts: Pt[]; lx?: number; ly?: number }[]
 }
 
@@ -42,14 +43,10 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   const g = new dagre.graphlib.Graph({ multigraph: true })
   g.setGraph({ rankdir, nodesep: 24, ranksep: 48, edgesep: 12, marginx: 12, marginy: 12 })
   g.setDefaultEdgeLabel(() => ({}))
-  const lines = new Map<string, string[]>()
   for (const n of step.nodes) {
-    const ls = wrap(n.label)
-    lines.set(n.id, ls)
-    g.setNode(n.id, {
-      width: Math.max(96, ...ls.map((l) => textWidth(l, NODE_PX, 500) + 28)),
-      height: 20 + ls.length * LINE_H,
-    })
+    const lines = wrap(n.label)
+    const width = Math.max(96, ...lines.map((l) => textWidth(l, NODE_PX, 500) + 28))
+    g.setNode(n.id, { ...n, lines, width, height: 20 + lines.length * LINE_H })
   }
   step.edges.forEach((e, i) => {
     if (!g.hasNode(e.from) || !g.hasNode(e.to)) return
@@ -60,10 +57,8 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   return {
     width: g.graph().width ?? 0,
     height: g.graph().height ?? 0,
-    nodes: step.nodes.map((n) => {
-      const d = g.node(n.id)
-      return { id: n.id, x: d.x ?? 0, y: d.y ?? 0, w: d.width, h: d.height, lines: lines.get(n.id)! }
-    }),
+    // One per id: a repeated id overwrites the earlier node.
+    nodes: g.nodes().map((id) => g.node(id)),
     edges: g.edges().map((e) => {
       const d = g.edge(e)
       return { i: Number(e.name), pts: d.points ?? [], lx: d.x, ly: d.y }
@@ -101,7 +96,6 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const fade = (lit: boolean, ...ids: string[]) =>
     !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
-  const tint = new Map(step.nodes.map((n) => [n.id, n.group ? TINTS[groups.indexOf(n.group) % TINTS.length] : PLAIN]))
 
   return (
     <div className="flex h-full w-full flex-col bg-surface">
@@ -167,26 +161,26 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
             )
           })}
           {l.nodes.map((n) => {
-            const t = tint.get(n.id) ?? PLAIN
+            const t = n.group ? TINTS[groups.indexOf(n.group) % TINTS.length] : PLAIN
             const lit = on.has(n.id)
             const to = lit ? -1 : focusOf.findIndex((f) => f.includes(n.id))
             return (
               <g
                 key={n.id}
-                transform={`translate(${n.x - n.w / 2} ${n.y - n.h / 2})`}
+                transform={`translate(${n.x - n.width / 2} ${n.y - n.height / 2})`}
                 className={`transition-opacity duration-300 ${fade(lit, n.id)} ${to >= 0 ? 'cursor-pointer hover:opacity-80' : ''}`}
                 onClick={to >= 0 ? () => onFocus(to) : undefined}
               >
                 <rect
-                  width={n.w}
-                  height={n.h}
+                  width={n.width}
+                  height={n.height}
                   rx={10}
                   strokeWidth={lit ? 2 : 1}
                   className={`transition-all duration-300 ${t.fill} ${lit ? 'stroke-accent' : t.stroke}`}
                 />
                 <text
-                  x={n.w / 2}
-                  y={n.h / 2 - ((n.lines.length - 1) * LINE_H) / 2}
+                  x={n.width / 2}
+                  y={n.height / 2 - ((n.lines.length - 1) * LINE_H) / 2}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize={NODE_PX}
@@ -194,7 +188,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                   className="fill-fg"
                 >
                   {n.lines.map((line, k) => (
-                    <tspan key={k} x={n.w / 2} dy={k ? LINE_H : 0}>
+                    <tspan key={k} x={n.width / 2} dy={k ? LINE_H : 0}>
                       {line}
                     </tspan>
                   ))}
