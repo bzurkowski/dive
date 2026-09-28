@@ -15,12 +15,14 @@ from pathlib import Path
 TEMPLATE = Path(__file__).resolve().parent.parent / 'assets' / 'template.html'
 DATA_TAG = '<script id="dive-data" type="application/json">'
 PLACEHOLDER = DATA_TAG + '__DIVE_DATA__</script>'
-CHAPTERS = ['why', 'glossary', 'big-picture', 'walkthrough', 'edge-cases', 'review-focus', 'recap']
+CHAPTERS = ['intro', 'glossary', 'big-picture', 'walkthrough', 'review-focus', 'recap']
 REQUIRED = {
     'card': ('title', 'body'),
     'terms': ('title', 'terms'),
     'code': ('title', 'say', 'notes'),
     'sequence': ('title', 'say', 'actors', 'messages'),
+    'flow': ('id', 'title', 'say', 'actors', 'messages'),
+    'edge': ('title', 'say', 'actors', 'messages'),
     'diagram': ('title', 'say', 'nodes', 'edges'),
     'quiz': ('title', 'question', 'options'),
 }
@@ -39,6 +41,11 @@ PROSE = {'title', 'summary', 'say', 'text', 'body', 'term', 'meaning', 'question
 DIFF = ('-M', '--no-color', '--no-ext-diff')  # user git settings must not change the output
 HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
 NEW_BELOW = 10  # ponytail: first guess, tune after real dives
+SEQUENCES = ('sequence', 'flow', 'edge')
+STEP_ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*$')
+CHANGES = ('added', 'changed', 'removed')
+MAX_ACTORS = 30
+MAX_EDGES = 2  # edge steps per flow
 
 
 def git(*args, check=True):
@@ -207,6 +214,7 @@ def validate(dive, files):
         need(l, f'dive.json source link {j}', ('title', 'url'))
     if not dive['chapters']:
         errs.append('dive.json: no chapter has steps')
+    pr = src.get('kind') == 'pr'
     for c in dive['chapters']:
         need(c, f"chapter {c['id']}", ('title',))
         for i, s in enumerate(c['steps'], 1):
@@ -240,8 +248,15 @@ def validate(dive, files):
                         errs.append(f'{w} note {j}: side "old" needs a changed file, {p} is unchanged')
                     elif f and ln[1] > side_len(f, side):
                         errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
-            elif k == 'sequence':
-                ids = {a.get('id') for j, a in enumerate(s.get('actors') or [], 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
+            elif k in SEQUENCES:
+                actors = s.get('actors') or []
+                if len(actors) > MAX_ACTORS:
+                    errs.append(f'{w}: {len(actors)} actors, at most {MAX_ACTORS}. Split the flow')
+                ids = {a.get('id') for j, a in enumerate(actors, 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
+                for j, a in enumerate(actors, 1):
+                    if isinstance(a, dict) and 'group' in a and not isinstance(a['group'], str):
+                        errs.append(f'{w} actor {j}: group must be a string')
+                    errs.extend(f'{w} actor {j}: {e}' for e in change_errs(a, pr))
                 reached = set()  # the first sender and every receiver so far
                 for j, m in enumerate(s.get('messages') or [], 1):
                     if not need(m, f'{w} message {j}', ('from', 'to', 'label', 'note')):
@@ -254,6 +269,9 @@ def validate(dive, files):
                         errs.append(f'{w} message {j}: from/to must be actor ids ({", ".join(sorted(map(str, ids)))})')
                     if m.get('type', 'call') not in ('call', 'return', 'async', 'error'):
                         errs.append(f'{w} message {j}: type must be call, return, async or error')
+                    errs.extend(f'{w} message {j}: {e}' for e in change_errs(m, pr))
+                    if 'step' in m and not isinstance(m['step'], str):
+                        errs.append(f'{w} message {j}: step must be a step id')
             elif k == 'diagram':
                 ids = {n.get('id') for j, n in enumerate(s.get('nodes') or [], 1) if need(n, f'{w} node {j}', ('id', 'label'))}
                 refs = [(e.get('from'), e.get('to')) for j, e in enumerate(s.get('edges') or [], 1)
@@ -270,6 +288,86 @@ def validate(dive, files):
                 opts = [o for j, o in enumerate(opts, 1) if need(o, f'{w} option {j}', ('text', 'why'))]
                 if sum(o.get('correct') is True for o in opts) != 1:
                     errs.append(f'{w}: needs exactly one correct option (correct: true)')
+    return errs + links(dive)
+
+
+def change_errs(x, pr):
+    if not isinstance(x, dict) or 'change' not in x:
+        return []
+    if not pr:
+        return ['"change" marks only belong in a PR dive']
+    return [] if x['change'] in CHANGES else [f'change must be one of {", ".join(CHANGES)}']
+
+
+def split_flows(steps):
+    """Walkthrough steps as [(flow step number, flow step, [(number, step) after it])]. Steps before the first flow are lost."""
+    flows = []
+    for i, s in enumerate(steps, 1):
+        if isinstance(s, dict) and s.get('kind') == 'flow':
+            flows.append((i, s, []))
+        elif flows and isinstance(s, dict):
+            flows[-1][2].append((i, s))
+    return flows
+
+
+def links(dive):
+    """Where each kind may go, step ids, and message links between steps."""
+    errs, ids, overview = [], set(), []
+    for c in dive['chapters']:
+        for i, s in enumerate(c['steps'], 1):
+            if not isinstance(s, dict):
+                continue
+            k, w = s.get('kind'), f"{c['id']} step {i} ({s.get('kind')} '{s.get('title', '')}')"
+            if k in ('flow', 'edge') and c['id'] != 'walkthrough':
+                errs.append(f'{w}: {k} steps belong in walkthrough')
+            if k == 'sequence':
+                if c['id'] == 'walkthrough':
+                    errs.append(f'{w}: in walkthrough, open a flow with "flow" and draw an edge case with "edge"')
+                overview.append((w, s))
+            if 'id' in s or k == 'flow' or (k == 'code' and c['id'] == 'walkthrough'):
+                sid = s.get('id')
+                if not isinstance(sid, str) or not STEP_ID.match(sid):
+                    errs.append(f'{w}: needs an "id" of lowercase letters, digits and dashes')
+                elif sid in ids:
+                    errs.append(f'{w}: id "{sid}" is used twice')
+                ids.add(sid)
+    # a link must be a string: a list or object would break the lookups below
+    msgs = lambda s: [m for m in s.get('messages') or [] if isinstance(m, dict) and isinstance(m.get('step', ''), str)]
+    wt = next((c for c in dive['chapters'] if c['id'] == 'walkthrough'), None)
+    flows = split_flows(wt['steps']) if wt else []
+    if wt and not (isinstance(wt['steps'][0], dict) and wt['steps'][0].get('kind') == 'flow'):
+        errs.append('walkthrough step 1: the walkthrough starts with a flow step')
+    for n, f, rest in flows:
+        fw = f"walkthrough flow '{f.get('title', '')}'"
+        code = {s.get('id'): i for i, s in rest if s.get('kind') == 'code' and isinstance(s.get('id'), str)}
+        edges = [s for _, s in rest if s.get('kind') == 'edge']
+        if len(edges) > MAX_EDGES:
+            errs.append(f'{fw}: {len(edges)} edge steps, at most {MAX_EDGES}')
+        seen_edge = False
+        for i, s in rest:
+            if seen_edge and s.get('kind') != 'edge':
+                errs.append(f"walkthrough step {i} ({s.get('kind')} '{s.get('title', '')}'): only edge steps may follow an edge step in a flow")
+            seen_edge = seen_edge or s.get('kind') == 'edge'
+        for s in [f, *edges]:
+            for j, m in enumerate(msgs(s), 1):
+                if 'step' in m and m['step'] not in code:
+                    errs.append(f"walkthrough {s.get('kind')} '{s.get('title', '')}' message {j}: step \"{m['step']}\" "
+                                f"is not a code step of this flow ({', '.join(code) or 'it has none'})")
+        first = {}
+        for j, m in enumerate(msgs(f), 1):
+            first.setdefault(m.get('step'), j)
+        for sid, i in code.items():
+            if sid not in first:
+                errs.append(f'walkthrough step {i} (code "{sid}"): no message of the flow links to it. '
+                            f'Add "step": "{sid}" to the message it implements')
+        order = [first[sid] for sid in code if sid in first]
+        if order != sorted(order):
+            errs.append(f'{fw}: code steps must follow the order of their first linking message')
+    flow_ids = {f.get('id') for _, f, _ in flows}
+    for w, s in overview:
+        for j, m in enumerate(msgs(s), 1):
+            if 'step' in m and m['step'] not in flow_ids:
+                errs.append(f"{w} message {j}: step \"{m['step']}\" is not a flow id ({', '.join(map(str, flow_ids)) or 'no flows'})")
     return errs
 
 
@@ -294,9 +392,10 @@ def build(d):
     if not isinstance(dive, dict):
         sys.exit(f'Cannot read {d}/dive.json: {errs[0] if errs else "it must be a JSON object"}')
     chapters = {c.get('id'): c for c in dive.get('chapters') or [] if isinstance(c, dict)}
-    parts = sorted((d / 'parts').glob('*.json')) if (d / 'parts').is_dir() else []
+    order = lambda p: (p.name.split('.')[0], int(p.name.split('.')[1]) if p.name.count('.') == 2 and p.name.split('.')[1].isdigit() else 0)
+    parts = sorted((d / 'parts').glob('*.json'), key=order) if (d / 'parts').is_dir() else []
     merged = {}
-    for p in parts:  # parts/<id>.json, or <id>.1.json, <id>.2.json for a split chapter
+    for p in parts:  # parts/<id>.json, or <id>.1.json, <id>.2.json: one per flow of the walkthrough
         c = load(p, errs)
         if not isinstance(c, dict):
             if c is not None:
@@ -343,8 +442,14 @@ def build(d):
     if skipped:
         print(f"Not embedded (lockfile or > {MAX_LINES} lines): {', '.join(skipped)}")
     w = words(dive)
-    notes = sum(len(s['notes']) for c in dive['chapters'] for s in c['steps'] if s['kind'] == 'code')
-    print(f'Reading: {w} words, {notes} code notes, about {max(1, round(w / 200))} min.')
+    count = lambda steps: sum(len(s['notes']) for s in steps if s['kind'] == 'code')
+    print(f"Reading: {w} words, {count(s for c in dive['chapters'] for s in c['steps'])} code notes, about {max(1, round(w / 200))} min.")
+    wt = next((c for c in dive['chapters'] if c['id'] == 'walkthrough'), None)
+    for _, f, rest in split_flows(wt['steps']) if wt else []:
+        steps = [f, *(s for _, s in rest)]
+        edges = sum(s['kind'] == 'edge' for s in steps)
+        print(f"  flow '{f['title']}': {words(steps)} words, {count(steps)} code notes, "
+              f"{len(f['messages'])} messages, {edges} edge cases")
 
 
 def level(paths, rev):
