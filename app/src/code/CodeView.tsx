@@ -109,8 +109,9 @@ function FileBody({
   const active = step.notes[focus]
   // A deleted file has no blob at head.
   const href = blob && file.status !== 'deleted' ? blob + path.split('/').map(encodeURIComponent).join('/') : ''
-  const link =
-    href && active.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
+  // plain=1: a rendered file (Markdown, notebook) ignores line anchors.
+  const [a, b] = active.lines
+  const link = href && active.file === path && active.side !== 'old' ? `${href}?plain=1#L${a}-L${b}` : href
   const card = (i: number) => <NoteCard key={`n${i}`} notes={step.notes} i={i} focus={focus} />
 
   return (
