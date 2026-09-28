@@ -230,8 +230,9 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
               {notes.map((_, i) => (
                 <button
                   key={i}
+                  type="button"
                   aria-label={`Note ${i + 1} of ${notes.length}`}
-                  aria-current={i === focus}
+                  aria-current={i === focus ? 'step' : undefined}
                   onClick={() => onFocus(i)}
                   className={`h-2 w-2 rounded-full transition-colors ${i === focus ? 'bg-accent' : 'bg-line hover:bg-muted'}`}
                 />
