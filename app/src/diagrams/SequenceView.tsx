@@ -161,7 +161,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                 strokeDasharray="4 4"
               />
             ))}
-            {rows.map(({ m, x1, x2, self, y, ey }, i) => {
+            {rows.map(({ m, x1, x2, self, y, ey, mid }, i) => {
               const on = i === focus
               const mark = m.change && CHANGE[m.change]
               const removed = m.change === 'removed'
@@ -179,7 +179,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const lw = tw((mark?.sign ?? '') + m.label + link)
               // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
-              const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min((x1 + x2) / 2 - lw / 2, width - lw - 4))
+              const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min(mid - lw / 2, width - lw - 4))
               const ty = beside ? y + 15 : y - 9
               return (
                 <g
