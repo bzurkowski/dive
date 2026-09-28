@@ -3,16 +3,14 @@ import { chapterSeconds, flowAt, flows, minutes, type Pos } from './nav'
 
 // Chapters on a vertical "depth line" that fills in as the reader goes deeper.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
-  const last = dive.chapters.findLastIndex((ch) => ch.steps.length)
   return (
     <ol>
       {dive.chapters.map((ch, c) => {
-        if (!ch.steps.length) return null
         const current = c === pos.c
         const past = c < pos.c
         return (
           <li key={ch.id} className="relative pb-5 pl-8">
-            {c !== last && (
+            {c < dive.chapters.length - 1 && (
               <span
                 aria-hidden
                 className={`absolute top-3 bottom-0 left-[11px] w-0.5 ${past ? 'bg-accent' : 'bg-line'}`}
