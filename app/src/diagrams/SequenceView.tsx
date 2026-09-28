@@ -215,7 +215,6 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                     fill="transparent"
                   />
                   <path
-                    key={on ? `on${focus}` : 'off'}
                     d={line}
                     fill="none"
                     stroke="currentColor"
@@ -225,7 +224,6 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                     className={on && !dash ? 'dive-draw' : ''}
                   />
                   <path
-                    key={on ? `h${focus}` : 'h'}
                     d={head}
                     fill={open ? 'none' : 'currentColor'}
                     stroke="currentColor"
