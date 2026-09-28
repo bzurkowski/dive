@@ -25,9 +25,9 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
   const scrolled = useRef(false)
   useLayoutEffect(() => {
     const b = box.current
-    const el = b?.querySelector<HTMLElement>(`[data-anchor="${focus}"]`)
     const card = b?.querySelector<HTMLElement>(`[data-card="${focus}"]`)
-    if (!b || !el || !card) return
+    if (!b || !card) return
+    const el = b.querySelector<HTMLElement>('[data-anchor]') ?? card
     const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
     // Span start at 20% from the top, unless that pushes the card below the fold.
     const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
@@ -70,12 +70,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
               <div className="p-6 text-sm text-muted">
                 File not included in this dive: <code className="font-mono">{path}</code>
               </div>
-              {step.notes.map(
-                (n, i) =>
-                  n.file === path && (
-                    <NoteCard key={i} note={n} i={i} total={step.notes.length} active={i === focus} anchor />
-                  ),
-              )}
+              {step.notes.map((n, i) => n.file === path && <NoteCard key={i} notes={step.notes} i={i} focus={focus} />)}
             </section>
           )
         })}
@@ -125,16 +120,7 @@ function FileBody({
   const href = blob && file.status !== 'deleted' ? blob + path.split('/').map(encodeURIComponent).join('/') : ''
   const link =
     href && active?.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
-  const card = (i: number) => (
-    <NoteCard
-      key={`n${i}`}
-      note={step.notes[i]}
-      i={i}
-      total={step.notes.length}
-      active={i === focus}
-      anchor={!spans[i]}
-    />
-  )
+  const card = (i: number) => <NoteCard key={`n${i}`} notes={step.notes} i={i} focus={focus} />
 
   return (
     <section className="border-line not-first:border-t">
@@ -187,7 +173,7 @@ function FileBody({
               diff={file.diff}
               note={note}
               active={note === focus}
-              anchor={spans[focus]?.[0] === it.i ? focus : undefined}
+              anchor={spans[focus]?.[0] === it.i}
             />,
             ...spans.flatMap((s, i) => (s?.[1] === it.i ? [card(i)] : [])),
           ]
@@ -203,7 +189,7 @@ const RowView = memo(function RowView(p: {
   diff: boolean
   note: number // owning note, -1 for none
   active: boolean // owned by the focused note
-  anchor?: number
+  anchor: boolean // first row of the focused note
 }) {
   const { row } = p
   if (row.type === 'hunk') return <div className="bg-bg px-4 text-xs leading-6 text-muted">{row.text}</div>
@@ -218,7 +204,7 @@ const RowView = memo(function RowView(p: {
   return (
     <div
       data-note={p.note >= 0 ? p.note : undefined}
-      data-anchor={p.anchor}
+      data-anchor={p.anchor || undefined}
       className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
     >
       {p.diff && <span className={num}>{row.old ?? ''}</span>}
@@ -241,21 +227,21 @@ const RowView = memo(function RowView(p: {
   )
 })
 
-function NoteCard(p: { note: CodeNote; i: number; total: number; active: boolean; anchor: boolean }) {
-  const { note, i, total, active } = p
+function NoteCard({ notes, i, focus }: { notes: CodeNote[]; i: number; focus: number }) {
+  const note = notes[i]
   const [a, b] = note.lines
+  const active = i === focus
   return (
     <div
       data-note={i}
       data-card={i}
-      data-anchor={p.anchor ? i : undefined}
       className={`mx-4 my-2 cursor-pointer rounded-lg border px-4 py-3 font-sans transition-colors duration-200 ${
         active ? 'border-accent bg-surface text-fg' : 'border-line bg-bg text-muted'
       }`}
     >
       <div className="mb-1 flex items-center gap-2 text-xs text-muted">
         <span className={`rounded-full px-2 font-medium ${active ? 'bg-mark text-fg' : 'bg-line'}`}>
-          {i + 1}/{total}
+          {i + 1}/{notes.length}
         </span>
         <span>
           {a === b ? `Line ${a}` : `Lines ${a}–${b}`}
