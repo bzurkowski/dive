@@ -177,7 +177,7 @@ function FileBody({
       </header>
       <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
         {unplaced.map(card)}
-        {items.map((it) =>
+        {items.flatMap((it) =>
           it.kind === 'gap' ? (
             <button
               key={`g${it.start}`}
