@@ -17,7 +17,7 @@ export interface Source {
   url?: string // PR URL
   repo?: string // "owner/name", used for GitHub links
   base?: string // base commit sha (pr)
-  head?: string // head commit sha (pr) or current commit (module)
+  head?: string // head commit sha (pr), else the commit the dive was built at
   links?: Link[] // knowledge-base pages and tickets used as sources
 }
 
@@ -55,7 +55,7 @@ export interface Term {
 
 export interface CodeStep {
   kind: 'code'
-  id?: string // target of Message.step; required in a flow
+  id?: string // target of Message.step; required in the walkthrough
   title: string // names the piece of logic, never a file
   say: string
   notes: CodeNote[] // in execution order, across files; → moves note to note
@@ -159,7 +159,6 @@ export function stepSize(step: Step): number {
   }
 }
 
-// Props shared by the visual step components.
 export interface StepViewProps<S extends Step> {
   step: S
   focus: number // active position, 0-based, < stepSize(step)
