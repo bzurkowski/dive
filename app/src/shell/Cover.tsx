@@ -6,6 +6,7 @@ const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const chapters = dive.chapters.map((ch, c) => ({ ch, c })).filter(({ ch }) => ch.steps.length)
+  const first = chapters[0]
   const total = chapters.reduce((n, { ch }) => n + chapterSeconds(ch.steps), 0)
   const { source } = dive
   return (
@@ -26,17 +27,19 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
         </h1>
         <p className="mt-6 max-w-[62ch] text-xl leading-relaxed">{dive.summary}</p>
 
-        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <button
-            type="button"
-            autoFocus
-            onClick={() => go({ c: chapters[0]?.c ?? 0, s: 0, f: 0 })}
-            className="rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90"
-          >
-            Start the dive
-          </button>
-          <span className="text-muted">About {minutes(total)} to read</span>
-        </div>
+        {first && (
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <button
+              type="button"
+              autoFocus
+              onClick={() => go({ c: first.c, s: 0, f: 0 })}
+              className="rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90"
+            >
+              Start the dive
+            </button>
+            <span className="text-muted">About {minutes(total)} to read</span>
+          </div>
+        )}
         <p className="mt-4 text-sm text-muted">
           Move with <kbd>←</kbd> <kbd>→</kbd>. Press <kbd>g</kbd> for the glossary. Skip to any chapter below.
         </p>
