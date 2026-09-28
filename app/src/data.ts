@@ -7,8 +7,9 @@ export async function loadDive(): Promise<Dive> {
   try {
     return JSON.parse(inline) as Dive
   } catch {
-    const name = new URLSearchParams(location.search).get('data') ?? 'dive'
-    const res = await fetch(`${name}.json`)
+    const file = `${new URLSearchParams(location.search).get('data') || 'dive'}.json`
+    const res = await fetch(file)
+    if (!res.ok) throw new Error(`${file}: ${res.status} ${res.statusText}`)
     return (await res.json()) as Dive
   }
 }

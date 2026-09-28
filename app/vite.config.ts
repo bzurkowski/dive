@@ -5,5 +5,6 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 
 export default defineConfig({
   base: './',
+  appType: 'mpa', // no SPA fallback: a missing public/<name>.json is a 404, not index.html
   plugins: [react(), tailwindcss(), viteSingleFile()],
 })
