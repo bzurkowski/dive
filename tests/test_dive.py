@@ -123,6 +123,28 @@ class DiveTest(unittest.TestCase):
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout)
 
+    def test_build_reports_shape_mistakes(self):
+        work, git = pr_repo()
+        d = work / 'd'
+        (d / 'parts').mkdir(parents=True)
+        (d / 'dive.json').write_text(json.dumps({'title': 'T', 'summary': 'S', 'source': {'kind': 'module'}, 'chapters': []}))
+        quiz = {'kind': 'quiz', 'title': 'Q', 'question': 'Q?', 'options': [
+            {'text': 'a', 'why': 'w', 'correct': True}, {'text': 'b', 'why': 'w', 'correct': 'false'}, 'c']}
+        card = {'kind': 'card', 'title': 'C', 'body': 'B', 'links': [{'title': 'PR'}]}
+        terms = {'kind': 'terms', 'title': 'T', 'terms': ['Refund']}
+        (d / 'parts' / 'walkthrough.json').write_text(json.dumps([quiz]))
+        (d / 'parts' / 'glossary.json').write_text(json.dumps({'id': 'glossary', 'steps': [terms, 'a step']}))
+        (d / 'parts' / 'recap.json').write_text(json.dumps({'id': 'recap', 'title': 'R', 'steps': [quiz, card]}))
+        r = run(work, 'build', str(d))
+        self.assertEqual(r.returncode, 1)
+        self.assertNotIn('Traceback', r.stderr)
+        for e in ['dive.json source: missing "ref"', 'walkthrough.json: must be an object',
+                  'chapter glossary: missing "title"', "glossary step 1 (terms 'T') term 1: must be an object",
+                  'glossary step 2: must be an object', "recap step 1 (quiz 'Q') option 3: must be an object",
+                  "recap step 2 (card 'C') link 1: missing \"url\""]:
+            self.assertIn(e, r.stdout)
+        self.assertNotIn('exactly one correct', r.stdout)
+
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

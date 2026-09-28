@@ -159,8 +159,8 @@ def side_len(f, side):
 
 def embed_files(dive, diff):
     """Build the `files` map: changed files as full-context diffs, referenced files as text."""
-    refs = {n['file'] for c in dive['chapters'] for s in c['steps'] if s.get('kind') == 'code'
-            for n in s.get('notes') or [] if n.get('file')}
+    refs = {n['file'] for c in dive['chapters'] for s in c['steps'] if isinstance(s, dict) and s.get('kind') == 'code'
+            for n in s.get('notes') or [] if isinstance(n, dict) and n.get('file')}
     files, skipped = {}, []
     if diff:
         full = diff_files(diff['base'], diff['head'], context=10 ** 7)
@@ -190,28 +190,43 @@ def embed_files(dive, diff):
 def validate(dive, files):
     errs = []
 
-    def need(obj, where, keys):
+    def need(obj, where, keys=()):
+        """Report missing keys. False when obj is not a JSON object."""
+        if not isinstance(obj, dict):
+            errs.append(f'{where}: must be an object, not {json.dumps(obj)[:40]}')
+            return False
         errs.extend(f'{where}: missing "{k}"' for k in keys if not obj.get(k))
+        return True
 
     need(dive, 'dive.json', ('title', 'summary', 'source'))
-    if (dive.get('source') or {}).get('kind') not in ('pr', 'module', 'question'):
+    src = dive.get('source') or {}
+    need(src, 'dive.json source', ('ref',))
+    if src.get('kind') not in ('pr', 'module', 'question'):
         errs.append('dive.json: source.kind must be pr, module or question')
+    for j, l in enumerate(src.get('links') or [], 1):
+        need(l, f'dive.json source link {j}', ('title', 'url'))
     if not dive['chapters']:
         errs.append('dive.json: no chapter has steps')
     for c in dive['chapters']:
+        need(c, f"chapter {c['id']}", ('title',))
         for i, s in enumerate(c['steps'], 1):
+            if not need(s, f"{c['id']} step {i}"):
+                continue
             k = s.get('kind')
             w = f"{c['id']} step {i} ({k} '{s.get('title', '')}')"
             if k not in REQUIRED:
                 errs.append(f'{w}: kind must be one of {", ".join(REQUIRED)}')
                 continue
             need(s, w, REQUIRED[k])
+            for j, l in enumerate(s.get('links') or [], 1):
+                need(l, f'{w} link {j}', ('title', 'url'))
             if k == 'terms':
-                for t in s.get('terms') or []:
-                    need(t, f'{w} term', ('term', 'meaning'))
+                for j, t in enumerate(s.get('terms') or [], 1):
+                    need(t, f'{w} term {j}', ('term', 'meaning'))
             elif k == 'code':
                 for j, n in enumerate(s.get('notes') or [], 1):
-                    need(n, f'{w} note {j}', ('file', 'text'))
+                    if not need(n, f'{w} note {j}', ('file', 'text')):
+                        continue
                     p, ln, side = n.get('file'), n.get('lines'), n.get('side', 'new')
                     f = files.get(p)
                     if p and not f:
@@ -226,27 +241,30 @@ def validate(dive, files):
                     elif f and ln[1] > side_len(f, side):
                         errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
             elif k == 'sequence':
-                ids = {a.get('id') for a in s.get('actors') or []}
+                ids = {a.get('id') for j, a in enumerate(s.get('actors') or [], 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
                 for j, m in enumerate(s.get('messages') or [], 1):
-                    need(m, f'{w} message {j}', ('from', 'to', 'label'))
+                    if not need(m, f'{w} message {j}', ('from', 'to', 'label')):
+                        continue
                     if m.get('from') not in ids or m.get('to') not in ids:
                         errs.append(f'{w} message {j}: from/to must be actor ids ({", ".join(sorted(map(str, ids)))})')
                     if m.get('type', 'call') not in ('call', 'return', 'async', 'error'):
                         errs.append(f'{w} message {j}: type must be call, return, async or error')
             elif k == 'diagram':
-                ids = {n.get('id') for n in s.get('nodes') or []}
-                refs = [(e.get('from'), e.get('to')) for e in s.get('edges') or []]
-                bad = {x for pair in refs for x in pair} | {x for n in s.get('notes') or [] for x in n.get('focus') or []}
+                ids = {n.get('id') for j, n in enumerate(s.get('nodes') or [], 1) if need(n, f'{w} node {j}', ('id', 'label'))}
+                refs = [(e.get('from'), e.get('to')) for j, e in enumerate(s.get('edges') or [], 1)
+                        if need(e, f'{w} edge {j}', ('from', 'to'))]
+                focus = {x for j, n in enumerate(s.get('notes') or [], 1) if need(n, f'{w} note {j}', ('text',))
+                         for x in n.get('focus') or []}
+                bad = {x for pair in refs for x in pair} | focus
                 if bad - ids:
                     errs.append(f'{w}: unknown node ids {sorted(map(str, bad - ids))}')
             elif k == 'quiz':
                 opts = s.get('options') or []
                 if not 3 <= len(opts) <= 4:
                     errs.append(f'{w}: needs 3-4 options')
-                if sum(bool(o.get('correct')) for o in opts) != 1:
-                    errs.append(f'{w}: needs exactly one correct option')
-                for o in opts:
-                    need(o, f'{w} option', ('text', 'why'))
+                opts = [o for j, o in enumerate(opts, 1) if need(o, f'{w} option {j}', ('text', 'why'))]
+                if sum(o.get('correct') is True for o in opts) != 1:
+                    errs.append(f'{w}: needs exactly one correct option (correct: true)')
     return errs
 
 
@@ -268,13 +286,17 @@ def load(path, errs):
 def build(d):
     errs = []
     dive = load(d / 'dive.json', errs)
-    if dive is None:
-        sys.exit(f'Cannot read {d}/dive.json: {errs[0]}')
-    chapters = {c.get('id'): c for c in dive.get('chapters') or []}
+    if not isinstance(dive, dict):
+        sys.exit(f'Cannot read {d}/dive.json: {errs[0] if errs else "it must be a JSON object"}')
+    chapters = {c.get('id'): c for c in dive.get('chapters') or [] if isinstance(c, dict)}
     parts = sorted((d / 'parts').glob('*.json')) if (d / 'parts').is_dir() else []
     merged = {}
     for p in parts:  # parts/<id>.json, or <id>.1.json, <id>.2.json for a split chapter
-        c = load(p, errs) or {}
+        c = load(p, errs)
+        if not isinstance(c, dict):
+            if c is not None:
+                errs.append(f'{p.name}: must be an object with "id", "title" and "steps"')
+            continue
         cid = p.name.split('.')[0]
         m = merged.setdefault(cid, {'id': cid, 'title': c.get('title', ''), 'steps': []})
         m['title'] = m['title'] or c.get('title', '')
