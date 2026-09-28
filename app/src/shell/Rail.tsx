@@ -37,7 +37,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
               </span>
               <span className="shrink-0 text-xs text-muted">{minutes(chapterSeconds(ch.steps))}</span>
             </button>
-            {current && <Steps steps={ch.steps} c={c} pos={pos} go={go} />}
+            {current && <StepList steps={ch.steps} c={c} pos={pos} go={go} />}
           </li>
         )
       })}
@@ -47,7 +47,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
 
 const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
 
-function Steps({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
+function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
   const fl = flows(steps)
   const open = flowAt(fl, pos.s)
   const item = (s: number) => (
