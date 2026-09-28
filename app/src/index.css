@@ -3,13 +3,9 @@
 @import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 @import '@fontsource-variable/atkinson-hyperlegible-mono/wght.css';
 
-/* Design tokens: a marked-up printout. Graphite ink (fg, accent) on paper;
-   the highlighter (mark) is the only color that means "read this now"; green
-   and red only for diffs and answers; warm edge only for optional edge cases. Theme: data-theme on <html>, set in index.html.
-   Use via Tailwind: bg-bg, bg-surface, text-fg, text-muted, border-line,
-   text-accent, bg-accent/10, bg-mark, bg-add, bg-del, bg-chg, text-ok, text-bad, text-edge.
-   Fonts: Atkinson Hyperlegible Next and Mono, built for telling similar
-   characters apart. Embedded into the HTML, so dives still work offline. */
+/* A marked-up printout: graphite ink on paper. The highlighter (mark) is the only
+   color that means "read this now"; green and red only for diffs and answers;
+   edge only for optional edge cases. Fonts are bundled so dives work offline. */
 @theme {
   --color-bg: #f2f3f5;
   --color-surface: #ffffff;
@@ -74,7 +70,7 @@ kbd {
   @apply rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.8em];
 }
 
-/* Highlighter stroke behind inline text: marks what is being read now. */
+/* Highlighter stroke behind inline text. */
 .mark {
   @apply rounded-sm bg-mark box-decoration-clone px-1 -mx-1;
 }
