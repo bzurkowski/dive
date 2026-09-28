@@ -95,8 +95,9 @@ function curve(p: Pt[]): string {
   return `${d} L${last.x} ${last.y}`
 }
 
-// Box-and-arrow diagram. Each note focuses a set of nodes: they and the edges
-// between them are highlighted, the rest dims, and the note shows as a caption.
+// Box-and-arrow diagram, built up note by note. Each note focuses a set of nodes:
+// they and the edges between them are highlighted, nodes of earlier notes dim,
+// and nodes no note has reached yet are faint ghosts. Without notes all shows.
 export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>) {
   const [ref, { w, h }] = useSize<HTMLDivElement>()
   const both = useMemo(() => ({ LR: layout(step, 'LR'), TB: layout(step, 'TB') }), [step])
@@ -108,6 +109,10 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const notes = step.notes ?? []
   const note = notes[focus]
   const on = new Set(note?.focus ?? [])
+  const seen = new Set(notes.slice(0, focus + 1).flatMap((n) => n.focus))
+  // '' for lit or no notes; earlier notes dim; not yet reached is a ghost.
+  const fade = (lit: boolean, ...ids: string[]) =>
+    !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
   const tint = new Map(step.nodes.map((n) => [n.id, n.group ? groups.indexOf(n.group) % FILLS.length : -1]))
 
@@ -142,13 +147,12 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
             const e = step.edges[i]
             if (pts.length < 2) return null
             const lit = on.has(e.from) && on.has(e.to)
-            const dim = note && !lit
             const [a, b] = pts.slice(-2)
             const deg = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI
             return (
               <g
                 key={i}
-                className={`transition-opacity duration-300 ${lit ? 'text-accent' : 'text-muted'} ${dim ? 'opacity-20' : ''}`}
+                className={`transition-opacity duration-300 ${lit ? 'text-accent' : 'text-muted'} ${fade(lit, e.from, e.to)}`}
               >
                 <path d={curve(pts)} fill="none" stroke="currentColor" strokeWidth={lit ? 2 : 1.25} />
                 <path
@@ -184,13 +188,12 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
           {l.nodes.map((n) => {
             const t = tint.get(n.id) ?? -1
             const lit = on.has(n.id)
-            const dim = note && !lit
             const clickable = !lit && notes.some((x) => x.focus.includes(n.id))
             return (
               <g
                 key={n.id}
                 transform={`translate(${n.x - n.w / 2} ${n.y - n.h / 2})`}
-                className={`transition-opacity duration-300 ${dim ? 'opacity-25' : ''} ${clickable ? 'cursor-pointer hover:opacity-60' : ''}`}
+                className={`transition-opacity duration-300 ${fade(lit, n.id)} ${clickable ? 'cursor-pointer hover:opacity-80' : ''}`}
                 onClick={() => pick(n.id)}
               >
                 <rect
