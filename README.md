@@ -31,12 +31,12 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 
 Dive tells the story step by step, with the real code, sequence diagrams, a glossary, and short quizzes. To build it, the agent:
 
-1. Works out what you gave it and fetches the pull request, if there is one.
-2. Sends out scouts in parallel:
+1. Works out what you gave it, fetches the pull request if there is one, and counts your commits in that code to judge how new you are to it.
+2. Sends out scouts in parallel. For a pull request, they read the code at the PR's commits, not in your working tree:
    - one per area of the code, which traces the call chains through it,
-   - one for the context: the PR description and comments, commits, linked issues, and docs,
-   - one for Notion, Confluence, Jira, or Linear, if you have them connected.
-3. Joins the call chains into flows and fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases.
+   - one for the context: the PR description, comments and reviews, commits, linked issues, docs, and tests,
+   - one for Notion, Confluence, Google Drive, Jira, or Linear, if you have them connected.
+3. Joins the call chains into flows and fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases. Then it checks that every hop, edge case, and risk the scouts found has a place, and that nothing in the plan would fail the build.
 4. Hands each flow, and each group of the other chapters, to its own writer, in parallel.
 5. Checks every code reference and link against the real code and builds the page.
 
@@ -44,12 +44,12 @@ Dive tells the story step by step, with the real code, sequence diagrams, a glos
 
 Every dive follows the same outline:
 
-1. **Intro** - the problem and the decision, with links to the PR, tickets, and docs. For a module or a question: what the code is for and who uses it, or the answer
-2. **Glossary** - the terms the rest of the dive uses, each one building on the ones before
+1. **Intro** - the problem, the constraint, and the decision, with links to the PR, tickets, and docs. For a module: what the code is for, who uses it, and what starts it. For a question: the answer first
+2. **Glossary** - the terms the rest of the dive uses, each one building on the ones before. If you are new to the domain, it opens with a primer and defines every term
 3. **Big picture** - the story from far above: a map of the flows, then the ideas they depend on
-4. **Walkthrough** - one or more flows. Each flow is a sequence diagram of the normal path, then the code behind its messages, then optional edge cases
-5. **Review focus** - suspected bugs and risks: what to check before you approve a PR, or traps to know before you change the code
-6. **Recap** - what to remember, other changed files (PR), where to read next, and the flows the dive left out
+4. **Walkthrough** - up to about five flows. Each flow is a sequence diagram of the main path, then the code behind its messages, a quiz, then up to two edge cases
+5. **Review focus** - 1-2 cards of suspected bugs, risks, and open questions: what to check before you approve a PR, or traps to know before you change the code
+6. **Recap** - other changed files (PR), the tests the walkthrough did not show, where to read next, and the flows the dive left out
 
 The writing is meant to be easy to read: short sentences, one name for each concept, and nothing that isn't backed by the code or a linked doc.
 
@@ -60,6 +60,7 @@ The writing is meant to be easy to read: short sentences, one name for each conc
 /dive https://github.com/acme/shop/pull/1234  # a pull request URL
 /dive src/payments                            # a module
 /dive how do refunds get retried?             # a question
+/dive src/payments I'm new to payments        # say how well you know the domain
 ```
 
 The dive is written to `docs/dives/<slug>/index.html` and opens in your browser when it's ready. Nothing is committed. For pull requests, your working tree and current branch are left alone.
