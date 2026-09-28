@@ -26,7 +26,7 @@ type Laid = {
   width: number
   height: number
   nodes: Node[]
-  edges: { i: number; pts: Pt[]; label?: Pt & { width: number } }[]
+  edges: { i: number; pts: Pt[]; label?: Pt & { width: number; height: number } }[]
 }
 
 // Split a long label into two lines at the space nearest the middle.
@@ -62,7 +62,7 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
       return {
         i: Number(e.name),
         pts: e.v === e.w ? loop(g.node(e.v), d, rankdir) : d.points,
-        label: d.width ? { x: d.x, y: d.y, width: d.width } : undefined,
+        label: d.width ? d : undefined,
       }
     }),
   }
@@ -158,9 +158,9 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                   <>
                     <rect
                       x={label.x - label.width / 2}
-                      y={label.y - 9}
+                      y={label.y - label.height / 2}
                       width={label.width}
-                      height={18}
+                      height={label.height}
                       rx={4}
                       className="fill-surface"
                     />
