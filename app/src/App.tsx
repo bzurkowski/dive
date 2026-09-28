@@ -55,13 +55,10 @@ export default function App({ dive }: { dive: Dive }) {
 
   useEffect(() => {
     document.title = dive.title
+    // Back and forward fire popstate too, but every entry has its own hash.
     const sync = () => setPos(parseHash(dive, location.hash))
-    addEventListener('popstate', sync)
     addEventListener('hashchange', sync)
-    return () => {
-      removeEventListener('popstate', sync)
-      removeEventListener('hashchange', sync)
-    }
+    return () => removeEventListener('hashchange', sync)
   }, [dive])
 
   // Focus moves replace the history entry; step and chapter moves push one.
