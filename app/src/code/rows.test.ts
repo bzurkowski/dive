@@ -17,22 +17,6 @@ const items = layout(p.rows, [], new Set())
 eq(items.at(-1), { kind: 'gap', start: 12, end: 25 }, 'collapses far context')
 eq(layout(p.rows, [], new Set([12])).length, 25, 'expanded gap')
 
-const hunked = parse({ lang: 'ts', diff: true, text: '@@ -10,2 +12,2 @@\n x\n-y\n+z' })
-eq([hunked.rows[1].old, hunked.rows[1].new, hunked.rows[3].new], [10, 12, 13], 'hunk header numbers')
-
-// A blank context line that lost its space is '', a stray line keeps its first char.
-const odd = parse({ lang: 'ts', diff: true, text: ' a\r\n\r\nstray\r\n+b\r\n\\ No newline at end of file\r\n' })
-eq(
-  odd.rows.map((r) => [r.type, r.text, r.old, r.new]),
-  [
-    ['ctx', 'a', 1, 1],
-    ['ctx', '', 2, 2],
-    ['ctx', 'stray', 3, 3],
-    ['add', 'b', undefined, 4],
-  ],
-  'odd diff lines',
-)
-
 const plain = parse({ lang: 'py', diff: false, text: 'a\nb\n' })
 eq(layout(plain.rows, [], new Set()).length, 2, 'plain file without notes shows all')
 eq(layout(parse({ lang: 'py', diff: false, text: '' }).rows, [], new Set()), [], 'empty file')
@@ -44,4 +28,3 @@ eq(
   [20, { kind: 'row', i: 0 }, { kind: 'gap', start: 19, end: 30 }],
   'note span keeps its context, a run of 2 far rows stays visible',
 )
-eq(noteSpan(long.rows, { lines: [5, 3], text: '' }), null, 'reversed span')

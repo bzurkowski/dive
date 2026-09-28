@@ -17,12 +17,12 @@ export interface Parsed {
   dels: number
 }
 
-// Diff text is a full-context body; `@@` headers are tolerated.
+// Diff text is a full-context body: every line starts with ' ', '+' or '-'.
 export function parse(file: FileData): Parsed {
-  const lines = file.text.split(/\r?\n/)
+  const lines = file.text.split('\n')
   if (lines.at(-1) === '') lines.pop()
   if (!file.diff) {
-    const rows = lines.map((text, i): Row => ({ type: 'ctx', old: i + 1, new: i + 1, text, n: i }))
+    const rows = lines.map((text, i): Row => ({ type: 'ctx', new: i + 1, text, n: i }))
     return { rows, oldText: '', newText: lines.join('\n'), adds: 0, dels: 0 }
   }
   const rows: Row[] = []
@@ -33,21 +33,12 @@ export function parse(file: FileData): Parsed {
   let adds = 0
   let dels = 0
   for (const line of lines) {
-    const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)/.exec(line)
-    if (hunk) {
-      o = +hunk[1]
-      n = +hunk[2]
-      rows.push({ type: 'hunk', text: line })
-      continue
-    }
-    const mark = line[0]
-    if (mark === '\\') continue // "\ No newline at end of file"
-    const text = /^[-+ ]/.test(line) ? line.slice(1) : line // unprefixed lines are context
-    if (mark === '+') {
+    const text = line.slice(1)
+    if (line[0] === '+') {
       rows.push({ type: 'add', new: n++, text, n: newL.length })
       newL.push(text)
       adds++
-    } else if (mark === '-') {
+    } else if (line[0] === '-') {
       rows.push({ type: 'del', old: o++, text, o: oldL.length })
       oldL.push(text)
       dels++
