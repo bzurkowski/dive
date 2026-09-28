@@ -25,16 +25,16 @@ A slug is lowercase words joined by `-`, such as `pr-842-network-error-retries`.
 
 - `pr`:
   1. Read the title, description, URL, and base branch: `gh pr view <pr> --json title,body,url,baseRefName`, where `<pr>` is the argument as given. Without `gh`, use `curl -s https://api.github.com/repos/<owner>/<repo>/pulls/<n>` (add `-H "Authorization: Bearer $GITHUB_TOKEN"` when it is set). Take `<owner>/<repo>` from the PR URL or from `git remote get-url origin`. The URL is `html_url` and the base branch is `base.ref`. Use the base branch as given: for a stacked PR, it is the PR below.
-  2. Run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <url> --base <base branch>`. Pass the URL, so prep fetches from the remote that holds the PR. Prep fetches the PR into a side ref, so the working tree and branch stay as they are, and writes `diff.json`. It prints `PR #<n> into <branch>: ...`, then `base=<sha>` and `head=<sha>`, then the changed files and lines per directory, two levels deep. From here on, `<base>` and `<head>` are these two shas. Read PR code only with `git show <head>:<path>` and `git diff <base> <head> -- <path>`.
+  2. Run `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <url> --base <base branch>`. Pass the URL, so prep fetches from the remote that holds the PR. Prep fetches the PR into a side ref, so the working tree and branch stay as they are, and writes `diff.json`. It prints `PR #<n> into <branch>: ...`, then `base=<sha>` and `head=<sha>`, then the areas. From here on, `<base>` and `<head>` are these two shas. Read PR code only with `git show <head>:<path>` and `git diff <base> <head> -- <path>`.
   3. If prep stops because no remote points to the PR's repo, tell the user to run the dive in a clone of that repo. If it stops because the PR is in the base branch without a merge commit, tell the user it cannot find the PR's changes. Other merged PRs work.
-- `module`: measure it with `git ls-files <path> | xargs wc -l`.
-- `question`: search the code for the question's key terms (identifiers, routes, tables, messages). The scope is the files that answer the question. Stop when a search for each key term finds no new file.
+- `module`: run `python3 <skill>/scripts/dive.py areas <path>`.
+- `question`: search the code for the question's key terms (identifiers, routes, tables, messages). The scope is the files that answer the question. Stop when a search for each key term finds no new file. Then run `python3 <skill>/scripts/dive.py areas <file>...` with those files.
 
-Split the scope into **areas**: groups of related files, each about 10 files, and in a PR about 400 changed lines, whichever comes first. In a PR, start from prep's lines per directory. Give each area a short name, `<area>`.
+The **areas** split the scope between the area scouts. `dive.py` cuts the scope at its directories until each area fits one scout, at most 40 files and 5000 lines (1200 changed lines in a PR), and packs small neighbors together. So an area is a whole directory when it fits. Take the areas as printed. Give each a short name, `<area>`, and keep its paths: they are the area scout's `<paths>`.
 
 Set the **level**, `new` or `familiar`. If the user's words said how well they know the domain, that is the level, and their words are the reason. Otherwise pick the 1-3 directories that hold the code the main path runs through, such as `services/payments`, and run `python3 <skill>/scripts/dive.py level <dir>... --rev <base>` (no `--rev` outside a PR). It prints `level=` and `reason=`.
 
-**Done when** you have the kind, the slug, `<base>` and `<head>` (PR), the areas, and the level with its reason, and every changed file (PR) or file in scope is in exactly one area.
+**Done when** you have the kind, the slug, `<base>` and `<head>` (PR), the named areas, and the level with its reason.
 
 ## 2. Discover (parallel)
 

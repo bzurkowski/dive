@@ -13,7 +13,10 @@ Fill every `<placeholder>` outside the Notes format. Keep a line marked `PR:`, `
 
 ## Area scout
 
-> You are the area scout for `<area>`: <paths>. Read every file in your area and, in a PR, its diff. Write `docs/dives/<slug>/notes/<area>.md` in the Notes format below.
+> You are the area scout for `<area>`: <paths>. Your area is the files of the scope under these paths.
+> PR: list them with `git diff --name-only <base> <head> -- <paths>`. Read every one of them and its diff.
+> Otherwise: list them with `git ls-files <paths>`. Read every one of them.
+> Write `docs/dives/<slug>/notes/<area>.md` in the Notes format below.
 > Your main output is call chains: for each entry point in your area, the ordered hops from the entry to its effect, each with the lines that make it. A call chain is a draft sequence diagram. In a PR, keep the unchanged hops of a chain too, so the reader sees where the change sits.
 > An edge case is designed behavior that changes an outcome the reader cares about: state (a timeout, a failed status), money (no fee paid), a retry, or a double-submit guard. Plain input validation is not an edge case. In a PR, only the edge cases that the PR adds or changes count.
 > Risks are suspected bugs, traps, and open questions. They go under `### Risks and open questions`.
