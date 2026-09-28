@@ -8,9 +8,9 @@ interface Dive {
   title: string // 3-7 words
   summary: string // 1-2 short sentences: what this is and why it matters
   source: {
-    kind: 'pr' | 'module' | 'question' | 'doc'
+    kind: 'pr' | 'module' | 'question'
     ref: string // the argument as given
-    url?: string // PR or page URL
+    url?: string // PR URL
     links?: Link[] // knowledge pages and tickets used as sources
   }
   chapters: Chapter[] // [] in step 3; build fills it from parts/

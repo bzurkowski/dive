@@ -174,8 +174,8 @@ def validate(dive, files):
         errs.extend(f'{where}: missing "{k}"' for k in keys if not obj.get(k))
 
     need(dive, 'dive.json', ('title', 'summary', 'source'))
-    if (dive.get('source') or {}).get('kind') not in ('pr', 'module', 'question', 'doc'):
-        errs.append('dive.json: source.kind must be pr, module, question or doc')
+    if (dive.get('source') or {}).get('kind') not in ('pr', 'module', 'question'):
+        errs.append('dive.json: source.kind must be pr, module or question')
     if not dive['chapters']:
         errs.append('dive.json: no chapter has steps')
     for c in dive['chapters']:

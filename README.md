@@ -1,6 +1,6 @@
 # Dive
 
-Dive is an Agent Skill that turns a pull request, a code module, a question about your codebase, or a knowledge-base page into an interactive walkthrough you can read in about ten minutes.
+Dive is an Agent Skill that turns a pull request, a code module, or a question about your codebase into an interactive walkthrough you can read in about ten minutes.
 
 | Big picture | Code walkthrough | Sequence |
 | --- | --- | --- |
@@ -44,13 +44,13 @@ Dive tells the story step by step, with the real code, diagrams, a glossary, and
 
 Every dive follows the same outline:
 
-1. **Why** - the problem and the decision, with links to the PR, tickets, and docs
+1. **Why** - the problem and the decision, with links to the PR, tickets, and docs. For a module or a question: what the code is for, or the answer
 2. **Glossary** - the terms the rest of the dive uses
 3. **Big picture** - the main parts and how they connect
 4. **Walkthrough** - the normal flow, in execution order
 5. **Edge cases** - failures, limits, and unusual inputs
-6. **Review focus** - what to check before you approve (pull requests only)
-7. **Recap** - what to remember, plus a list of other changed files
+6. **Review focus** - suspected bugs and risks: what to check before you approve a PR, or traps to know before you change the code
+7. **Recap** - what to remember, plus a list of other changed files (PR) or where to read next
 
 The writing is meant to be easy to read: short sentences, one name for each concept, and nothing that isn't backed by the code or a linked doc.
 
@@ -61,7 +61,6 @@ The writing is meant to be easy to read: short sentences, one name for each conc
 /dive https://github.com/acme/shop/pull/1234  # a pull request URL
 /dive src/payments                            # a module
 /dive how do refunds get retried?             # a question
-/dive https://www.notion.so/acme/Refunds-123  # a knowledge page (needs its connector)
 ```
 
 The dive is written to `docs/dives/<slug>/index.html` and opens in your browser when it's ready. Nothing is committed. For pull requests, your working tree and current branch are left alone.

@@ -12,9 +12,9 @@ export interface Dive {
 }
 
 export interface Source {
-  kind: 'pr' | 'module' | 'question' | 'doc'
-  ref: string // the input as given: PR URL/number, path, question, page URL
-  url?: string // PR or page URL
+  kind: 'pr' | 'module' | 'question'
+  ref: string // the input as given: PR URL/number, path, question
+  url?: string // PR URL
   repo?: string // "owner/name", used for GitHub links
   base?: string // base commit sha (pr)
   head?: string // head commit sha (pr) or current commit (module)

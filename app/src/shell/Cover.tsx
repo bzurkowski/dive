@@ -2,7 +2,7 @@ import type { Dive } from '../types'
 import { chapterSeconds, COVER, minutes, type Pos } from './nav'
 import { Links } from './Steps'
 
-const KIND = { pr: 'Pull request', module: 'Module', question: 'Question', doc: 'Page' }
+const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const chapters = dive.chapters.map((ch, c) => ({ ch, c })).filter(({ ch }) => ch.steps.length)

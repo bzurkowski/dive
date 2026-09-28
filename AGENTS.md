@@ -1,6 +1,6 @@
 # dive
 
-`dive` is an Agent Skill. It turns a pull request, a code module, a domain question, or a knowledge-base page into an interactive walkthrough: one self-contained `index.html` in `docs/dives/<slug>/` of the user's repo.
+`dive` is an Agent Skill. It turns a pull request, a code module, or a question about the codebase into an interactive walkthrough: one self-contained `index.html` in `docs/dives/<slug>/` of the user's repo.
 
 ## Mantra
 

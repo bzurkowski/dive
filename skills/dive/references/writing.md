@@ -49,7 +49,7 @@ Delete these, or replace them with the fact they hide.
 
 ## The dive voice
 
-Write like the author of the change, who reviews their own PR for a tired colleague.
+Write like the author of the change, who reviews their own PR for a tired colleague. Outside a PR, write like the owner of the code, who shows it to a new teammate.
 
 - Concrete over abstract. Name the file, function, field or value: "`MAX_ATTEMPTS` is 5", not "a limit".
 - Numbers over adjectives: "waits up to 32 s", not "waits a long time".
