@@ -65,7 +65,8 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   // Columns fill the stage and fit lane names. Each row has one label,
   // so labels may run past lifelines without colliding.
   let cw = Math.max(MIN_COL, w / n)
-  for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 32)
+  // 42: lane px-2, box px-3 and its border.
+  for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 42)
   const width = cw * n
   const x = (id: string) => ((view.of.get(id) ?? 0) + 0.5) * cw
   // Within one lane (same actor, or one collapsed group) a message loops back.
