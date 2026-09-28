@@ -21,7 +21,7 @@ import {
 } from './shell/nav'
 import { Rail } from './shell/Rail'
 import { ThemeButton } from './shell/Theme'
-import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
+import { CardView, QuizView, TermList, TermsView } from './shell/Steps'
 import type { Dive, Step, Term } from './types'
 
 export default function App({ dive }: { dive: Dive }) {
@@ -320,11 +320,9 @@ function StepView({
             </span>
           )}
         </div>
-        {say && (
-          <p className="mt-1 text-[17px] leading-snug">
-            <Inline text={say} />
-          </p>
-        )}
+        <p className="mt-1 text-[17px] leading-snug">
+          <Inline text={say} />
+        </p>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">{view}</div>
     </section>
@@ -365,7 +363,5 @@ function StepView({
       return page(<TermsView step={step} />, true)
     case 'quiz':
       return page(<QuizView step={step} />)
-    default:
-      return page(<Notice>Unknown step type: {(step as { kind?: string }).kind ?? 'none'}.</Notice>)
   }
 }
