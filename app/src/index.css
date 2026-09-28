@@ -12,7 +12,7 @@
   --color-fg: #1c1f26;
   --color-muted: #5b6170;
   --color-line: #dadde3;
-  --color-accent: #1c1f26;
+  --color-accent: var(--color-fg);
   --color-add: #e3f4e6;
   --color-del: #fbe8e8;
   --color-chg: #e0ecff;
@@ -37,7 +37,6 @@
   --color-fg: #e7e9ee;
   --color-muted: #9ca1ad;
   --color-line: #2c3039;
-  --color-accent: #e7e9ee;
   --color-add: #13271a;
   --color-del: #341a1b;
   --color-chg: #1d2c44;
