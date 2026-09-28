@@ -82,12 +82,12 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const height = bottom + BOTTOM
 
   const active = step.messages[focus]
-  const aself = active ? isSelf(active) : false
+  const aself = !!active && isSelf(active)
   const ax1 = active ? x(active.from) : 0
-  const ax2 = active ? (aself ? ax1 + LOOP : x(active.to)) : 0
+  const ax2 = active ? x(active.to) : 0
   const ay = (ys[focus] ?? 0) + (aself ? 22 : 0)
   const noteW = Math.min(NOTE_W, width - 16)
-  const mid = (ax1 + ax2) / 2
+  const mid = aself ? ax1 + LOOP / 2 : (ax1 + ax2) / 2
   const noteLeft = Math.max(8, Math.min(mid - noteW / 2, width - noteW - 8))
   const jump = active?.step && onJump ? active.step : undefined
 
