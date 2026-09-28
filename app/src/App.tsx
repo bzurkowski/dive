@@ -306,12 +306,13 @@ export default function App({ dive }: { dive: Dive }) {
   )
 }
 
-// A modal side panel. Its content fills it, so a click on the dialog itself is a backdrop click.
+// A modal side panel. Its content fills it, so a click on the dialog itself is a
+// backdrop click, unless it ends a text selection dragged out of the panel.
 function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'> & { head: ReactNode }) {
   return (
     <dialog
       {...props}
-      onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
+      onClick={(e) => e.target === e.currentTarget && getSelection()?.isCollapsed && e.currentTarget.close()}
       className={`fixed inset-y-0 m-0 h-full max-h-none overflow-y-auto text-fg ${className}`}
     >
       <div className="min-h-full p-6">
