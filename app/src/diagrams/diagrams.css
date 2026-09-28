@@ -1,20 +1,13 @@
-/* Reveal animations for sequence and box diagrams. */
+/* Keyframes without `to` end at the element's own style. */
 @keyframes dive-draw {
   from {
     stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
   }
 }
 @keyframes dive-pop {
   from {
     opacity: 0;
     transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 @keyframes dive-fade {
