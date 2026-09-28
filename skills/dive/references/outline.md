@@ -1,18 +1,34 @@
 # Outline
 
-## From call chains to flows
+You are the architect twice: in step 3 you pick the flows from the scout notes, and in step 5 you turn the traces into the outline.
 
-Draft the sequences first: each hop of a call chain becomes one message. A hop that ends with `leaves: <path>` continues in the chain whose entry point is at `<path>` in another scout note. Keep every hop, in a PR the unchanged ones too, so the reader sees where the change sits. Leave out only a hop marked `detail`, or a whole chain whose heading is marked `detail`, and list it under Left out. Then split the messages into flows:
+## Picking flows
 
-- Start a flow for each trigger: a user action, a job, a webhook, a consumer. A simple PR or module has one flow.
-- Split a flow at a **stop**, and only there, when it has about 15 messages or more, or more than 30 actors (the most a sequence may have). A stop is where control stops anyway: a wait for the user (signing), an async hop to a queue or a job, or a handoff with a persisted status. A flow without a stop stays whole.
+A flow is one trigger and the path it runs, from the trigger to its effect. Find the triggers under `## Entry points` of the scout notes: a user action, a job, a webhook, a consumer. A hop that ends with `leaves: <path>` continues in the chain whose entry point is at `<path>` in another scout note. The chains joined this way are one flow. A simple PR or module has one flow.
+
+- PR: keep the flows that run through changed code.
+- An edge case with its own trigger, such as a recovery job or a retry consumer, is a flow when it is central to the scope.
 - Keep about 5 flows, the ones that matter most. Put each other flow, with its trigger, in Left out and in the recap card "Other flows".
 
-Edge cases come from the `## Edge cases` of each scout note. An edge case is designed behavior that changes an outcome the reader cares about: state (a timeout, a failed status), money (no fee paid), a retry, or a double-submit guard. Plain input validation is not an edge case. In a PR, only the edge cases that the PR adds or changes count. Each item goes to at least one of these places:
+Then write the start of `docs/dives/<slug>/outline.md` in the **Outline format** below: lines 1-3, the story plan without `New names:`, and `## walkthrough` with one `### flow` section per flow. At this step, a flow section holds only two lines:
 
-- an edge step: at most 2 per flow, for the outcomes that matter most. story.md **Edge steps** says how to draw one.
+- `Trigger:` the trigger, then ` - <path>:<line>` of its entry point.
+- `Chains:` the chains the flow runs through, in order, as `notes/<area>.md C<n>`, comma-separated. A chain may be on more than one flow.
+
+## From traces to flows
+
+Each trace is the draft of its flow. Its `Actors:` line and its hops become the flow's actors and messages, in the same form. Keep every hop, in a PR the unchanged ones too, so the reader sees where the change sits. Leave out only a hop marked `detail`, and list it under Left out. Where a trace's `## Corrections` contradict a scout note, follow the trace.
+
+- Give an actor the same id and label in every flow.
+- Split a flow at a **stop**, and only there, when it has about 15 messages or more, or more than 30 actors (the most a sequence may have). A stop is where control stops anyway: a wait for the user (signing), an async hop to a queue or a job, or a handoff with a persisted status. A flow without a stop stays whole. Each part gets its own `### flow` section and id.
+- A hop under a trace's `## Not on this flow` goes in another flow, or in Left out.
+- A flow under a trace's `## Other flows` goes in Left out and in the recap card "Other flows".
+
+Edge cases come from the `## Edge cases` of each scout note and from the branches of each trace. An edge case is designed behavior that changes an outcome the reader cares about: state (a timeout, a failed status), money (no fee paid), a retry, or a double-submit guard. Plain input validation is not an edge case. In a PR, only the edge cases that the PR adds or changes count. Each item goes to at least one of these places:
+
+- an edge step: at most 2 per flow, for the outcomes that matter most. Draw it from the trace's branch. story.md **Edge steps** says how to draw one.
 - a code note in the code step that shows its guard: a guard on the main path is a check in its code step. Its rejection branch may also be an edge step.
-- a flow: a designed recovery path with its own trigger (a recovery job, a retry consumer), when it is central to the scope. Otherwise it goes in Left out and "Other flows".
+- its own flow, when step 3 made it one.
 - Left out, with the reason: not an edge case by the definition above, or past the 2 edge steps of its flow.
 
 ## Story plan
@@ -21,15 +37,15 @@ Edge cases come from the `## Edge cases` of each scout note. An edge case is des
 - `Level:` `new` or `familiar`, then the reason: the user's words, or the `reason=` that `dive.py level` printed.
 - `Flows:` one line per flow, in order: `` `<id>` <title> - trigger: <trigger> ``. From the second flow on, add why it is split: its own trigger, or the stop it is split at.
 - `New names:` the code names from the scope (functions, constants, types), each with the first flow whose code steps show it: `` `<name>`, `<name>` → `<flow id>` ``. A domain term goes in the glossary section instead. A name can be both.
-- `Left out:` one line per group of dropped items: what, the scout-note section it comes from, and why.
+- `Left out:` one line per group of dropped items: what, the note section it comes from, and why.
 
 ## Outline format
 
 - Line 1 is `# <dive title>`, line 2 the summary sentence: they become `title` and `summary` in `dive.json`. For a PR, line 3 is `PR: <url> · base <sha> · head <sha>`, with the shas that prep printed.
-- Then the story plan, and one `##` section per chapter id, one line per step: `- <kind> <title> - <intent, one sentence> - <reads>`. `<reads>` names the code refs and the scout-note sections or grep terms: a writer reads only the story plan, its own sections, and what you cite.
-- Each flow is `### flow <id>: <title>`, then:
+- Then the story plan, and one `##` section per chapter id, one line per step: `- <kind> <title> - <intent, one sentence> - <reads>`. `<reads>` names the code refs and the note sections or grep terms: a writer reads only the story plan, its own sections, and what you cite.
+- Each flow is `### flow <id>: <title>`, then its `Trigger:` and `Chains:` lines from step 3, then:
   - `Actors:` `<id> <label> (<group>, <change>)`, comma-separated.
-  - Messages, numbered: `<n>. <from> → <to>: <label> (<type>, <change>) - <anchor> → <code step id>`. Leave out the type `call` and an empty change. The anchor is the lines of the hop, as in the scout note.
+  - Messages, numbered: `<n>. <from> → <to>: <label> (<type>, <change>) - <anchor> → <code step id>`. Leave out the type `call` and an empty change. The anchor is the lines of the hop, as in the trace.
   - `- code <id> - <refs> - <intent> - <reads>`. A ref is `path:start-end`, or `old path:start-end` for deleted lines.
   - `- quiz - <the question idea>`.
   - 0-2 `- edge <title>` lines, each with its numbered messages indented below it, in the same form, `change` included. Add an `Actors:` line only for actors the flow lacks.
@@ -59,6 +75,8 @@ PR: https://github.com/acme/payments/pull/318 · base 3f2a9c1 · head 8d41b7e
 
 ## walkthrough
 ### flow attempt: Send one refund attempt
+Trigger: each worker run - src/refunds/worker.ts:3
+Chains: notes/refunds.md C1, notes/refunds.md C2
 Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund worker), retry `retryRefund` (refund worker, changed), pg Postgres (database), gateway Payment gateway (outside)
 1. worker → store: due() - src/refunds/worker.ts:5
 2. store → pg: SELECT due refunds - src/refunds/store.ts:12
@@ -69,8 +87,8 @@ Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund
 7. retry → gateway: refund() (changed) - src/refunds/retry.ts:19 → send
 8. gateway → retry: 200 OK (return)
 9. retry → store: markDone(id) - src/refunds/retry.ts:20
-- code count - src/refunds/worker.ts:7-8, old src/refunds/worker.ts:7 - the count goes up before the call - notes/refunds.md Flow
-- code send - src/refunds/retry.ts:19, old src/refunds/retry.ts:6 - the refund id is the idempotency key - notes/refunds.md Flow
+- code count - src/refunds/worker.ts:7-8, old src/refunds/worker.ts:7 - the count goes up before the call - notes/flow-attempt.md Flow
+- code send - src/refunds/retry.ts:19, old src/refunds/retry.ts:6 - the refund id is the idempotency key - notes/flow-attempt.md Flow
 - quiz - a crash during the gateway call: does the attempt still count?
 - edge The gateway times out after it refunded
   1. retry → gateway: refund() (changed) - src/refunds/retry.ts:19 → send
@@ -82,7 +100,7 @@ Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund
   7. gateway → retry: 200 OK (return)
 
 ## review-focus
-- card What to check - the risks of the retry path - notes/refunds.md Risks and open questions, notes/context.md Open questions
+- card What to check - the risks of the retry path - notes/refunds.md Risks and open questions, notes/flow-attempt.md Risks and open questions, notes/context.md Open questions
 
 ## recap
 - card Also changed - `src/refunds/index.ts` (import of `GatewayError`)
@@ -101,13 +119,14 @@ Write `docs/dives/<slug>/dive.json` as strict JSON. Leave out `url` outside a PR
 
 ## Checklist
 
-The outline is done when every line holds for `docs/dives/<slug>/outline.md` and `dive.json`, checked against the scout-note summaries. The build rejects a dive that breaks a line marked (build), so catch it here.
+The outline is done when every line holds for `docs/dives/<slug>/outline.md` and `dive.json`, checked against the summaries of the scout notes and the traces. The build rejects a dive that breaks a line marked (build), so catch it here.
 
-- Every hop of every call chain is a message in a flow or an edge step, or in Left out: a `detail` hop, or a hop of a flow you cut.
-- Every `## Edge cases` item is in a place that **From call chains to flows** lists.
+- Every chain of every scout note is on a `Chains:` line, or in Left out.
+- Every hop of every trace is a message in a flow or an edge step, or in Left out: a `detail` hop. Every hop under a trace's `## Not on this flow` is in a flow, or in Left out.
+- Every `## Edge cases` item of the scout notes, and every branch of a trace, is in a place that **From traces to flows** lists.
 - PR: every `## Mechanical` item is in the recap card "Also changed".
-- Every flow you cut is in Left out and in the recap card "Other flows".
-- review-focus cites `### Risks and open questions` of every area scout note, and Open questions of context.md.
+- Every flow you cut, and every flow under a trace's `## Other flows`, is in Left out and in the recap card "Other flows".
+- review-focus cites `### Risks and open questions` of every scout note and every trace, and Open questions of context.md.
 - Every flow in `Flows:` has its `### flow` section, in the same order. Every name in `New names:` has one flow.
 - Each group's actors are next to each other.
 - In flows and edges, every call into code in scope has an anchor (returns and messages from external systems may have none), and the links follow story.md **Links**, each as `→ <code step id>`.

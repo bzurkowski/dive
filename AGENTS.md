@@ -16,12 +16,12 @@ Simple and fast. If the skill is slow or long, people do not use it.
 skills/dive/                  the skill (this is what ships)
   SKILL.md                    entry point: the workflow
   references/                 loaded on demand
-    briefs.md                 every subagent prompt: scouts, writers, the scout-note format
-    outline.md                step 3, the architect: flows, outline format, dive.json frame, checklist
+    briefs.md                 every subagent prompt: scouts, tracers, writers, the scout-note and trace formats
+    outline.md                steps 3 and 5, the architect: picking flows, traces to flows, outline format, dive.json frame, checklist
     story.md                  story rules: chapters, flows, sequences, code steps (architect and writers)
     format.md                 part-file JSON and the rules the build rejects (writers)
     writing.md                prose rules (writers)
-  scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time)
+  scripts/dive.py             prep (fetch PR, diff.json) + areas (split the scope by directory) + level (new or familiar) + build (validate, bake index.html, reading time)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind); never shipped
   src/types.ts                data contract: single source of truth for dive.json
@@ -52,7 +52,7 @@ Rebuild the template only at checkpoints and commit it. The template holds
 
 The build's checks are listed for agents twice: format.md `## Structure` and the `(build)` lines of outline.md `## Checklist`. When a check in `dive.py` changes, change both.
 
-`references/briefs.md` repeats three rules word for word, because a subagent sees only its prompt: the edge-case definition (outline.md `## From call chains to flows`), the actor definition (story.md `## Sequences`), and the hop rule (story.md Messages, with "hop" for "message"). Change them together.
+`references/briefs.md` repeats four rules word for word, because a subagent sees only its prompt. `## Tracing rules` holds the edge-case definition (outline.md `## From traces to flows`), the actor definition (story.md `## Sequences`), and the hop rule (the first three sentences of story.md Messages, with "hop" for "message"). The trace rules hold the group definition (story.md Groups). Change them together.
 
 ## Commits
 
