@@ -9,9 +9,9 @@ eq([p.adds, p.dels], [2, 1], 'counts')
 eq(p.oldText.split('\n').slice(0, 3), ['a', 'b', 'd'], 'old side')
 eq(p.newText.split('\n').slice(0, 4), ['a', 'B', 'C', 'd'], 'new side')
 
-eq(noteSpan(p.rows, { lines: [1, 3], text: '' }), [0, 3], 'new span includes inner del row')
-eq(noteSpan(p.rows, { lines: [2, 2], side: 'old', text: '' }), [1, 1], 'old span')
-eq(noteSpan(p.rows, { lines: [90, 91], text: '' }), null, 'missing span')
+eq(noteSpan(p.rows, { lines: [1, 3] }), [0, 3], 'new span includes inner del row')
+eq(noteSpan(p.rows, { lines: [2, 2], side: 'old' }), [1, 1], 'old span')
+eq(noteSpan(p.rows, { lines: [90, 91] }), null, 'missing span')
 
 const items = layout(p.rows, [], new Set())
 eq(items.at(-1), { kind: 'gap', start: 12, end: 25 }, 'collapses far context')
