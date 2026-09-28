@@ -130,11 +130,6 @@ function FileBody({
           </span>
         )}
         <span className="ml-auto flex shrink-0 items-center gap-3 whitespace-nowrap">
-          {link && (
-            <a className="text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
-              Open on GitHub ↗
-            </a>
-          )}
           {file.status && (
             <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>
           )}
@@ -143,6 +138,11 @@ function FileBody({
               <span className="text-green-700 dark:text-green-400">+{parsed.adds}</span>{' '}
               <span className="text-red-700 dark:text-red-400">−{parsed.dels}</span>
             </span>
+          )}
+          {link && (
+            <a className="text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
+              Open on GitHub ↗
+            </a>
           )}
         </span>
       </header>
