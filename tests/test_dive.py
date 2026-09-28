@@ -59,6 +59,23 @@ class DiveTest(unittest.TestCase):
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
 
+    def test_level(self):
+        work = Path(tempfile.mkdtemp())
+        sh(work, 'git', 'init', '-q')
+        sh(work, 'git', 'config', 'user.name', 't')
+        sh(work, 'git', 'config', 'user.email', 't@t')
+
+        def commit(d, i, author='t <t@t>'):
+            (work / d).mkdir(exist_ok=True)
+            (work / d / 'f').write_text(str(i))
+            sh(work, 'git', 'add', '.'); sh(work, 'git', 'commit', '-qm', 'c', '--author', author)
+
+        for i in range(10): commit('a', i)
+        commit('b', 0)
+        for i in range(12): commit('b', i + 1, 'o <o@o>')
+        self.assertIn('level=familiar\nreason=10 of your commits', sh(work, sys.executable, str(DIVE), 'level', 'a'))
+        self.assertIn('level=new\nreason=1 of your commits', sh(work, sys.executable, str(DIVE), 'level', 'b'))
+
 
 if __name__ == '__main__':
     unittest.main()

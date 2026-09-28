@@ -3,6 +3,7 @@
 
   dive.py prep  <dir> --pr <number|url> [--base <branch>]   fetch the PR, write <dir>/diff.json
   dive.py build <dir>                                       merge parts, validate, embed code, write <dir>/index.html
+  dive.py level <path>... [--rev <rev>]                     print new or familiar from your commits under <path>
 """
 import argparse
 import json
@@ -36,6 +37,7 @@ LANGS = {'ts': 'ts', 'tsx': 'tsx', 'js': 'js', 'jsx': 'jsx', 'mjs': 'js', 'cjs':
 NAMES = {'Dockerfile': 'dockerfile', 'Makefile': 'make'}
 PROSE = {'title', 'summary', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'}
 HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
+NEW_BELOW = 10  # ponytail: first guess, tune after real dives
 
 
 def git(*args, check=True):
@@ -297,6 +299,22 @@ def build(d):
     print(f'Reading: {w} words, {notes} code notes, about {max(1, round(w / 200))} min.')
 
 
+def level(paths, rev):
+    """(level, reason): new if the user has few recent commits under paths, else familiar."""
+    if (git('rev-parse', '--is-shallow-repository', check=False) or '').strip() == 'true':
+        return 'familiar', 'shallow clone, cannot count your commits'
+    who = [w for w in ((git('config', k, check=False) or '').strip() for k in ('user.email', 'user.name')) if w]
+    if not who:
+        return 'familiar', 'no git user.name or user.email'
+    log = git('log', rev, '--no-merges', '--use-mailmap', '--since=1 year ago', '-F',
+              *[f'--author={w}' for w in who], '--format=%H', '--', *paths, check=False)
+    if log is None:
+        return 'familiar', 'git log failed'
+    n = len(log.split())
+    return ('new' if n < NEW_BELOW else 'familiar',
+            f'{n} of your commits touch {", ".join(paths)} in the last year (new below {NEW_BELOW})')
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest='cmd', required=True)
@@ -306,8 +324,16 @@ def main():
     p.add_argument('--base')
     b = sub.add_parser('build')
     b.add_argument('dir', type=Path)
+    lv = sub.add_parser('level')
+    lv.add_argument('paths', nargs='+')
+    lv.add_argument('--rev', default='HEAD')
     a = ap.parse_args()
-    prep(a.dir, a.pr, a.base) if a.cmd == 'prep' else build(a.dir)
+    if a.cmd == 'prep':
+        prep(a.dir, a.pr, a.base)
+    elif a.cmd == 'build':
+        build(a.dir)
+    else:
+        print('level=%s\nreason=%s' % level(a.paths, a.rev))
 
 
 if __name__ == '__main__':

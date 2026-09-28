@@ -13,7 +13,7 @@ You orchestrate. Scouts discover in parallel, you outline the story, writers fil
 
 ## 1. Prep
 
-Classify the argument:
+The argument may end with words about how well the user knows the domain, such as "I'm new to payments" or "I know payments". Set them aside: they set the level below. Classify the rest:
 
 | Argument | Kind | Slug |
 |---|---|---|
@@ -30,6 +30,8 @@ Delete `docs/dives/<slug>/` if it exists: a rerun starts fresh. Then, by kind:
 - `doc`: read the page with a connected knowledge tool. If no connected tool can read it, stop and tell the user which connector the page needs. Then find the code the page describes.
 
 Split the scope into **areas**: groups of related files, about 10 files or 400 changed lines each. Every changed file (`pr`) or file in scope belongs to exactly one area.
+
+Find the reader's **level**. Pick 1-3 directories that hold the domain of the core areas, such as `services/payments`. Run `python3 <skill>/scripts/dive.py level <dir>... --rev <base>` (without `--rev` outside a PR). It prints `level=` (`new` or `familiar`) and `reason=`. When the argument said how well the user knows the domain, use that level instead, with the user's words as the reason.
 
 ## 2. Discover (parallel)
 
@@ -67,4 +69,4 @@ Spawn one **editor** subagent with a fresh context. Editor brief:
 > Delete or merge steps and notes that break the importance rule in story.md: notes on unchanged code, trivia, repeats across chapters, test notes that only repeat, suspected bugs outside `review-focus`. Move a fact to the step where it belongs when needed. Check the soft budget in story.md against the build output. Do not add new facts. Do not cut a detail the reader needs to understand the change.
 > Edit `dive.json` (the parts are already merged), run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`, and fix any errors. Return the list of cuts, one line each.
 
-Open the page: `open docs/dives/<slug>/index.html` on macOS, `xdg-open` on Linux. Give the user the path and one sentence about the story. Leave all files uncommitted.
+Open the page: `open docs/dives/<slug>/index.html` on macOS, `xdg-open` on Linux. Give the user the path, the level with its reason, and one sentence about the story. Leave all files uncommitted.
