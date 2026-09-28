@@ -1,13 +1,23 @@
+import type { ReactNode } from 'react'
 import type { Dive } from '../types'
 import { chapterSeconds, COVER, minutes, type Pos } from './nav'
 import { Links } from './Steps'
 
 const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
+const primary = 'rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
+
+function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
+      {children}
+    </a>
+  )
+}
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const chapters = dive.chapters.map((ch, c) => ({ ch, c })).filter(({ ch }) => ch.steps.length)
   const first = chapters[0]
-  const total = chapters.reduce((n, { ch }) => n + chapterSeconds(ch.steps), 0)
+  const total = chapterSeconds(dive.chapters.flatMap((ch) => ch.steps))
   const { source } = dive
   return (
     <main className="h-full overflow-y-auto">
@@ -15,9 +25,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
         <p className="text-muted">
           {KIND[source.kind] ?? 'Dive'}:{' '}
           {source.url ? (
-            <a href={source.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-              {source.ref}
-            </a>
+            <ExternalLink href={source.url}>{source.ref}</ExternalLink>
           ) : (
             <span className="text-fg">{source.ref}</span>
           )}
@@ -29,12 +37,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
 
         {first && (
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <button
-              type="button"
-              autoFocus
-              onClick={() => go({ c: first.c, s: 0, f: 0 })}
-              className="rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90"
-            >
+            <button type="button" autoFocus onClick={() => go({ c: first.c, s: 0, f: 0 })} className={primary}>
               Start the dive
             </button>
             <span className="text-muted">About {minutes(total)} to read</span>
@@ -86,18 +89,11 @@ export function End({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
         <h1 className="mt-6 text-4xl leading-tight font-bold tracking-tight text-balance">You finished the dive</h1>
         <p className="mt-3 text-xl leading-relaxed text-muted">{dive.title}</p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-          <button
-            type="button"
-            autoFocus
-            onClick={() => go(COVER)}
-            className="rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90"
-          >
+          <button type="button" autoFocus onClick={() => go(COVER)} className={primary}>
             Back to the start
           </button>
           {source.url && (
-            <a href={source.url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-              Open the {(KIND[source.kind] ?? 'source').toLowerCase()}
-            </a>
+            <ExternalLink href={source.url}>Open the {(KIND[source.kind] ?? 'source').toLowerCase()}</ExternalLink>
           )}
         </div>
         <p className="mt-6 text-sm text-muted">
