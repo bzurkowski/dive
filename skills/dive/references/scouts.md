@@ -26,6 +26,38 @@ Fill in the `<placeholders>` and use the brief as the subagent prompt. Every sco
 > Write `docs/dives/<slug>/notes/knowledge.md`: for each page, its title, URL, and what matters for the code: decisions, requirements, configuration, and anything the code contradicts. Write "No relevant pages." when nothing matches.
 > Return 3 lines: the pages found and the most useful fact.
 
+## Domain scout
+
+Only at level `new`: one per domain directory.
+
+> You are a domain scout for a dive: a walkthrough that explains <argument> to a developer who is new to its domain. Your domain: <dir>. The scope inside it: <paths>. <PR only: base=<base>. Read the domain at base with `git show <base>:<path>`.>
+> Find what a newcomer must know before the change makes sense. Start from the files in scope and go one hop out: the parts they call, the parts that call them, the concepts their names build on, and the features they serve. Read the READMEs and docs in <dir>, the entry points, and the public interfaces. Do not map the whole domain. Leave out any part the scope does not reach.
+> Describe the domain before the change. The area scouts cover the change.
+> Write `docs/dives/<slug>/notes/domain-<name>.md` in the domain notes format below.
+> Return 3 lines: what the domain does, its central part, the concept a newcomer needs most.
+
+## Domain notes format
+
+```md
+# <domain name>
+Purpose: <what the domain does for its users, one sentence>
+
+## Features
+- <feature>: <one sentence, in the words of a user>
+
+## Parts
+- <name> (`<path>`): <what it is responsible for>
+
+## Dependencies
+- <part> -> <part>: <what it asks for or sends>
+
+## Terms
+- <Term> (`<identifier>`): <one-sentence meaning>
+
+## Typical flow
+1. <part>: <what happens>
+```
+
 ## Notes format
 
 ```md

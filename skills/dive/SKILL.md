@@ -39,13 +39,14 @@ In one message, spawn all scouts:
 
 - one **area scout** per area,
 - one **context scout**,
+- at level `new`, one **domain scout** per domain directory,
 - one **knowledge scout**, only when a knowledge tool (Notion, Confluence, Google Drive, Jira, Linear, …) is connected.
 
 Fill in each brief from [references/scouts.md](references/scouts.md). Scouts write `docs/dives/<slug>/notes/<name>.md`. Wait for all of them.
 
 ## 3. Outline (you)
 
-Read every note: its Terms, its Flow items tagged `[<layer>, <core|detail>]`, and the context. Think how to explain the change most clearly to a human: which layers or regions, in what order, and how few steps reveal the important parts.
+Read every note: its Terms, its Flow items tagged `[<layer>, <core|detail>]`, the context, and at level `new` the domain notes. Think how to explain the change most clearly to a human: which layers or regions, in what order, and how few steps reveal the important parts.
 
 Write `docs/dives/<slug>/outline.md`, its `## Story plan` first, before any step. Write `docs/dives/<slug>/dive.json` (title, summary, source, `"chapters": []`). Follow [references/story.md](references/story.md) and [references/format.md](references/format.md). The outline is done when every step serves the story plan, and every Flow, Edge cases, and Mechanical item in the notes is in a step, in "Also changed", or in the plan's Left out list.
 
@@ -66,7 +67,7 @@ On errors, fix the part file (or `dive.json` after a successful build, which del
 Spawn one **editor** subagent with a fresh context. Editor brief:
 
 > You edit a dive about <argument> as a first-time reader. Read `<skill>/references/story.md` and `<skill>/references/writing.md`, the story plan in `docs/dives/<slug>/outline.md`, and `docs/dives/<slug>/dive.json`. The last build printed: <its Reading line>.
-> Delete or merge steps and notes that break the importance rule in story.md: notes on unchanged code, trivia, repeats across chapters, test notes that only repeat, suspected bugs outside `review-focus`. Move a fact to the step where it belongs when needed. Check the soft budget in story.md against the build output. Do not add new facts. Do not cut a detail the reader needs to understand the change.
+> Delete or merge steps and notes that break the importance rule in story.md: notes on unchanged code outside `orientation`, trivia, repeats across chapters, test notes that only repeat, suspected bugs outside `review-focus`. Move a fact to the step where it belongs when needed. Check the soft budget in story.md against the build output. Do not add new facts. Do not cut a detail the reader needs to understand the change.
 > Edit `dive.json` (the parts are already merged), run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`, and fix any errors. Return the list of cuts, one line each.
 
 Open the page: `open docs/dives/<slug>/index.html` on macOS, `xdg-open` on Linux. Give the user the path, the level with its reason, and one sentence about the story. Leave all files uncommitted.
