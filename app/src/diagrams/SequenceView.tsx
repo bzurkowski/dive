@@ -87,11 +87,11 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const jump = active?.step && onJump ? active.step : undefined
 
   useEffect(() => {
-    anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [focus, step, grouped])
 
   return (
-    <div ref={ref} className="h-full w-full overflow-auto bg-surface">
+    <div ref={ref} className="h-full w-full overflow-auto bg-surface motion-safe:scroll-smooth">
       <div style={{ width }}>
         <div className="sticky top-0 z-10 bg-surface/90 pb-1 backdrop-blur">
           {canGroup ? (

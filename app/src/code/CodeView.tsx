@@ -30,7 +30,8 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
     const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
     // Span start at 20% from the top, unless that pushes the card below the fold.
     const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
-    b.scrollTo({ top, behavior: scrolled.current ? 'smooth' : 'auto' })
+    // 'auto' follows the container's CSS: smooth unless the reader prefers reduced motion.
+    b.scrollTo({ top, behavior: scrolled.current ? 'auto' : 'instant' })
     scrolled.current = true
   }, [step, focus])
 
@@ -60,7 +61,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
           ))}
         </nav>
       )}
-      <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto">
+      <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto motion-safe:scroll-smooth">
         {[...new Set(step.notes.map((n) => n.file))].map((path) => {
           const file = files?.[path]
           if (file) return <FileBody key={path} step={step} path={path} file={file} focus={focus} blob={blob} />
