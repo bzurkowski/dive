@@ -49,7 +49,7 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   }
   step.edges.forEach((e, i) => {
     if (!g.hasNode(e.from) || !g.hasNode(e.to)) return
-    const label = e.label ? { width: textWidth(e.label, EDGE_PX) + 12, height: 18, labelpos: 'c' as const } : {}
+    const label = e.label ? { width: textWidth(e.label, EDGE_PX) + 12, height: 18, labelpos: 'c' } : {}
     g.setEdge(e.from, e.to, label, String(i))
   })
   dagre.layout(g)
@@ -91,7 +91,6 @@ function loop(n: Node, at: Pt, rankdir: 'LR' | 'TB'): Pt[] {
   ]
 }
 
-// Smooth path through dagre's points.
 function curve(p: Pt[]): string {
   let d = `M${p[0].x} ${p[0].y}`
   for (let i = 1; i < p.length - 1; i++)
@@ -117,7 +116,6 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const focusOf = notes.map((n) => n.focus ?? [])
   const on = new Set(focusOf[focus])
   const seen = new Set(focusOf.slice(0, focus + 1).flat())
-  // '' for lit or no notes; earlier notes dim; not yet reached is a ghost.
   const fade = (lit: boolean, ...ids: string[]) =>
     !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
