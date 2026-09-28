@@ -1,14 +1,11 @@
 # Outline
 
-You are the architect. Before any prose, you fix the structure of the dive in `docs/dives/<slug>/outline.md` and write the `dive.json` frame. Draft the sequences first: they are the spine. story.md holds the rules for the reader, actors, groups, links and code steps. This file holds how you plan them.
-
 ## From call chains to flows
 
-Each hop of a call chain becomes one message. A hop that ends with `leaves: <path>` continues in the chain whose entry point is at `<path>` in another scout note. Keep every hop, in a PR the unchanged ones too, so the reader sees where the change sits. Leave out only a hop marked `detail`, or a whole chain whose heading is marked `detail`, and list it under Left out. Then split the messages into flows:
+Draft the sequences first: each hop of a call chain becomes one message. A hop that ends with `leaves: <path>` continues in the chain whose entry point is at `<path>` in another scout note. Keep every hop, in a PR the unchanged ones too, so the reader sees where the change sits. Leave out only a hop marked `detail`, or a whole chain whose heading is marked `detail`, and list it under Left out. Then split the messages into flows:
 
 - Start a flow for each trigger: a user action, a job, a webhook, a consumer. A simple PR or module has one flow.
-- Split a flow of about 15 messages or more at a **stop**, and only there. A stop is where control stops anyway: a wait for the user (signing), an async hop to a queue or a job, or a handoff with a persisted status. A flow without a stop stays whole.
-- A sequence has at most 30 actors. Past that, split at a stop.
+- Split a flow at a **stop**, and only there, when it has about 15 messages or more, or more than 30 actors (the most a sequence may have). A stop is where control stops anyway: a wait for the user (signing), an async hop to a queue or a job, or a handoff with a persisted status. A flow without a stop stays whole.
 - Keep about 5 flows, the ones that matter most. Put each other flow, with its trigger, in Left out and in the recap card "Other flows".
 
 Edge cases come from the `## Edge cases` of each scout note. An edge case is designed behavior that changes an outcome the reader cares about: state (a timeout, a failed status), money (no fee paid), a retry, or a double-submit guard. Plain input validation is not an edge case. In a PR, only the edge cases that the PR adds or changes count. Each item goes to at least one of these places:
@@ -18,14 +15,12 @@ Edge cases come from the `## Edge cases` of each scout note. An edge case is des
 - a flow: a designed recovery path with its own trigger (a recovery job, a retry consumer), when it is central to the scope. Otherwise it goes in Left out and "Other flows".
 - Left out, with the reason: not an edge case by the definition above, or past the 2 edge steps of its flow.
 
-New names: a domain term goes in the glossary section. A code name from the scope (a function, constant or type) goes in `New names:`, with the first flow whose code steps show it. A name can be both.
-
 ## Story plan
 
 - `Change:` (PR), `Does:` (module) or `Answer:` (question): the story in one sentence.
 - `Level:` `new` or `familiar`, then the reason: the user's words, or the `reason=` that `dive.py level` printed.
 - `Flows:` one line per flow, in order: `` `<id>` <title> - trigger: <trigger> ``. From the second flow on, add why it is split: its own trigger, or the stop it is split at.
-- `New names:` the code names, each with the one flow that introduces it: `` `<name>`, `<name>` → `<flow id>` ``.
+- `New names:` the code names from the scope (functions, constants, types), each with the first flow whose code steps show it: `` `<name>`, `<name>` → `<flow id>` ``. A domain term goes in the glossary section instead. A name can be both.
 - `Left out:` one line per group of dropped items: what, the scout-note section it comes from, and why.
 
 ## Outline format
@@ -87,7 +82,7 @@ Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund
   7. gateway → retry: 200 OK (return)
 
 ## review-focus
-- card What to check - notes/refunds.md Risks and open questions, notes/context.md Open questions
+- card What to check - the risks of the retry path - notes/refunds.md Risks and open questions, notes/context.md Open questions
 
 ## recap
 - card Also changed - `src/refunds/index.ts` (import of `GatewayError`)
@@ -97,30 +92,28 @@ Actors: worker `runWorker` (refund worker, changed), store `RefundStore` (refund
 
 ```json
 { "title": "<line 1 of the outline>", "summary": "<line 2 of the outline>",
-  "source": { "kind": "pr", "ref": "<the argument as given>", "url": "<the PR URL>",
+  "source": { "kind": "<kind>", "ref": "<the argument as given>", "url": "<the PR URL>",
     "links": [{ "title": "Refunds can go out twice (#301)", "url": "https://github.com/acme/payments/issues/301" }] },
   "chapters": [] }
 ```
 
-Write `docs/dives/<slug>/dive.json` as strict JSON. `kind` is `pr`, `module` or `question`. Leave out `url` outside a PR. `links` holds each issue, ticket and page from `## Linked` in context.md and from knowledge.md. The build fills `chapters` from the part files, and `repo`, `base` and `head` itself. The frame copies `Dive` and `Source` from format.md: change them together.
+Write `docs/dives/<slug>/dive.json` as strict JSON. Leave out `url` outside a PR. `links` holds each issue, ticket and page from `## Linked` in context.md and from knowledge.md. The build fills `chapters` from the part files, and `repo`, `base` and `head` itself. The frame copies `Dive` and `Source` from format.md: change them together.
 
 ## Checklist
 
 The outline is done when every line holds for `outline.md` and `dive.json`, checked against the scout-note summaries. The build rejects a dive that breaks a line marked (build), so catch it here.
 
-- Every hop of every chain is a message in a flow or an edge step, or in Left out: a `detail` hop, or a hop of a flow you cut.
-- Every `## Edge cases` item is an edge step, a code note in the code step that shows its guard, a flow, or in Left out.
+- Every hop of every call chain is a message in a flow or an edge step, or in Left out: a `detail` hop, or a hop of a flow you cut.
+- Every `## Edge cases` item is in a place that **From call chains to flows** lists.
 - PR: every `## Mechanical` item is in the recap card "Also changed".
 - Every flow you cut is in Left out and in the recap card "Other flows".
 - review-focus cites `### Risks and open questions` of every area scout note, and Open questions of context.md.
 - Every flow in `Flows:` has its `### flow` section, in the same order. Every name in `New names:` has one flow.
 - Each group's actors are next to each other.
-- In flows and edges, every call into code in scope has an anchor. Returns and messages from external systems may have none.
-- In a flow's own list, every call with a change mark (PR), or every call into code in scope (otherwise), ends with `→ <code step id>`. In a PR, only messages with a change mark link to code steps.
+- In flows and edges, every call into code in scope has an anchor (returns and messages from external systems may have none), and the links follow story.md **Links**, each as `→ <code step id>`.
 - (build) Every flow id and code step id is lowercase letters and digits in words joined by single dashes, and no id is used twice.
 - (build) A sequence has at most 30 actors, and `change` marks appear only in a PR.
 - (build) Each message after the first starts from an actor that an earlier message of the same sequence came from or reached. If a left-out `detail` hop breaks this, restore the hop.
-- (build) Every `→` in a flow or edge names a code step of the same flow. In the overview, it names a flow id.
-- (build) Every code step is linked from its flow's own list (links from edges do not count), and the code steps come in the order of their first link.
+- (build) Every `→` in a flow or edge names a code step of the same flow, and in the overview a flow id. Every code step is linked from its flow's own list (links from edges do not count), and the code steps come in the order of their first link.
 - (build) A flow has at most 2 edge steps, and they come last. An `old` ref names a file that the PR changed.
 - `dive.json` holds the frame, with `links` from `## Linked` in context.md and from knowledge.md.

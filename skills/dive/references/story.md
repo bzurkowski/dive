@@ -1,7 +1,5 @@
 # Story
 
-How a dive tells its story. The orchestrator plans the outline with these rules at step 3, beside `references/outline.md`, which turns call chains into flows. Each writer applies them to the steps the outline gives it.
-
 ## The reader
 
 The reader has already read a lot of code today. They want to know what this code really does, and they check each claim against the code. Walk them through it one small step at a time, with one new idea per step and each claim on the lines that show it.
@@ -12,8 +10,7 @@ The story plan's `Level:` line says how well the reader knows the domain. For `n
 
 A PR is a **self-review**: the author explains their own change to a reviewer. For a module or question, the owner of the code shows it to a new teammate. In both voices:
 
-- Concrete over abstract: name the file, function, field or value. "`MAX_ATTEMPTS` is 5", not "a limit".
-- Numbers over adjectives: "waits up to 32 s", not "waits a long time".
+- Concrete over abstract, numbers over adjectives: name the file, function, field or value. "`MAX_ATTEMPTS` is 5", not "a limit". "Waits up to 32 s", not "waits a long time".
 - Say what the code does, then why it matters.
 - Present tense for how the code works now. Past tense for old behavior: "Before, every failure waited 60 s."
 
@@ -47,11 +44,9 @@ The glossary defines the domain terms. Order them by dependency: each meaning us
 
 The story from far above, in this order:
 
-1. The **overview**: one `sequence` step, the map of the walkthrough. Its actors are the groups (the widget, the backend, the vendor, the chain). Each call links to the flow that zooms into it. Returns need no link. Leave the overview out when the dive has one flow.
+1. The **overview**: one `sequence` step, the map of the walkthrough. Its actors are the groups (the widget, the backend, the vendor, the chain). Each call links to the flow that zooms into it. Leave the overview out when the dive has one flow.
 2. **Concepts**: only the abstractions the flows depend on, such as a state machine, the data model, which parts depend on which, or who trusts whom. Each concept is one diagram or one card. A diagram's `say`, or a card's first sentence, states the one question it answers.
 3. One quiz.
-
-## Diagrams
 
 A diagram tells its story through its diagram notes, which the app reveals one by one. Focus the first note on the entry nodes. Each later note adds the nodes in its `focus`. Nodes that no note has named yet show as ghosts. So each note builds on the one before, and every node is in the `focus` of some note.
 
@@ -74,8 +69,8 @@ The sequences are the spine of the dive: the reader maps each message to the cod
 - **Groups**: An actor's `group` is the deployable app or package that owns it (a service, a library, the database), or `outside` for a system the scope does not own. Keep the actors of one group next to each other. The app draws one band over each run of neighbors in a group.
 - **Messages**: One message per call, return, or queued message. Show one pass of a loop. Each message starts from an actor that has control: the one the previous message reached, or a caller still waiting on its call. Use `return` for replies, `error` for failures, and `async` for queued work. An in-process check is a message from an actor to itself. Every message has a message note.
 - **Main path**: the path a `flow` step draws. It is the path the change or the question is about (for a module, the usual path). It may be a failure path: when the point of a PR is new failure handling, that handling is the main path, with the rejection as an `error` message.
-- **Links**: a message's `step` names the code step of the same flow that shows the code that sends or handles it. Outside a PR, every call into code in scope links to one. In a PR, every changed call does, and only changed messages link. Returns and messages from external systems may have no link. Several messages may link to one code step.
-- **PR marks**: mark the actors and messages that the PR adds, changes, or removes with `change`, in the flow and in its edge steps. An unchanged message gets a message note but no link: it shows where the change sits.
+- **Links**: a message's `step` names the code step of the same flow that shows the code that sends or handles it. In the `flow` step, every changed call (PR) or every call into code in scope (otherwise) links to one. In a PR, only changed messages link. Returns and messages from external systems may have no link. Several messages may link to one code step. Edge messages may link too (**Edge steps**).
+- **PR marks**: mark the actors and messages that the PR adds, changes, or removes with `change`, in the flow and in its edge steps.
 
 ## Edge steps
 
@@ -91,4 +86,4 @@ A code step shows one piece of logic. Its `title` and `say` hold for the whole s
 
 ## Quizzes
 
-A quiz tests understanding: a consequence, a cause, or the result of a given input, never trivia such as names or line numbers. Earlier steps of the dive contain the answer. Each wrong option is a mistake a smart reader could make, so every option sounds plausible. Keep the options similar in length and form.
+A quiz tests understanding: a consequence, a cause, or the result of a given input, never trivia such as names or line numbers. Earlier steps of the dive contain the answer. Each wrong option is a mistake a smart reader could make, so every option sounds plausible. Keep the options similar in length and form, and make each one whole on its own: the app shuffles them.
