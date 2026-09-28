@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && cp dist/index.html ../skills/dive/assets/template.html",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "test": "node --test",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
