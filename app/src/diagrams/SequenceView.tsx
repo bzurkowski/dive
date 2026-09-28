@@ -178,14 +178,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
               // The active message keeps the reading tone; its change sign stays colored.
-              const tone =
-                m.type === 'error'
-                  ? 'text-red-600 dark:text-red-400'
-                  : on
-                    ? 'text-accent'
-                    : mark
-                      ? mark.tone
-                      : 'text-fg'
+              const tone = m.type === 'error' ? 'text-bad' : on ? 'text-accent' : mark ? mark.tone : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const link = m.step && onJump ? LINK : ''
               const lw = textWidth((mark?.sign ?? '') + m.label + link, LABEL_PX, 600, true)
