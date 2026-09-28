@@ -23,8 +23,6 @@ import { ThemeButton } from './shell/Theme'
 import { CardView, Notice, QuizView, TermList, TermsView } from './shell/Steps'
 import { stepSize, type Dive, type Step, type Term } from './types'
 
-const VISUAL = new Set(['code', 'sequence', 'flow', 'edge', 'diagram'])
-
 export default function App({ dive }: { dive: Dive }) {
   const flat = useMemo(() => flatten(dive), [dive])
   const terms = useMemo(() => {
@@ -130,14 +128,8 @@ export default function App({ dive }: { dive: Dive }) {
   const atEnd = i === flat.length - 1 && last
   const nextChapter = pos.s === chapter.steps.length - 1 && last ? dive.chapters[flat[i + 1]?.c]?.title : undefined
 
-  // Flows: a breadcrumb inside a flow, and a way to skip edge cases.
-  const fl = flows(chapter.steps)
-  const flow = flowAt(fl, pos.s)
   const edge = step.kind === 'edge'
-  const crumbs = flow
-    ? [chapter.title, ...(pos.s > flow.s ? [chapter.steps[flow.s].title] : []), ...(edge ? ['Edge cases'] : [])]
-    : []
-  const crumb = crumbs.length > 0 && <p className="mb-1 truncate text-sm text-muted">{crumbs.join(' › ')}</p>
+  const flow = flowAt(flows(chapter.steps), pos.s)
   const skip = skipEdges(dive, flat, pos)
   const skipTo =
     skip &&
@@ -148,17 +140,6 @@ export default function App({ dive }: { dive: Dive }) {
         : dive.chapters[skip.c].title)
 
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
-  const view = (
-    <StepView
-      dive={dive}
-      step={step}
-      focus={pos.f}
-      onFocus={(f) => go({ ...pos, f })}
-      onJump={jump}
-      links={back}
-      onLink={(k) => back && go(back[k].pos)}
-    />
-  )
   const rail = <Rail dive={dive} pos={pos} go={go} />
   const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 
@@ -215,34 +196,24 @@ export default function App({ dive }: { dive: Dive }) {
         <p className="sr-only" aria-live="polite">{`${chapter.title}: ${step.title}`}</p>
         <main className="min-h-0 flex-1" key={`${pos.c}-${pos.s}`}>
           <Guard>
-            {VISUAL.has(step.kind) ? (
-              <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
-                <div className="max-w-5xl">
-                  {crumb}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
-                    {edge && (
-                      <span className="rounded-full border border-edge/50 bg-edge/10 px-2.5 py-0.5 text-sm font-medium text-edge">
-                        Edge case · optional
-                      </span>
-                    )}
-                  </div>
-                  {'say' in step && step.say && (
-                    <p className="mt-1 text-[17px] leading-snug">
-                      <Inline text={step.say} />
-                    </p>
-                  )}
-                </div>
-                <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">{view}</div>
-              </section>
-            ) : (
-              <section className="h-full overflow-y-auto">
-                <div className={`mx-auto px-6 py-12 sm:py-16 ${step.kind === 'terms' ? 'max-w-4xl' : 'max-w-2xl'}`}>
-                  {crumb}
-                  {view}
-                </div>
-              </section>
-            )}
+            <StepView
+              dive={dive}
+              step={step}
+              crumb={
+                flow && (
+                  <p className="mb-1 truncate text-sm text-muted">
+                    {[chapter.title, pos.s > flow.s && chapter.steps[flow.s].title, edge && 'Edge cases']
+                      .filter(Boolean)
+                      .join(' › ')}
+                  </p>
+                )
+              }
+              focus={pos.f}
+              onFocus={(f) => go({ ...pos, f })}
+              onJump={jump}
+              links={back}
+              onLink={(k) => back && go(back[k].pos)}
+            />
           </Guard>
         </main>
 
@@ -328,9 +299,11 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
   )
 }
 
+// Code and diagrams fill the screen under a short header; the other steps read as a page.
 function StepView({
   dive,
   step,
+  crumb,
   focus,
   onFocus,
   onJump,
@@ -339,41 +312,71 @@ function StepView({
 }: {
   dive: Dive
   step: Step
+  crumb: ReactNode
   focus: number
   onFocus: (f: number) => void
   onJump: (id: string) => void
   links?: CodeLink[]
   onLink: (i: number) => void
 }) {
-  const { repo, head } = dive.source
+  const visual = (say: string, view: ReactNode) => (
+    <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
+      <div className="max-w-5xl">
+        {crumb}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h2 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h2>
+          {step.kind === 'edge' && (
+            <span className="rounded-full border border-edge/50 bg-edge/10 px-2.5 py-0.5 text-sm font-medium text-edge">
+              Edge case · optional
+            </span>
+          )}
+        </div>
+        {say && (
+          <p className="mt-1 text-[17px] leading-snug">
+            <Inline text={say} />
+          </p>
+        )}
+      </div>
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-line bg-surface">{view}</div>
+    </section>
+  )
+  const page = (view: ReactNode, wide = false) => (
+    <section className="h-full overflow-y-auto">
+      <div className={`mx-auto px-6 py-12 sm:py-16 ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>
+        {crumb}
+        {view}
+      </div>
+    </section>
+  )
   switch (step.kind) {
     case 'code': {
-      const blob = repo && head ? `https://github.com/${repo}/blob/${head}/` : undefined
-      return (
+      const { repo, head } = dive.source
+      return visual(
+        step.say,
         <CodeView
           step={step}
           files={dive.files}
           focus={focus}
           onFocus={onFocus}
-          blob={blob}
+          blob={repo && head ? `https://github.com/${repo}/blob/${head}/` : undefined}
           links={links}
           onLink={onLink}
-        />
+        />,
       )
     }
     case 'sequence':
     case 'flow':
     case 'edge':
-      return <SequenceView step={step} focus={focus} onFocus={onFocus} onJump={onJump} />
+      return visual(step.say, <SequenceView step={step} focus={focus} onFocus={onFocus} onJump={onJump} />)
     case 'diagram':
-      return <DiagramView step={step} focus={focus} onFocus={onFocus} />
+      return visual(step.say, <DiagramView step={step} focus={focus} onFocus={onFocus} />)
     case 'card':
-      return <CardView step={step} />
+      return page(<CardView step={step} />)
     case 'terms':
-      return <TermsView step={step} />
+      return page(<TermsView step={step} />, true)
     case 'quiz':
-      return <QuizView step={step} />
+      return page(<QuizView step={step} />)
     default:
-      return <Notice>Unknown step type: {(step as { kind?: string }).kind ?? 'none'}.</Notice>
+      return page(<Notice>Unknown step type: {(step as { kind?: string }).kind ?? 'none'}.</Notice>)
   }
 }
