@@ -32,7 +32,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
             <button
               type="button"
               onClick={() => go({ c, s: 0, f: 0 })}
-              aria-current={current ? 'step' : undefined}
+              aria-current={current || undefined}
               className="flex w-full items-baseline justify-between gap-3 rounded text-left"
             >
               <span className={`text-[15px] ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}>
