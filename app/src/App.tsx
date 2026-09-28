@@ -146,14 +146,13 @@ export default function App({ dive }: { dive: Dive }) {
   const atEnd = i === flat.length - 1 && last
   const nextChapter = pos.s === chapter.steps.length - 1 && last ? dive.chapters[flat[i + 1]?.c]?.title : undefined
 
-  // Flows: breadcrumb with 2+ flows (always on edge cases), and a way to skip edge cases.
+  // Flows: a breadcrumb inside a flow, and a way to skip edge cases.
   const fl = flows(chapter.steps)
   const flow = flowAt(fl, pos.s)
   const edge = step.kind === 'edge'
-  const crumbs =
-    flow && (edge || fl.length > 1)
-      ? [chapter.title, ...(pos.s > flow.s ? [chapter.steps[flow.s].title] : []), ...(edge ? ['Edge cases'] : [])]
-      : []
+  const crumbs = flow
+    ? [chapter.title, ...(pos.s > flow.s ? [chapter.steps[flow.s].title] : []), ...(edge ? ['Edge cases'] : [])]
+    : []
   const crumb = crumbs.length > 0 && <p className="mb-1 truncate text-sm text-muted">{crumbs.join(' › ')}</p>
   const skip = skipEdges(dive, flat, pos)
   const skipTo =
