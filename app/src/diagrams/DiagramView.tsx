@@ -105,9 +105,9 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const [ref, { w, h }] = useSize<HTMLDivElement>()
   const both = useMemo(() => ({ LR: layout(step, 'LR'), TB: layout(step, 'TB') }), [step])
   const fit = (l: Laid) => Math.min(w / l.width, h / l.height)
-  const l = w && h && fit(both.TB) > fit(both.LR) ? both.TB : both.LR
+  const l = fit(both.TB) > fit(both.LR) ? both.TB : both.LR
   // Keep text readable: below 0.85 the diagram scrolls instead of shrinking.
-  const s = w && h ? Math.max(0.85, Math.min(1.25, fit(l))) : 1
+  const s = Math.max(0.85, Math.min(1.25, fit(l)))
 
   const notes = step.notes ?? []
   const note = notes[focus]
