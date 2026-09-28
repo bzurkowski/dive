@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { Inline } from './Inline'
 import { CodeView, type CodeLink } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
@@ -78,16 +78,18 @@ export default function App({ dive }: { dive: Dive }) {
     if (t) go({ ...t, f: 0 })
   }
 
-  const toggle = (d: HTMLDialogElement | null) => (d?.open ? d.close() : d?.showModal())
-  // Content fills the dialog, so a click that hits the dialog itself is a backdrop click.
-  const closeOnBackdrop = (e: MouseEvent<HTMLDialogElement>) => e.target === e.currentTarget && e.currentTarget.close()
+  const toggleGlossary = () => {
+    const d = glossary.current
+    if (d?.open) d.close()
+    else d?.showModal()
+  }
 
   const onKey = useEffectEvent((e: KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return
     const t = e.target as Element
     if (t.closest('input, textarea, select, [contenteditable]')) return
     const open = document.querySelector('dialog[open]')
-    if (e.key === 'g' && (!open || open === glossary.current)) return toggle(glossary.current)
+    if (e.key === 'g' && (!open || open === glossary.current)) return toggleGlossary()
     if (open || (e.key === ' ' && t.closest('button, a'))) return
     const fwd = ['ArrowRight', 'j'].includes(e.key) || (e.key === ' ' && !e.shiftKey)
     const back = ['ArrowLeft', 'k'].includes(e.key) || (e.key === ' ' && e.shiftKey)
@@ -100,27 +102,15 @@ export default function App({ dive }: { dive: Dive }) {
     return () => removeEventListener('keydown', onKey)
   }, [])
 
-  const glossaryDialog = (
-    <dialog
+  const glossaryDrawer = (
+    <Drawer
       ref={glossary}
       aria-label="Glossary"
-      onClick={closeOnBackdrop}
-      className="fixed inset-y-0 right-0 left-auto m-0 h-full max-h-none w-[min(30rem,100%)] overflow-y-auto border-l border-line bg-bg text-fg"
+      head={<h2 className="text-2xl font-bold tracking-tight">Glossary</h2>}
+      className="right-0 left-auto w-[min(30rem,100%)] border-l border-line bg-bg"
     >
-      <div className="min-h-full p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Glossary</h2>
-          <button
-            type="button"
-            onClick={() => glossary.current?.close()}
-            className="rounded px-2 py-1 text-muted hover:text-fg"
-          >
-            Close
-          </button>
-        </div>
-        {terms.length ? <TermList terms={terms} narrow /> : <p className="text-muted">This dive has no glossary.</p>}
-      </div>
-    </dialog>
+      {terms.length ? <TermList terms={terms} narrow /> : <p className="text-muted">This dive has no glossary.</p>}
+    </Drawer>
   )
 
   const chapter = dive.chapters[pos.c]
@@ -130,7 +120,7 @@ export default function App({ dive }: { dive: Dive }) {
       <>
         {pos.c === END.c ? <End dive={dive} go={go} /> : <Cover dive={dive} go={go} />}
         <ThemeButton className="fixed top-3 right-4" />
-        {glossaryDialog}
+        {glossaryDrawer}
       </>
     )
 
@@ -206,7 +196,7 @@ export default function App({ dive }: { dive: Dive }) {
           </p>
           <button
             type="button"
-            onClick={() => toggle(glossary.current)}
+            onClick={toggleGlossary}
             aria-keyshortcuts="g"
             className="ml-auto shrink-0 rounded px-2 py-1 text-sm font-medium hover:text-accent"
           >
@@ -295,34 +285,45 @@ export default function App({ dive }: { dive: Dive }) {
         </footer>
       </div>
 
-      <dialog
+      <Drawer
         ref={chapters}
         aria-label="Chapters"
-        onClick={closeOnBackdrop}
-        className="fixed inset-y-0 left-0 m-0 h-full max-h-none w-[min(22rem,90%)] overflow-y-auto bg-surface text-fg"
+        head={
+          <button
+            type="button"
+            onClick={() => go(COVER)}
+            className="rounded text-left text-lg font-bold tracking-tight"
+          >
+            {dive.title}
+          </button>
+        }
+        className="left-0 w-[min(22rem,90%)] bg-surface"
       >
-        <div className="min-h-full p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => go(COVER)}
-              className="rounded text-left text-lg font-bold tracking-tight"
-            >
-              {dive.title}
-            </button>
-            <button
-              type="button"
-              onClick={() => chapters.current?.close()}
-              className="rounded px-2 py-1 text-muted hover:text-fg"
-            >
-              Close
-            </button>
-          </div>
-          {rail}
-        </div>
-      </dialog>
-      {glossaryDialog}
+        {rail}
+      </Drawer>
+      {glossaryDrawer}
     </div>
+  )
+}
+
+// A modal side panel. Its content fills it, so a click on the dialog itself is a backdrop click.
+function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'> & { head: ReactNode }) {
+  return (
+    <dialog
+      {...props}
+      onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
+      className={`fixed inset-y-0 m-0 h-full max-h-none overflow-y-auto text-fg ${className}`}
+    >
+      <div className="min-h-full p-6">
+        <div className="mb-6 flex items-center justify-between">
+          {head}
+          <form method="dialog">
+            <button className="rounded px-2 py-1 text-muted hover:text-fg">Close</button>
+          </form>
+        </div>
+        {children}
+      </div>
+    </dialog>
   )
 }
 
