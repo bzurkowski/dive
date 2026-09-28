@@ -3,13 +3,13 @@ import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import type { FileData } from '../types'
 import type { Parsed } from './rows'
 
-export type Lines = ThemedToken[][]
+type Lines = ThemedToken[][]
 export interface Tokens {
   old: Lines | null
   new: Lines | null
 }
 
-// Curated set; each grammar adds to the template size.
+// Each grammar adds to the template size.
 // ponytail: no ruby (its embedded grammars add ~2 MB); ruby renders as plain text.
 const LANGS: Record<string, LanguageInput> = {
   typescript: () => import('shiki/langs/typescript.mjs'),
@@ -32,27 +32,8 @@ const LANGS: Record<string, LanguageInput> = {
   markdown: () => import('shiki/langs/markdown.mjs'),
 }
 
-const ALIASES: Record<string, string> = {
-  ts: 'typescript',
-  mts: 'typescript',
-  cts: 'typescript',
-  js: 'javascript',
-  mjs: 'javascript',
-  cjs: 'javascript',
-  jsx: 'tsx',
-  py: 'python',
-  kt: 'kotlin',
-  kts: 'kotlin',
-  rs: 'rust',
-  cs: 'csharp',
-  'c#': 'csharp',
-  yml: 'yaml',
-  md: 'markdown',
-  bash: 'shellscript',
-  sh: 'shellscript',
-  shell: 'shellscript',
-  zsh: 'shellscript',
-}
+// dive.py ids that differ from the grammar name. tsx covers jsx, one grammar less.
+const ALIASES: Record<string, string> = { ts: 'typescript', js: 'javascript', jsx: 'tsx', bash: 'shellscript' }
 
 let core: Promise<HighlighterCore> | undefined
 const highlighter = () =>
