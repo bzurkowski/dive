@@ -93,19 +93,15 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
 
   const notes = step.notes ?? []
   const note = notes[focus]
-  const on = new Set(note?.focus ?? [])
-  const seen = new Set(notes.slice(0, focus + 1).flatMap((n) => n.focus))
+  // dive.py accepts a note without focus.
+  const focusOf = notes.map((n) => n.focus ?? [])
+  const on = new Set(focusOf[focus])
+  const seen = new Set(focusOf.slice(0, focus + 1).flat())
   // '' for lit or no notes; earlier notes dim; not yet reached is a ghost.
   const fade = (lit: boolean, ...ids: string[]) =>
     !note || lit ? '' : ids.every((id) => seen.has(id)) ? 'opacity-60' : 'opacity-15'
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
   const tint = new Map(step.nodes.map((n) => [n.id, n.group ? TINTS[groups.indexOf(n.group) % TINTS.length] : PLAIN]))
-
-  const pick = (id: string) => {
-    if (on.has(id)) return
-    const i = notes.findIndex((n) => n.focus.includes(id))
-    if (i >= 0) onFocus(i)
-  }
 
   return (
     <div className="flex h-full w-full flex-col bg-surface">
@@ -173,13 +169,13 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
           {l.nodes.map((n) => {
             const t = tint.get(n.id) ?? PLAIN
             const lit = on.has(n.id)
-            const clickable = !lit && notes.some((x) => x.focus.includes(n.id))
+            const to = lit ? -1 : focusOf.findIndex((f) => f.includes(n.id))
             return (
               <g
                 key={n.id}
                 transform={`translate(${n.x - n.w / 2} ${n.y - n.h / 2})`}
-                className={`transition-opacity duration-300 ${fade(lit, n.id)} ${clickable ? 'cursor-pointer hover:opacity-80' : ''}`}
-                onClick={() => pick(n.id)}
+                className={`transition-opacity duration-300 ${fade(lit, n.id)} ${to >= 0 ? 'cursor-pointer hover:opacity-80' : ''}`}
+                onClick={to >= 0 ? () => onFocus(to) : undefined}
               >
                 <rect
                   width={n.w}
