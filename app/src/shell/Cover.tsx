@@ -12,7 +12,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
     <main className="h-full overflow-y-auto">
       <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
         <p className="text-muted">
-          {KIND[source.kind] ?? 'Dive'}:{' '}
+          {KIND[source.kind]}:{' '}
           {source.url ? (
             <ExternalLink href={source.url}>{source.ref}</ExternalLink>
           ) : (
@@ -79,9 +79,7 @@ export function End({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
           <button type="button" autoFocus onClick={() => go(COVER)} className={primary}>
             Back to the start
           </button>
-          {source.url && (
-            <ExternalLink href={source.url}>Open the {(KIND[source.kind] ?? 'source').toLowerCase()}</ExternalLink>
-          )}
+          {source.url && <ExternalLink href={source.url}>Open the {KIND[source.kind].toLowerCase()}</ExternalLink>}
         </div>
         <p className="mt-6 text-sm text-muted">
           Press <kbd>←</kbd> to go back to the last step.
