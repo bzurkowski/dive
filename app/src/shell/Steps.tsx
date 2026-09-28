@@ -13,31 +13,33 @@ export function Notice({ children }: { children: ReactNode }) {
 // Paragraphs split on blank lines; "- " lines become bullets.
 function Rich({ text }: { text: string }) {
   const blocks: { ul: boolean; lines: string[] }[] = []
+  let block: (typeof blocks)[number] | undefined
   for (const raw of text.split('\n')) {
     const line = raw.trim()
     const ul = line.startsWith('- ')
-    const last = blocks[blocks.length - 1]
-    if (!line) blocks.push({ ul: false, lines: [] })
-    else if (last && last.ul === ul && (ul || last.lines.length)) last.lines.push(ul ? line.slice(2) : line)
-    else blocks.push({ ul, lines: [ul ? line.slice(2) : line] })
+    const item = ul ? line.slice(2) : line
+    if (!line) block = undefined
+    else if (block?.ul === ul) block.lines.push(item)
+    else {
+      block = { ul, lines: [item] }
+      blocks.push(block)
+    }
   }
-  return blocks
-    .filter((b) => b.lines.length)
-    .map((b, i) =>
-      b.ul ? (
-        <ul key={i} className="my-4 list-disc space-y-2 pl-5 marker:text-accent">
-          {b.lines.map((l, j) => (
-            <li key={j}>
-              <Inline text={l} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p key={i} className="my-4">
-          <Inline text={b.lines.join(' ')} />
-        </p>
-      ),
-    )
+  return blocks.map((b, i) =>
+    b.ul ? (
+      <ul key={i} className="my-4 list-disc space-y-2 pl-5 marker:text-accent">
+        {b.lines.map((l, j) => (
+          <li key={j}>
+            <Inline text={l} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p key={i} className="my-4">
+        <Inline text={b.lines.join(' ')} />
+      </p>
+    ),
+  )
 }
 
 export function Links({ links }: { links?: Link[] }) {
