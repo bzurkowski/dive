@@ -32,13 +32,15 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 Dive tells the story step by step, with the real code, sequence diagrams, a glossary, and short quizzes. To build it, the agent:
 
 1. Works out what you gave it, fetches the pull request if there is one, and counts your commits in that code to judge how new you are to it.
-2. Sends out scouts in parallel. For a pull request, they read the code at the PR's commits, not in your working tree:
-   - one per area of the code, which traces the call chains through it,
+2. Splits the code into areas along its directories, then sends out scouts in parallel. For a pull request, they read the code at the PR's commits, not in your working tree:
+   - one per area, which maps the entry points and call chains in it,
    - one for the context: the PR description, comments and reviews, commits, linked issues, docs, and tests,
    - one for Notion, Confluence, Google Drive, Jira, or Linear, if you have them connected.
-3. Joins the call chains into flows and fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases. Then it checks that every hop, edge case, and risk the scouts found has a place, and that nothing in the plan would fail the build.
-4. Hands each flow, and each group of the other chapters, to its own writer, in parallel.
-5. Checks every code reference and link against the real code and builds the page.
+3. Picks the flows from the scouts' notes: one per trigger, up to about five, the ones that matter most.
+4. Sends one tracer per flow, in parallel. Each follows its flow through the code from the trigger to the effect, across areas, and corrects the scouts' notes where the code disagrees.
+5. Fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases. Then it checks that every hop, edge case, and risk the scouts and tracers found has a place, and that nothing in the plan would fail the build.
+6. Hands each flow, and each group of the other chapters, to its own writer, in parallel.
+7. Checks every code reference and link against the real code and builds the page.
 
 ## What's in a dive
 
