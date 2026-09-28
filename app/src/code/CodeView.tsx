@@ -112,7 +112,6 @@ function FileBody({
   const covers = (s: [number, number] | null, r: number) => !!s && s[0] <= r && r <= s[1]
   // The active note owns its rows; any other row goes to the first note covering it.
   const owner = (r: number) => (covers(spans[focus], r) ? focus : spans.findIndex((s) => covers(s, r)))
-  const unplaced = step.notes.flatMap((n, i) => (n.file === path && !spans[i] ? [i] : []))
 
   const active = step.notes[focus]
   // A deleted file has no blob at head.
@@ -150,7 +149,7 @@ function FileBody({
         </span>
       </header>
       <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
-        {unplaced.map(card)}
+        {step.notes.map((n, i) => n.file === path && !spans[i] && card(i))}
         {items.flatMap((it) => {
           if (it.kind === 'gap')
             return (
