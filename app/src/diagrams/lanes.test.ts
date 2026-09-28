@@ -50,4 +50,8 @@ const plain = [
 ]
 eq(bands(lanes(plain, false).lanes), [], 'no groups, no bands')
 eq(lanes(plain, true).lanes.length, 2, 'no groups, nothing to collapse')
+
+// A duplicate id keeps the first actor, like the actor lookups in App.
+const dup = lanes([...plain, { id: 'a', label: 'A again' }], false)
+eq(dup.of.get('a'), 0, 'duplicate id maps to the first actor')
 console.log('lanes ok')

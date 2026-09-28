@@ -20,7 +20,7 @@ export function lanes(actors: Actor[], grouped: boolean) {
       if (merge) byGroup.set(merge, i)
     }
     list[i].actors.push(a)
-    of.set(a.id, i)
+    if (!of.has(a.id)) of.set(a.id, i)
   }
   return { lanes: list, of }
 }
