@@ -36,6 +36,7 @@ LANGS = {'ts': 'ts', 'tsx': 'tsx', 'js': 'js', 'jsx': 'jsx', 'mjs': 'js', 'cjs':
          'xml': 'xml', 'graphql': 'graphql', 'proto': 'proto', 'tf': 'hcl'}
 NAMES = {'Dockerfile': 'dockerfile', 'Makefile': 'make'}
 PROSE = {'title', 'summary', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'}
+DIFF = ('-M', '--no-color', '--no-ext-diff')  # user git settings must not change the output
 HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
 NEW_BELOW = 10  # ponytail: first guess, tune after real dives
 
@@ -79,7 +80,7 @@ def default_branch(remote):
 
 def diff_files(base, head, context=3):
     """Changed files with hunks, in git's order."""
-    names = git('diff', '-M', '--name-status', '-z', base, head).split('\0')
+    names = git('diff', *DIFF, '--name-status', '-z', base, head).split('\0')
     files, i = [], 0
     while i < len(names) - 1:
         st = names[i]
@@ -89,7 +90,7 @@ def diff_files(base, head, context=3):
         else:
             files.append({'path': names[i + 1], 'status': {'A': 'added', 'D': 'deleted'}.get(st[0], 'modified')})
             i += 2
-    chunks = re.split(r'^diff --git ', git('diff', '-M', f'-U{context}', base, head), flags=re.M)[1:]
+    chunks = re.split(r'^diff --git ', git('diff', *DIFF, f'-U{context}', base, head), flags=re.M)[1:]
     if len(chunks) != len(files):
         sys.exit(f'Diff parse error: {len(chunks)} diffs for {len(files)} files.')
     for f, chunk in zip(files, chunks):

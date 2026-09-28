@@ -31,6 +31,7 @@ def pr_repo():
     (work / 'util.py').write_text('X = 1\n')
     git('add', '.'); git('commit', '-qm', 'pr'); git('push', '-q', 'origin', 'HEAD:refs/pull/1/head')
     git('reset', '-q', '--hard', 'HEAD~1')  # user's tree stays on base
+    git('config', 'color.ui', 'always'); git('config', 'diff.external', 'echo')  # user settings prep must survive
     return work, git
 
 
