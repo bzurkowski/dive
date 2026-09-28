@@ -61,9 +61,31 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
     nodes: g.nodes().map((id) => g.node(id)),
     edges: g.edges().map((e) => {
       const d = g.edge(e)
-      return { i: Number(e.name), pts: d.points ?? [], lx: d.x, ly: d.y }
+      return { i: Number(e.name), pts: e.v === e.w ? loop(g.node(e.v), d, rankdir) : d.points, lx: d.x, ly: d.y }
     }),
   }
+}
+
+// dagre 3 misplaces self-loop points, so loop out to the spot it reserves (`at`):
+// right of the node in TB, below it in LR.
+function loop(n: Node, at: Pt, rankdir: 'LR' | 'TB'): Pt[] {
+  const k = 14
+  if (rankdir === 'TB') {
+    const x = n.x + n.width / 2
+    return [
+      { x, y: n.y - k },
+      { x: at.x, y: n.y - k },
+      { x: at.x, y: n.y + k },
+      { x, y: n.y + k },
+    ]
+  }
+  const y = n.y + n.height / 2
+  return [
+    { x: n.x - k, y },
+    { x: n.x - k, y: at.y },
+    { x: n.x + k, y: at.y },
+    { x: n.x + k, y },
+  ]
 }
 
 // Smooth path through dagre's points.
