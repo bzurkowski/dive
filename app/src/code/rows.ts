@@ -17,10 +17,14 @@ export interface Parsed {
   dels: number
 }
 
-// FileData → rows. Diff text is a full-context body; `@@` headers are tolerated.
+// Diff text is a full-context body; `@@` headers are tolerated.
 export function parse(file: FileData): Parsed {
   const lines = file.text.split(/\r?\n/)
   if (lines.at(-1) === '') lines.pop()
+  if (!file.diff) {
+    const rows = lines.map((text, i): Row => ({ type: 'ctx', old: i + 1, new: i + 1, text, n: i }))
+    return { rows, oldText: '', newText: lines.join('\n'), adds: 0, dels: 0 }
+  }
   const rows: Row[] = []
   const oldL: string[] = []
   const newL: string[] = []
@@ -29,12 +33,6 @@ export function parse(file: FileData): Parsed {
   let adds = 0
   let dels = 0
   for (const line of lines) {
-    if (!file.diff) {
-      rows.push({ type: 'ctx', old: n, new: n, text: line, n: newL.length })
-      newL.push(line)
-      n++
-      continue
-    }
     const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)/.exec(line)
     if (hunk) {
       o = +hunk[1]
