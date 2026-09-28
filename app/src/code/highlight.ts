@@ -46,7 +46,7 @@ async function tokenize(code: string, lang: string): Promise<Lines | null> {
   const id = ALIASES[lang] ?? lang
   if (!LANGS[id]) return null
   const h = await highlighter()
-  if (!h.getLoadedLanguages().includes(id)) await h.loadLanguage(LANGS[id])
+  await h.loadLanguage(LANGS[id]) // a no-op once loaded
   const themes = { light: 'github-light', dark: 'github-dark' }
   return h.codeToTokens(code, { lang: id, themes, defaultColor: false }).tokens
 }
