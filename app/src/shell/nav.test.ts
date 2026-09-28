@@ -1,6 +1,6 @@
 // Run: node app/src/shell/nav.test.ts
 import type { Dive, Step } from '../types.ts'
-import { COVER, END, flatten, flows, move, parseHash, skipEdges, toHash } from './nav.ts'
+import { COVER, END, flatten, flows, move, parseHash, skipEdges, stepSeconds, toHash } from './nav.ts'
 
 function eq(actual: unknown, expected: unknown, what: string) {
   const a = JSON.stringify(actual)
@@ -119,3 +119,17 @@ const tailFlat = flatten(tail)
 eq(skipEdges(tail, tailFlat, { c: 0, s: 0, f: 0 }), null, 'no skip before the first flow')
 eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'a flow right before its edges skips to the end')
 eq(skipEdges(tail, tailFlat, { c: 0, s: 2, f: 0 }), END, 'the last edge of the dive skips to the end')
+
+// Reading time: prose is empty below, so any counted id, enum or path shows as extra seconds.
+const note = { file: 'a b.ts', lines: [1, 2], side: 'old', text: '' }
+const actor = { id: 'a', label: '', group: 'g h', change: 'added' }
+const message = { from: 'a', to: 'a', label: '', note: '', type: 'return', step: 'x', change: 'removed' }
+for (const [st, sec] of [
+  [{ kind: 'card', title: '', body: Array(200).fill('w').join(' '), links: [{ title: '', url: 'a b' }] }, 60],
+  [{ kind: 'terms', title: '', terms: [{ term: '', meaning: '', code: 'Refund Job' }] }, 0],
+  [{ kind: 'code', id: 'c', title: '', say: '', notes: [note] }, 20],
+  [{ kind: 'flow', id: 'f', title: '', say: '', actors: [actor], messages: [message] }, 9],
+  [{ kind: 'diagram', title: '', say: '', nodes: [{ id: 'a', label: '', group: 'g h' }], edges: [], notes: [] }, 8],
+  [{ kind: 'quiz', title: '', question: '', options: [{ text: '', correct: true, why: '' }] }, 15],
+] as [Step, number][])
+  eq(stepSeconds(st), sec, `${st.kind} seconds`)
