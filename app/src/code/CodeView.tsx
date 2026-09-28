@@ -62,18 +62,10 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
         </nav>
       )}
       <div ref={box} onClick={pick} className="relative min-h-0 flex-1 overflow-auto motion-safe:scroll-smooth">
-        {[...new Set(step.notes.map((n) => n.file))].map((path) => {
-          const file = files?.[path]
-          if (file) return <FileBody key={path} step={step} path={path} file={file} focus={focus} blob={blob} />
-          return (
-            <section key={path} className="border-line not-first:border-t">
-              <div className="p-6 text-sm text-muted">
-                File not included in this dive: <code className="font-mono">{path}</code>
-              </div>
-              {step.notes.map((n, i) => n.file === path && <NoteCard key={i} notes={step.notes} i={i} focus={focus} />)}
-            </section>
-          )
-        })}
+        {/* dive.py build embeds every note's file */}
+        {[...new Set(step.notes.map((n) => n.file))].map((path) => (
+          <FileBody key={path} step={step} path={path} file={files![path]} focus={focus} blob={blob} />
+        ))}
       </div>
     </div>
   )
@@ -118,7 +110,7 @@ function FileBody({
   // A deleted file has no blob at head.
   const href = blob && file.status !== 'deleted' ? blob + path.split('/').map(encodeURIComponent).join('/') : ''
   const link =
-    href && active?.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
+    href && active.file === path && active.side !== 'old' ? `${href}#L${active.lines[0]}-L${active.lines[1]}` : href
   const card = (i: number) => <NoteCard key={`n${i}`} notes={step.notes} i={i} focus={focus} />
 
   return (
