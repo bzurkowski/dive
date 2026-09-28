@@ -47,7 +47,7 @@ Every dive follows the same outline:
 1. **Why** - the problem and the decision, with links to the PR, tickets, and docs
 2. **Glossary** - the terms the rest of the dive uses
 3. **Big picture** - the main parts and how they connect
-4. **Happy path** - the normal flow, in execution order
+4. **Walkthrough** - the normal flow, in execution order
 5. **Edge cases** - failures, limits, and unusual inputs
 6. **Review focus** - what to check before you approve (pull requests only)
 7. **Recap** - what to remember, plus a list of other changed files

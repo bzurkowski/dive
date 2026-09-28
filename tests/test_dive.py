@@ -41,21 +41,21 @@ class DiveTest(unittest.TestCase):
         (d / 'dive.json').write_text(json.dumps({'title': 'T', 'summary': 'S', 'source': {'kind': 'pr', 'ref': '1'}, 'chapters': []}))
         (d / 'parts').mkdir()
         step = {'kind': 'code', 'title': 'Guard', 'say': 'A guard.', 'notes': [{'file': 'app.py', 'lines': [2, 9], 'text': 'x'}]}
-        (d / 'parts' / 'happy-path.json').write_text(json.dumps({'id': 'happy-path', 'title': 'Happy path', 'steps': [step]}))
+        (d / 'parts' / 'walkthrough.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'Walkthrough', 'steps': [step]}))
         r = run('build', str(d))
         self.assertEqual(r.returncode, 1)
         self.assertIn('outside app.py', r.stdout)
 
         step['notes'][0]['lines'] = [2, 3]
-        (d / 'parts' / 'happy-path.json').write_text(json.dumps({'id': 'happy-path', 'title': 'Happy path', 'steps': [step]}))
+        (d / 'parts' / 'walkthrough.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'Walkthrough', 'steps': [step]}))
         r = run('build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertIn('Reading: 8 words, 1 code notes, about 1 min.', r.stdout)
-        self.assertFalse((d / 'parts' / 'happy-path.json').exists())
+        self.assertIn('Reading: 7 words, 1 code notes, about 1 min.', r.stdout)
+        self.assertFalse((d / 'parts' / 'walkthrough.json').exists())
 
         html = (d / 'index.html').read_text()
         data = json.loads(re.search(r'<script id="dive-data" type="application/json">(.*?)</script>', html, re.S).group(1))
-        self.assertEqual(data['chapters'][0]['id'], 'happy-path')
+        self.assertEqual(data['chapters'][0]['id'], 'walkthrough')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
 

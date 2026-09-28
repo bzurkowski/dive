@@ -18,7 +18,7 @@ interface Dive {
 
 // parts/<id>.json
 interface Chapter {
-  id: 'why' | 'glossary' | 'big-picture' | 'happy-path' | 'edge-cases' | 'review-focus' | 'recap'
+  id: 'why' | 'glossary' | 'big-picture' | 'walkthrough' | 'edge-cases' | 'review-focus' | 'recap'
   title: string
   steps: Step[]
 }
@@ -63,12 +63,12 @@ interface Quiz {
 interface Link { title: string; url: string }
 ```
 
-## Example: `parts/happy-path.json`
+## Example: `parts/walkthrough.json`
 
 ```json
 {
-  "id": "happy-path",
-  "title": "Happy path",
+  "id": "walkthrough",
+  "title": "Walkthrough",
   "steps": [
     {
       "kind": "code",

@@ -11,7 +11,7 @@ The story plan gives the reader's level: `new` means they barely know this domai
 | `why` | The problem and the decision behind it, with sources | 1-2 cards with links to the PR, tickets, pages |
 | `glossary` | The words the rest of the dive uses | 1 terms step, 3-10 terms |
 | `big-picture` | The layers or regions and how they depend on each other | 1 diagram per layer or region, sequence, quiz |
-| `happy-path` | The whole code walkthrough, bottom-up (see **Order**) | code steps, quiz |
+| `walkthrough` | The whole code walkthrough, bottom-up (see **Order**) | code steps, quiz |
 | `edge-cases` | Designed behavior for failures, limits, odd inputs | code steps, sequence, quiz |
 | `review-focus` | PR only: suspected bugs, risks, what to check | 1 card |
 | `recap` | Only facts no earlier step said, and "Also changed" | 1-2 cards |
@@ -31,7 +31,7 @@ Importance, not brevity: never drop a detail the reader needs to understand the 
 
 - **Once**: say each fact once, in the step where the reader sees it in code. Other steps build on it.
 - **New names**: the first time a note names a function, constant or type from the diff, that code gets its own note before the note that names it. For a function, note the line that matters to the story, not the whole body. Example: one note on the list of runtime error messages, then one note on the line of `isRawNetworkError` that checks a message against that list. The other lines of `isRawNetworkError` get no note.
-- **Order**: `happy-path` goes bottom-up: new types and constants, then the data model, migrations and services, then the flow in execution order, from entry point to effect.
+- **Order**: `walkthrough` goes bottom-up: new types and constants, then the data model, migrations and services, then the flow in execution order, from entry point to effect.
 - **Designed or suspected**: `edge-cases` holds only designed behavior. Suspected bugs and risks go only to `review-focus`.
 - **Tests**: put a test note right after the note on the behavior it proves, in the same step, only when the test adds something. List other tests in the "Also changed" card.
 - **Also changed**: mechanical changes (renames, formatting, generated code, lockfiles, doc comments) go in one card in `recap`. Write each path in backticks. Put no notes on imports and exports: list the file in the card.
@@ -44,7 +44,7 @@ Importance, not brevity: never drop a detail the reader needs to understand the 
 - `code`: one piece of logic. `title` and `say` describe it and hold for the whole step. Title the logic, never a file: "A fetch failure becomes a NetworkError", not "The NetworkError class". Notes follow execution order and may cross files (A → B → A is fine). Each note sits on the lines it explains and says what the author would tell a reviewer about them: what they do and why. Never cite line numbers in text: give those lines their own note. 1-3 sentences per note, about 15 lines per range at most.
 - `sequence`: a flow across 3 or more actors (services, classes, modules), one message per call. At most about 10 messages: show one pass of a loop, not every repeat. Add a `note` to the messages that matter. Use `return` for replies, `error` for failures, `async` for queued work.
 - `diagram`: static structure of one layer or region: which parts exist and what depends on what. 3-10 nodes. Use notes to walk through it. Draw one for a simple change. Add one per extra layer or region of a complex change, and no more.
-- `quiz`: one at the end of `big-picture`, `happy-path`, and `edge-cases`.
+- `quiz`: one at the end of `big-picture`, `walkthrough`, and `edge-cases`.
 
 ## Quizzes
 
@@ -76,7 +76,7 @@ Failed refunds now retry with growing, random waits and stop after 5 attempts.
 - Diagrams: the worker, `retryRefund` and the gateway
 - Left out: gateway client internals (unchanged); log wording (no behavior change)
 
-## happy-path
+## walkthrough
 - code src/refunds/retry.ts:3-5 - the limits: `MAX_ATTEMPTS` and the wait cap that `nextDelay` doubles - notes/refunds.md
 - code src/refunds/worker.ts:7-8 → src/refunds/retry.ts:9 → src/refunds/retry.ts:19 - one attempt: count it, `nextDelay` caps the wait, send with an idempotency key - notes/refunds.md
 - quiz - a timeout after the gateway already refunded

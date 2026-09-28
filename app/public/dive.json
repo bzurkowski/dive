@@ -236,8 +236,8 @@
       ]
     },
     {
-      "id": "happy-path",
-      "title": "Happy path",
+      "id": "walkthrough",
+      "title": "Walkthrough",
       "steps": [
         {
           "kind": "code",
