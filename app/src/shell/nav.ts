@@ -86,11 +86,10 @@ export function skipEdges(dive: Dive, flat: Flat, p: Pos): Pos | null {
   return move(dive, flat, { c: p.c, s: f.end - 1, f: stepSize(steps[f.end - 1]) - 1 }, 1)
 }
 
-// Only these keys hold prose, as PROSE in dive.py; ids, enums and paths are not read.
+// The step keys of PROSE in dive.py: only they hold prose, not ids, enums or paths.
 const PROSE = new Set(['title', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'])
 
 function words(v: unknown): number {
-  if (Array.isArray(v)) return v.reduce((n: number, x) => n + words(x), 0)
   if (!v || typeof v !== 'object') return 0
   return Object.entries(v).reduce(
     (n, [k, x]) => n + (PROSE.has(k) && typeof x === 'string' ? (x.match(/\S+/g)?.length ?? 0) : words(x)),
