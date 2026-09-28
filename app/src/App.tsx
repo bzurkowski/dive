@@ -227,10 +227,9 @@ export default function App({ dive }: { dive: Dive }) {
           </div>
         </header>
 
+        {/* Outside the keyed main: a live region only announces changes, not its own mount. */}
+        <p className="sr-only" aria-live="polite">{`${chapter.title}: ${step.title}`}</p>
         <main className="min-h-0 flex-1" key={`${pos.c}-${pos.s}`}>
-          <p className="sr-only" aria-live="polite">
-            {chapter.title}: {step.title}
-          </p>
           <Guard>
             {VISUAL.has(step.kind) ? (
               <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
