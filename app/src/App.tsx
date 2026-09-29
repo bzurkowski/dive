@@ -53,6 +53,7 @@ export default function App({ dive }: { dive: Dive }) {
   const search = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const chapters = useRef<HTMLDialogElement>(null)
+  const [railOpen, setRailOpen] = useState(true)
 
   useEffect(() => {
     document.title = dive.title
@@ -170,7 +171,10 @@ export default function App({ dive }: { dive: Dive }) {
 
   return frame(
     <div className="flex h-full">
-      <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 lg:flex">
+      <aside
+        id="rail"
+        className={`hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 ${railOpen ? 'lg:flex' : ''}`}
+      >
         <button
           type="button"
           onClick={() => go(COVER)}
@@ -192,8 +196,22 @@ export default function App({ dive }: { dive: Dive }) {
           </button>
           <button
             type="button"
+            onClick={() => setRailOpen(!railOpen)}
+            aria-controls="rail"
+            aria-expanded={railOpen}
+            aria-label="Chapters"
+            title={`${railOpen ? 'Hide' : 'Show'} chapters`}
+            className="hidden shrink-0 rounded p-1.5 text-muted hover:text-fg lg:block"
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M9 4v16" />
+            </svg>
+          </button>
+          <button
+            type="button"
             onClick={() => go(COVER)}
-            className="min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg lg:hidden"
+            className={`min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg ${railOpen ? 'lg:hidden' : ''}`}
           >
             {dive.title}
           </button>
