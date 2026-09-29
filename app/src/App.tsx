@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { askContext, askPrompt, askTargets } from './ask'
 import { Inline } from './Inline'
 import { CodeView, type CodeLink } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
@@ -280,6 +281,7 @@ export default function App({ dive }: { dive: Dive }) {
               Skip to {skipTo}
             </button>
           )}
+          <Ask dive={dive} pos={pos} />
           <button type="button" className={btn} onClick={() => go(next)} aria-keyshortcuts="ArrowRight">
             {next.c === END.c
               ? 'Finish'
@@ -331,6 +333,73 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
         {children}
       </div>
     </dialog>
+  )
+}
+
+// The prompt follows the step and focus; the links only prefill the agent's prompt box.
+function Ask({ dive, pos }: { dive: Dive; pos: Pos }) {
+  const [question, setQuestion] = useState('')
+  const [copied, setCopied] = useState('')
+  const panel = useRef<HTMLDivElement>(null)
+  const ctx = askContext(dive, pos, location.href)
+  const prompt = askPrompt(ctx, question)
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt)
+      setCopied('Copied')
+    } catch {
+      setCopied('Copy failed')
+    }
+    setTimeout(() => setCopied(''), 1500)
+  }
+  const btn = 'rounded-lg border border-line px-3 py-1.5 text-sm font-medium hover:border-accent'
+  return (
+    <>
+      <button
+        type="button"
+        popoverTarget="ask"
+        aria-label="Ask your agent"
+        title="Ask your agent about this step"
+        className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg"
+      >
+        Ask
+      </button>
+      <div
+        ref={panel}
+        id="ask"
+        popover="auto"
+        role="dialog"
+        aria-label="Ask your agent"
+        className="inset-auto right-4 bottom-18 m-0 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
+      >
+        <h2 className="font-bold">Ask your agent about this step</h2>
+        <label className="mt-3 block text-sm text-muted">
+          Your question (optional)
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            rows={3}
+            className="mt-1 block w-full rounded-lg border border-line bg-bg px-3 py-2 text-base text-fg"
+          />
+        </label>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {askTargets(ctx, prompt).map((t) => (
+            <a
+              key={t.label}
+              href={t.href}
+              aria-label={`Open in ${t.label}`}
+              onClick={() => panel.current?.hidePopover()}
+              className={btn}
+            >
+              {t.label}
+            </a>
+          ))}
+          <button type="button" onClick={copy} className={btn}>
+            {copied || 'Copy prompt'}
+          </button>
+        </div>
+      </div>
+    </>
   )
 }
 

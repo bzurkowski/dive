@@ -1,0 +1,50 @@
+import { deepStrictEqual as eq, ok } from 'node:assert/strict'
+import { askContext, askPrompt, askTargets } from './ask.ts'
+import type { Dive } from './types.ts'
+
+// An overview message links the flow; the flow's message shows code step c1.
+const msg = (step?: string) => ({ from: 'a', to: 'b', label: 'call', note: 'n', step })
+const seq = (kind: string, step?: string) => ({
+  kind,
+  id: kind,
+  title: kind,
+  say: '',
+  actors: [],
+  messages: [msg(step)],
+})
+const new35 = { file: 'src/a.ts', lines: [3, 5], text: 'new' }
+const notes = [new35, { file: 'src/a.ts', lines: [1, 2], side: 'old', text: 'gone' }, new35]
+const dive = {
+  title: 'T',
+  summary: 's',
+  source: { kind: 'pr', ref: '1', repo: 'o/r', base: 'b0', head: 'h1' },
+  chapters: [
+    { id: 'big-picture', title: 'Big picture', steps: [seq('sequence', 'flow')] },
+    {
+      id: 'walkthrough',
+      title: 'W',
+      steps: [seq('flow', 'c1'), { kind: 'code', id: 'c1', title: 'C', say: '', notes }],
+    },
+  ],
+} as Dive
+
+const url = 'file:///Users/me/my%20repo/docs/dives/pr-1-x/index.html'
+const code = askContext(dive, { c: 1, s: 1, f: 0 }, url)
+eq([code.cwd, code.dir, code.flow, code.refs], ['/Users/me/my repo', 'docs/dives/pr-1-x', 'flow', ['src/a.ts:3-5']])
+ok(code.step.startsWith('W › flow › C'), code.step)
+const prompt = askPrompt(code, ' why? \n')
+for (const s of ['docs/dives/pr-1-x/notes/flow-flow.md', 'src/a.ts:3-5', 'h1']) ok(prompt.includes(s), s)
+ok(prompt.endsWith(' why?'), 'ends with the trimmed question')
+eq(askContext(dive, { c: 1, s: 1, f: 1 }, url).refs, ['old src/a.ts:1-2'], 'old side')
+eq(askContext(dive, { c: 1, s: 0, f: 0 }, url).refs, ['src/a.ts:3-5', 'old src/a.ts:1-2'], 'message refs its code step')
+
+const over = askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///C:/w/docs/dives/s/')
+eq([over.cwd, over.dir, over.flow], ['C:/w', 'docs/dives/s', 'flow'], 'windows, overview links a flow')
+eq(askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///tmp/x/page.html').dir, '/tmp/x', 'elsewhere: its folder')
+
+const web = askContext(dive, { c: 1, s: 1, f: 0 }, 'http://localhost:5173/#/1/1/0')
+eq([web.cwd, web.dir], [undefined, undefined])
+const [claude] = askTargets(web, askPrompt(web, 'q'))
+ok(claude.href.includes('repo=o%2Fr') && !claude.href.includes('cwd='), claude.href)
+ok(askTargets(code, prompt)[0].href.includes('cwd=%2FUsers%2Fme%2Fmy%20repo'))
+for (const t of askTargets(code, prompt)) ok(t.href.includes('%0A') && !t.href.includes('\n'), t.label)
