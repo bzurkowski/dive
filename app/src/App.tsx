@@ -20,6 +20,7 @@ import {
   type Pos,
 } from './shell/nav'
 import { Rail } from './shell/Rail'
+import { searchTerms } from './shell/search'
 import { ThemeButton } from './shell/Theme'
 import { CardView, QuizView, TermList, TermsView } from './shell/Steps'
 import type { Dive, Step, Term } from './types'
@@ -49,6 +50,8 @@ export default function App({ dive }: { dive: Dive }) {
   }, [dive])
   const [pos, setPos] = useState(() => parseHash(dive, location.hash))
   const glossary = useRef<HTMLDialogElement>(null)
+  const search = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
   const chapters = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -74,14 +77,21 @@ export default function App({ dive }: { dive: Dive }) {
     if (t) go({ ...t, f: 0 })
   }
 
-  const toggleGlossary = () => (glossary.current?.open ? glossary.current.close() : glossary.current?.showModal())
+  const toggleGlossary = () => {
+    if (glossary.current?.open) return glossary.current.close()
+    glossary.current?.showModal()
+    search.current?.focus()
+  }
 
   const onKey = useEffectEvent((e: KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return
     const t = e.target as Element
     if (t.closest('input, textarea, select, [contenteditable]')) return
     const open = document.querySelector('dialog[open]')
-    if (e.key === 'g' && (!open || open === glossary.current)) return toggleGlossary()
+    if (e.key === 'g' && (!open || open === glossary.current)) {
+      e.preventDefault() // else the g lands in the search box that opening focuses
+      return toggleGlossary()
+    }
     if (open || (e.key === ' ' && t.closest('button, a'))) return
     const fwd = ['ArrowRight', 'j'].includes(e.key) || (e.key === ' ' && !e.shiftKey)
     const back = ['ArrowLeft', 'k'].includes(e.key) || (e.key === ' ' && e.shiftKey)
@@ -96,6 +106,7 @@ export default function App({ dive }: { dive: Dive }) {
 
   const chapter = dive.chapters[pos.c]
   const step = chapter?.steps[pos.s]
+  const found = searchTerms(terms, query)
   // One tree on every screen, so the live region and the glossary outlive the cover and end screens:
   // a live region only announces changes, not its own mount.
   const frame = (screen: ReactNode) => (
@@ -107,10 +118,26 @@ export default function App({ dive }: { dive: Dive }) {
       <Drawer
         ref={glossary}
         aria-label="Glossary"
+        onClose={() => setQuery('')}
         head={<h2 className="text-2xl font-bold tracking-tight">Glossary</h2>}
         className="right-0 left-auto w-[min(30rem,100%)] border-l border-line bg-bg"
       >
-        {terms.length ? <TermList terms={terms} narrow /> : <p className="text-muted">This dive has no glossary.</p>}
+        {terms.length ? (
+          <>
+            <input
+              ref={search}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Search terms"
+              placeholder="Search terms"
+              className="mb-2 w-full rounded-lg border border-line bg-surface px-3 py-2 placeholder:text-muted"
+            />
+            {found.length ? <TermList terms={found} narrow /> : <p className="py-4 text-muted">No terms match.</p>}
+          </>
+        ) : (
+          <p className="text-muted">This dive has no glossary.</p>
+        )}
       </Drawer>
     </>
   )
