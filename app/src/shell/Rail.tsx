@@ -87,7 +87,7 @@ function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; g
               {range(f.s + 1, f.edge).map(item)}
               {f.edge < f.end && (
                 <li className="pt-1">
-                  <p className="text-xs font-medium text-edge">Edge cases · optional</p>
+                  <p className="text-xs font-semibold">Edge cases</p>
                   <ol className="mt-1 space-y-1 border-l border-dashed border-edge/60 pl-3">
                     {range(f.edge, f.end).map(item)}
                   </ol>

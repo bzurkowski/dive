@@ -357,14 +357,7 @@ function StepView({
     <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
       <div className="max-w-5xl">
         {crumb}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h1 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h1>
-          {step.kind === 'edge' && (
-            <span className="rounded-full border border-edge/50 bg-edge/10 px-2.5 py-0.5 text-sm font-medium text-edge">
-              Edge case · optional
-            </span>
-          )}
-        </div>
+        <h1 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h1>
         <p className="mt-1 text-[17px] leading-snug">
           <Inline text={say} />
         </p>
