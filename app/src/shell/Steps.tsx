@@ -144,7 +144,7 @@ export function QuizView({ step }: { step: QuizStep }) {
                 aria-disabled={done}
                 aria-pressed={i === picked}
                 onClick={() => setPicked((p) => p ?? i)}
-                className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : 'cursor-pointer'}`}
+                className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : ''}`}
               >
                 <span className="flex items-start gap-3">
                   <span className="grow">
