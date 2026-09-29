@@ -29,31 +29,18 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 
 ## How it works
 
-Dive tells the story step by step, with the real code, sequence diagrams, a glossary, and short quizzes. To build it, the agent:
-
-1. Works out what you gave it, fetches the pull request if there is one, and counts your commits in that code to judge how new you are to it.
-2. Splits the code into areas along its directories, then sends out scouts in parallel. For a pull request, they read the code at the PR's commits, not in your working tree:
-   - one per area, which maps the entry points and call chains in it,
-   - one for the context: the PR description, comments and reviews, commits, linked issues, docs, and tests,
-   - one for Notion, Confluence, Google Drive, Jira, or Linear, if you have them connected.
-3. Picks the flows from the scouts' notes: one per trigger, up to about five, the ones that matter most.
-4. Sends one tracer per flow, in parallel. Each follows its flow through the code from the trigger to the effect, across areas, and corrects the scouts' notes where the code disagrees.
-5. Fixes the whole story before any prose: each flow's sequence, the code behind each message, and the edge cases. Then it checks that every hop, edge case, and risk the scouts and tracers found has a place, and that nothing in the plan would fail the build.
-6. Hands each flow, and each group of the other chapters, to its own writer, in parallel.
-7. Checks every code reference and link against the real code and builds the page.
+1. Scout subagents explore the domain and connected knowledge sources, such as Notion or Slack.
+2. The orchestrator picks the key flows in the business logic.
+3. A second wave of subagents traces each flow end to end.
+4. Writer subagents turn the traces into the walkthrough.
 
 ## What's in a dive
 
-Every dive follows the same outline:
-
-1. **Intro** - the problem, the constraint, and the decision, with links to the PR, tickets, and docs. For a module: what the code is for, who uses it, and what starts it. For a question: the answer first
-2. **Glossary** - the terms the rest of the dive uses, each one building on the ones before. If you are new to the domain, it opens with a primer and defines every term
-3. **Big picture** - the story from far above: a map of the flows, then the ideas they depend on
-4. **Walkthrough** - up to about five flows. Each flow is a sequence diagram of the main path, then the code behind its messages, a quiz, then up to two edge cases
-5. **Review focus** - 1-2 cards of suspected bugs, risks, and open questions: what to check before you approve a PR, or traps to know before you change the code
-6. **Recap** - other changed files (PR), the tests the walkthrough did not show, where to read next, and the flows the dive left out
-
-The writing is meant to be easy to read: short sentences, one name for each concept, and nothing that isn't backed by the code or a linked doc.
+- Intro with the basic concepts and the motivation.
+- Searchable glossary of domain terms.
+- Big picture of the change or the domain, with links to each flow.
+- Walkthrough of every business flow, each with an interactive sequence diagram and code snippets.
+- Short quizzes to check that you follow along :smile:
 
 ## Usage
 
