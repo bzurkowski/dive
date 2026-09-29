@@ -12,7 +12,7 @@ import {
   flows,
   move,
   parseHash,
-  skipEdges,
+  skipFlow,
   stepSize,
   toHash,
   COVER,
@@ -156,7 +156,7 @@ export default function App({ dive }: { dive: Dive }) {
 
   const edge = step.kind === 'edge'
   const flow = flowAt(flows(chapter.steps), pos.s)
-  const skip = skipEdges(dive, flat, pos)
+  const skip = skipFlow(dive, flat, pos)
   const skipTo =
     skip &&
     (skip.c === pos.c
@@ -283,7 +283,7 @@ export default function App({ dive }: { dive: Dive }) {
           <button type="button" className={btn} onClick={() => go(next)} aria-keyshortcuts="ArrowRight">
             {next.c === END.c
               ? 'Finish'
-              : skip && !edge && last
+              : last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
                 ? 'Next: edge cases (optional)'
                 : next.c !== pos.c
                   ? `Next chapter: ${dive.chapters[next.c].title}`

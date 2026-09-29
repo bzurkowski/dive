@@ -77,13 +77,14 @@ export function flows(steps: Step[]): Flow[] {
 
 export const flowAt = (fl: Flow[], s: number) => fl.find((f) => s >= f.s && s < f.end)
 
-// Target of "skip edge cases": the step after p's flow. Offered only on the
-// flow's last step before its edges and on the edges themselves, else null.
-export function skipEdges(dive: Dive, flat: Flat, p: Pos): Pos | null {
+// Target of "skip to the next flow": the step after p's flow. Null outside a flow
+// and on the flow's last position, where → lands there anyway.
+export function skipFlow(dive: Dive, flat: Flat, p: Pos): Pos | null {
   const steps = dive.chapters[p.c]?.steps
   const f = steps && flowAt(flows(steps), p.s)
-  if (!f || f.edge === f.end || p.s < f.edge - 1) return null
-  return move(dive, flat, { c: p.c, s: f.end - 1, f: stepSize(steps[f.end - 1]) - 1 }, 1)
+  if (!f) return null
+  const end = { c: p.c, s: f.end - 1, f: stepSize(steps[f.end - 1]) - 1 }
+  return p.s === end.s && p.f === end.f ? null : move(dive, flat, end, 1)
 }
 
 // The step keys of PROSE in dive.py: only they hold prose, not ids, enums or paths.

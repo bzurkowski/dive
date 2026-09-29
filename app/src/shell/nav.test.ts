@@ -1,6 +1,6 @@
 import { deepStrictEqual as eq } from 'node:assert/strict'
 import type { Dive, Step } from '../types.ts'
-import { COVER, END, flatten, flows, move, parseHash, skipEdges, stepSeconds, toHash } from './nav.ts'
+import { COVER, END, flatten, flows, move, parseHash, skipFlow, stepSeconds, toHash } from './nav.ts'
 
 const card = { kind: 'card', title: 't', body: 'b' } as const
 const dive = {
@@ -60,7 +60,7 @@ eq(move(three, tflat, { c: 1, s: 0, f: 0 }, -1), { c: 0, s: 1, f: 2 }, 'back lan
 eq(move(three, tflat, { c: 0, s: 0, f: 5 }, 1), { c: 0, s: 1, f: 0 }, 'focus past the step size moves on')
 eq(move(three, tflat, COVER, -1), COVER, 'cover stays')
 
-// Flows and skipping edge cases.
+// Flows and skipping to the next flow.
 const step = (kind: string) => ({
   kind,
   id: kind,
@@ -89,18 +89,23 @@ eq(
   ],
   'flows split at flow steps',
 )
-eq(skipEdges(walk, wflat, { c: 0, s: 1, f: 0 }), { c: 0, s: 4, f: 0 }, 'quiz skips to the next flow')
-eq(skipEdges(walk, wflat, { c: 0, s: 3, f: 0 }), { c: 0, s: 4, f: 0 }, 'edge skips to the next flow')
-eq(skipEdges(walk, wflat, { c: 0, s: 0, f: 0 }), null, 'no skip before the last step ahead of edges')
-eq(skipEdges(walk, wflat, { c: 0, s: 5, f: 0 }), null, 'no skip in a flow without edges')
-eq(skipEdges(walk, wflat, { c: 0, s: 7, f: 0 }), { c: 1, s: 0, f: 0 }, 'last flow skips to the next chapter')
-eq(skipEdges(walk, wflat, { c: 0, s: 8, f: 0 }), { c: 1, s: 0, f: 0 }, 'last edge skips to the next chapter')
-eq(skipEdges(walk, wflat, COVER), null, 'no skip on the cover')
+eq(skipFlow(walk, wflat, { c: 0, s: 0, f: 0 }), { c: 0, s: 4, f: 0 }, 'flow step skips to the next flow')
+eq(skipFlow(walk, wflat, { c: 0, s: 1, f: 0 }), { c: 0, s: 4, f: 0 }, 'quiz skips to the next flow')
+eq(skipFlow(walk, wflat, { c: 0, s: 2, f: 0 }), { c: 0, s: 4, f: 0 }, 'edge skips to the next flow')
+eq(skipFlow(walk, wflat, { c: 0, s: 3, f: 0 }), null, 'no skip on the last step, next goes there')
+eq(skipFlow(walk, wflat, { c: 0, s: 4, f: 0 }), { c: 0, s: 6, f: 0 }, 'a flow without edges skips too')
+eq(skipFlow(walk, wflat, { c: 0, s: 7, f: 0 }), { c: 1, s: 0, f: 0 }, 'last flow skips to the next chapter')
+eq(skipFlow(walk, wflat, { c: 1, s: 0, f: 0 }), null, 'no skip outside a flow')
+eq(skipFlow(walk, wflat, COVER), null, 'no skip on the cover')
 eq(flows([card, quiz] as Step[]), [], 'no flow step, no flows')
-const tail = { ...dive, chapters: [{ id: 'walkthrough', title: 'W', steps: [flow, edge] }] } as Dive
+const tail = {
+  ...dive,
+  chapters: [{ id: 'walkthrough', title: 'W', steps: [flow, { ...edge, messages: [msg, msg] }] }],
+} as Dive
 const tailFlat = flatten(tail)
-eq(skipEdges(tail, tailFlat, { c: 0, s: 0, f: 0 }), END, 'a flow right before its edges skips to the end')
-eq(skipEdges(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'the last edge of the dive skips to the end')
+eq(skipFlow(tail, tailFlat, { c: 0, s: 0, f: 0 }), END, 'the last flow of the dive skips to the end')
+eq(skipFlow(tail, tailFlat, { c: 0, s: 1, f: 0 }), END, 'skip from a focus before the last')
+eq(skipFlow(tail, tailFlat, { c: 0, s: 1, f: 1 }), null, 'no skip on the last focus')
 
 // Reading time: prose is empty below, so any counted id, enum or path shows as extra seconds.
 const note = { file: 'a b.ts', lines: [1, 2], side: 'old', focus: ['a b'], text: '' }
