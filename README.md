@@ -4,7 +4,7 @@ Dive is an Agent Skill that turns a pull request, a code module, or a question a
 
 | Big picture | Code walkthrough | Sequence |
 | --- | --- | --- |
-| ![Dependency diagram](docs/screenshots/diagram.png) | ![Highlighted code with a note](docs/screenshots/code.png) | ![Sequence diagram with a note](docs/screenshots/sequence.png) |
+| ![Diagram of which errors Ky retries](docs/screenshots/diagram.png) | ![Highlighted code with notes](docs/screenshots/code.png) | ![Edge-case sequence diagram with a note](docs/screenshots/sequence.png) |
 
 ## Table of contents
 
