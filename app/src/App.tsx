@@ -55,6 +55,7 @@ export default function App({ dive }: { dive: Dive }) {
   const [query, setQuery] = useState('')
   const chapters = useRef<HTMLDialogElement>(null)
   const [railOpen, setRailOpen] = useState(true)
+  const [agent, setAgent] = useState('Claude Code')
 
   useEffect(() => {
     document.title = dive.title
@@ -95,6 +96,10 @@ export default function App({ dive }: { dive: Dive }) {
       return toggleGlossary()
     }
     if (open || (e.key === ' ' && t.closest('button, a'))) return
+    if (e.key === 'a') {
+      e.preventDefault() // else the a lands in the question box that opening focuses
+      return document.getElementById('ask')?.togglePopover()
+    }
     const fwd = ['ArrowRight', 'j'].includes(e.key) || (e.key === ' ' && !e.shiftKey)
     const back = ['ArrowLeft', 'k'].includes(e.key) || (e.key === ' ' && e.shiftKey)
     if (!fwd && !back) return
@@ -268,7 +273,7 @@ export default function App({ dive }: { dive: Dive }) {
           >
             Previous
           </button>
-          <p className="min-w-0 grow truncate text-center text-sm text-muted">
+          <p className="min-w-0 grow truncate text-center text-sm text-muted max-sm:invisible">
             {size > 1 && `${pos.f + 1} of ${size}`}
           </p>
           {skip && (
@@ -276,12 +281,12 @@ export default function App({ dive }: { dive: Dive }) {
               type="button"
               title={`Skip to ${skipTo}`}
               onClick={() => go(skip)}
-              className="min-w-0 truncate rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg"
+              className="min-w-0 truncate rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg max-sm:hidden"
             >
               Skip to {skipTo}
             </button>
           )}
-          <Ask dive={dive} pos={pos} />
+          <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
           <button type="button" className={btn} onClick={() => go(next)} aria-keyshortcuts="ArrowRight">
             {next.c === END.c
               ? 'Finish'
@@ -336,13 +341,17 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
   )
 }
 
-// The prompt follows the step and focus; the links only prefill the agent's prompt box.
-function Ask({ dive, pos }: { dive: Dive; pos: Pos }) {
+// The prompt follows the step and focus; the agent's link only prefills its prompt box.
+// The agent picked is App state: remembered for this visit only.
+function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: string; setAgent: (a: string) => void }) {
   const [question, setQuestion] = useState('')
   const [copied, setCopied] = useState('')
   const panel = useRef<HTMLDivElement>(null)
+  const box = useRef<HTMLTextAreaElement>(null)
   const ctx = askContext(dive, pos, location.href)
   const prompt = askPrompt(ctx, question)
+  const targets = askTargets(ctx, prompt)
+  const target = targets.find((t) => t.label === agent) ?? targets[0]
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt)
@@ -352,17 +361,20 @@ function Ask({ dive, pos }: { dive: Dive; pos: Pos }) {
     }
     setTimeout(() => setCopied(''), 1500)
   }
-  const btn = 'rounded-lg border border-line px-3 py-1.5 text-sm font-medium hover:border-accent'
+  const fill = 'flex items-center justify-center gap-2 rounded-lg bg-accent font-medium text-bg hover:opacity-85'
   return (
     <>
       <button
         type="button"
         popoverTarget="ask"
-        aria-label="Ask your agent"
-        title="Ask your agent about this step"
-        className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg"
+        title="Ask your agent about this step (A)"
+        aria-keyshortcuts="a"
+        className={`${fill} shrink-0 px-4 py-2`}
       >
-        Ask
+        <Icon d={target.icon} />
+        <span>
+          Ask<span className="max-sm:hidden"> your agent</span>
+        </span>
       </button>
       <div
         ref={panel}
@@ -370,38 +382,66 @@ function Ask({ dive, pos }: { dive: Dive; pos: Pos }) {
         popover="auto"
         role="dialog"
         aria-label="Ask your agent"
-        className="inset-auto right-4 bottom-18 m-0 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
+        onToggle={(e) => e.newState === 'open' && box.current?.focus()}
+        className="inset-auto right-4 bottom-18 m-0 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
       >
         <h2 className="font-bold">Ask your agent about this step</h2>
         <label className="mt-3 block text-sm text-muted">
           Your question (optional)
           <textarea
+            ref={box}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             rows={3}
             className="mt-1 block w-full rounded-lg border border-line bg-bg px-3 py-2 text-base text-fg"
           />
         </label>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {askTargets(ctx, prompt).map((t) => (
-            <a
-              key={t.label}
-              href={t.href}
-              aria-label={`Open in ${t.label}`}
-              onClick={() => panel.current?.hidePopover()}
-              className={btn}
+        <div className="mt-3 flex gap-2">
+          <label className="relative flex items-center">
+            <span className="sr-only">Agent</span>
+            <Icon d={target.icon} className="pointer-events-none absolute left-3" />
+            <select
+              value={target.label}
+              onChange={(e) => setAgent(e.target.value)}
+              className="h-full rounded-lg border border-line bg-surface py-2 pr-2 pl-9 text-sm font-medium hover:border-accent"
             >
-              {t.label}
-            </a>
-          ))}
-          <button type="button" onClick={copy} className={btn}>
-            {copied || 'Copy prompt'}
+              {targets.map((t) => (
+                <option key={t.label}>{t.label}</option>
+              ))}
+            </select>
+          </label>
+          <a
+            href={target.href}
+            title={`Open in ${target.label} with this prompt`}
+            onClick={() => panel.current?.hidePopover()}
+            className={`${fill} grow px-3 py-2 text-sm`}
+          >
+            Open
+          </a>
+          <button
+            type="button"
+            onClick={copy}
+            title="Copy the prompt"
+            className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm font-medium hover:border-accent"
+          >
+            <Icon d={COPY} />
+            {copied || 'Copy'}
           </button>
         </div>
+        <p className="mt-2 text-xs text-muted">The prompt is filled in, not sent: you press Enter in your agent.</p>
       </div>
     </>
   )
 }
+
+const COPY =
+  'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z'
+
+const Icon = ({ d, className = '' }: { d: string; className?: string }) => (
+  <svg viewBox="0 0 24 24" aria-hidden className={`size-4 shrink-0 fill-current ${className}`}>
+    <path d={d} />
+  </svg>
+)
 
 function StepView({
   dive,

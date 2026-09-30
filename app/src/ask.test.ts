@@ -48,3 +48,5 @@ const [claude] = askTargets(web, askPrompt(web, 'q'))
 ok(claude.href.includes('repo=o%2Fr') && !claude.href.includes('cwd='), claude.href)
 ok(askTargets(code, prompt)[0].href.includes('cwd=%2FUsers%2Fme%2Fmy%20repo'))
 for (const t of askTargets(code, prompt)) ok(t.href.includes('%0A') && !t.href.includes('\n'), t.label)
+const codex = (c: typeof web) => askTargets(c, 'p').find((t) => t.label === 'Codex')!.href
+ok(codex(code).includes('path=%2FUsers%2Fme') && codex(web).includes('originUrl=https%3A%2F%2Fgithub.com%2Fo%2Fr'))
