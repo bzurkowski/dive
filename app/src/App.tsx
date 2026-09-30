@@ -345,9 +345,10 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
 // The agent picked is App state: remembered for this visit only.
 function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: string; setAgent: (a: string) => void }) {
   const [question, setQuestion] = useState('')
-  const [copied, setCopied] = useState('')
+  const [copied, setCopied] = useState<'' | 'ok' | 'fail'>('')
   const panel = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLTextAreaElement>(null)
+  const open = useRef<HTMLAnchorElement>(null)
   const ctx = askContext(dive, pos, location.href)
   const prompt = askPrompt(ctx, question)
   const targets = askTargets(ctx, prompt)
@@ -355,13 +356,14 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt)
-      setCopied('Copied')
+      setCopied('ok')
     } catch {
-      setCopied('Copy failed')
+      setCopied('fail')
     }
     setTimeout(() => setCopied(''), 1500)
   }
   const fill = 'flex items-center justify-center gap-2 rounded-lg bg-accent font-medium text-bg hover:opacity-85'
+  const square = 'grid size-8 shrink-0 place-items-center rounded-md'
   return (
     <>
       <button
@@ -386,49 +388,64 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
         className="inset-auto right-4 bottom-18 m-0 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
       >
         <h2 className="font-bold">Ask your agent about this step</h2>
-        <label className="mt-3 block text-sm text-muted">
-          Your question (optional)
+        {/* A chat composer: the question, then the agent on the left and the actions on the right. */}
+        <div className="mt-3 rounded-lg border border-line bg-bg outline-offset-2 outline-accent has-[textarea:focus-visible]:outline-2">
           <textarea
             ref={box}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
+              e.preventDefault() // Enter opens, Shift+Enter adds a line
+              open.current?.click()
+            }}
             rows={3}
-            className="mt-1 block w-full rounded-lg border border-line bg-bg px-3 py-2 text-base text-fg"
+            aria-label="Your question (optional)"
+            placeholder="Your question (optional)"
+            className="block w-full resize-none bg-transparent px-3 pt-2 text-base placeholder:text-muted focus-visible:outline-none!"
           />
-        </label>
-        <div className="mt-3 flex gap-2">
-          <label className="relative flex items-center">
-            <span className="sr-only">Agent</span>
-            <Icon d={target.icon} className="pointer-events-none absolute left-3" />
-            <select
-              value={target.label}
-              onChange={(e) => setAgent(e.target.value)}
-              className="h-full rounded-lg border border-line bg-surface py-2 pr-2 pl-9 text-sm font-medium hover:border-accent"
+          <div className="flex items-center gap-2 p-2">
+            <label className="relative mr-auto flex items-center">
+              <span className="sr-only">Agent</span>
+              <Icon d={target.icon} className="pointer-events-none absolute left-2.5" />
+              <select
+                value={target.label}
+                onChange={(e) => setAgent(e.target.value)}
+                className="h-8 rounded-md border border-line bg-surface pr-1 pl-8 text-sm font-medium hover:border-accent"
+              >
+                {targets.map((t) => (
+                  <option key={t.label}>{t.label}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={copy}
+              title="Copy prompt"
+              aria-label="Copy prompt"
+              className={`${square} border border-line bg-surface hover:border-accent`}
             >
-              {targets.map((t) => (
-                <option key={t.label}>{t.label}</option>
-              ))}
-            </select>
-          </label>
-          <a
-            href={target.href}
-            title={`Open in ${target.label} with this prompt`}
-            onClick={() => panel.current?.hidePopover()}
-            className={`${fill} grow px-3 py-2 text-sm`}
-          >
-            Open
-          </a>
-          <button
-            type="button"
-            onClick={copy}
-            title="Copy the prompt"
-            className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm font-medium hover:border-accent"
-          >
-            <Icon d={COPY} />
-            {copied || 'Copy'}
-          </button>
+              <Icon d={copied === 'ok' ? CHECK : COPY} />
+            </button>
+            <a
+              ref={open}
+              href={target.href}
+              title={`Open in ${target.label} (Enter)`}
+              aria-label={`Open in ${target.label}`}
+              onClick={() => panel.current?.hidePopover()}
+              className={`${square} bg-accent text-bg hover:opacity-85`}
+            >
+              <Icon d={PLAY} />
+            </a>
+          </div>
         </div>
-        <p className="mt-2 text-xs text-muted">The prompt is filled in, not sent: you press Enter in your agent.</p>
+        <p role="status" className="mt-2 text-xs text-muted">
+          {copied === 'ok'
+            ? 'Copied the prompt.'
+            : copied === 'fail'
+              ? 'Could not copy: the browser blocked the clipboard.'
+              : 'The prompt is filled in, not sent: you continue in your agent.'}
+        </p>
       </div>
     </>
   )
@@ -436,6 +453,8 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
 
 const COPY =
   'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z'
+const CHECK = 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'
+const PLAY = 'M8 5v14l11-7z'
 
 const Icon = ({ d, className = '' }: { d: string; className?: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden className={`size-4 shrink-0 fill-current ${className}`}>
