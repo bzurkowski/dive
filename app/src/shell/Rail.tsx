@@ -1,10 +1,26 @@
-import type { Dive, Step } from '../types'
-import { chapterSeconds, flowAt, flows, minutes, type Pos } from './nav'
+import type { Dive, Source, Step } from '../types'
+import { chapterSeconds, flowAt, flows, minutes, COVER, type Pos } from './nav'
 
 // Chapters on a vertical "depth line" that fills in as the reader goes deeper.
+// The cover is its first stop; the current chapter's flows are smaller stops on it.
+// Titles stop at the reading-time column: pr-12 = its min-w-9 plus the gap-3 before it.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
   return (
     <ol>
+      <li className="relative pb-6 pl-8">
+        <span aria-hidden className="absolute top-3 -bottom-3 left-[11px] w-0.5 bg-accent" />
+        <span aria-hidden className="absolute top-1.5 left-1.5 size-3 rounded-[3px] bg-accent" />
+        <button
+          type="button"
+          onClick={() => go(COVER)}
+          className="block rounded pr-12 text-left text-[15px] leading-snug font-semibold hover:underline"
+        >
+          {dive.title}
+        </button>
+        <p className="mt-1 truncate text-xs text-muted">
+          {origin(dive.source)} · {minutes(chapterSeconds(dive.chapters.flatMap((ch) => ch.steps)))}
+        </p>
+      </li>
       {dive.chapters.map((ch, c) => {
         const current = c === pos.c
         const past = c < pos.c
@@ -35,7 +51,9 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
               <span className={`text-[15px] ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}>
                 {ch.title}
               </span>
-              <span className="shrink-0 text-xs text-muted">{minutes(chapterSeconds(ch.steps))}</span>
+              <span className="min-w-9 shrink-0 text-right text-xs text-muted">
+                {minutes(chapterSeconds(ch.steps))}
+              </span>
             </button>
             {current && <StepList steps={ch.steps} c={c} pos={pos} go={go} />}
           </li>
@@ -45,8 +63,18 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
   )
 }
 
+// "sindresorhus/ky #842" for a PR, the path for a module.
+const origin = (s: Source) =>
+  s.kind === 'pr'
+    ? `${s.repo ?? 'Pull request'} #${(s.url ?? s.ref).match(/\d+/g)?.at(-1) ?? ''}`
+    : s.kind === 'module'
+      ? s.ref
+      : 'Question'
+
 const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
 
+// Steps flush under the chapter title. A flow's dot sits on the chapter's line and fills
+// once the reader has passed the flow; only the open flow lists its steps.
 function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
   const fl = flows(steps)
   const open = flowAt(fl, pos.s)
@@ -64,59 +92,43 @@ function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; g
   )
 
   return (
-    <ol className="mt-2 space-y-1 border-l border-line pl-3">
+    <ol className="mt-2 space-y-2 pr-12">
       {range(0, fl[0]?.s ?? steps.length).map(item)}
       {fl.map((f) => (
-        <li key={f.s} className="pt-1">
+        <li key={f.s} className="relative">
+          <span
+            aria-hidden
+            className={`absolute top-[5px] -left-[25px] size-2.5 rounded-full border-2 ring-3 ring-surface ${
+              f.end <= pos.s
+                ? 'border-accent bg-accent'
+                : f === open
+                  ? 'border-accent bg-surface'
+                  : 'border-muted bg-surface'
+            }`}
+          />
           <button
             type="button"
             onClick={() => go({ c, s: f.s, f: 0 })}
             aria-current={f.s === pos.s ? 'step' : undefined}
-            className={`flex w-full items-baseline gap-2 rounded text-left text-sm leading-snug ${
-              f.s === pos.s ? 'font-semibold' : f === open ? 'font-medium' : 'font-medium text-muted hover:text-fg'
+            className={`w-full rounded text-left text-sm leading-snug ${
+              f === open ? 'font-semibold' : 'font-medium text-muted hover:text-fg'
             }`}
           >
-            <FlowGlyph />
-            <span className={`grow ${f.s === pos.s ? 'mark' : ''}`}>{steps[f.s].title}</span>
-            <span className="shrink-0 text-xs font-normal text-muted">
-              {minutes(chapterSeconds(steps.slice(f.s, f.end)))}
-            </span>
+            <span className={f.s === pos.s ? 'mark' : ''}>{steps[f.s].title}</span>
           </button>
-          {f === open && f.s + 1 < f.end && (
-            <ol className="mt-1.5 ml-[7px] space-y-1 border-l border-line pl-6">
+          {f === open && (
+            <ol className="mt-1.5 space-y-1">
               {range(f.s + 1, f.edge).map(item)}
               {f.edge < f.end && (
-                <li className="pt-1">
-                  <p className="text-xs font-semibold">Edge cases</p>
-                  <ol className="mt-1 space-y-1 border-l border-dashed border-edge/60 pl-3">
-                    {range(f.edge, f.end).map(item)}
-                  </ol>
+                <li className="flex items-center gap-2 pt-1 text-xs font-semibold text-edge">
+                  Edge cases <span aria-hidden className="grow border-t border-dashed border-edge/50" />
                 </li>
               )}
+              {range(f.edge, f.end).map(item)}
             </ol>
           )}
         </li>
       ))}
     </ol>
-  )
-}
-
-// Two lifelines with a call and its return: marks a flow header.
-function FlowGlyph() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      className="size-3.5 shrink-0 translate-y-0.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2.5 1.5v13M13.5 1.5v13" />
-      <path d="M5 5.5h6M9 3.5l2 2-2 2" />
-      <path d="M11 10.5H5M7 8.5l-2 2 2 2" />
-    </svg>
   )
 }

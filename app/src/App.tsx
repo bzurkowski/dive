@@ -181,13 +181,6 @@ export default function App({ dive }: { dive: Dive }) {
         id="rail"
         className={`hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 ${railOpen ? 'lg:flex' : ''}`}
       >
-        <button
-          type="button"
-          onClick={() => go(COVER)}
-          className="mb-8 rounded text-left text-lg leading-snug font-bold tracking-tight hover:text-accent"
-        >
-          {dive.title}
-        </button>
         <nav aria-label="Chapters">{rail}</nav>
       </aside>
 
@@ -302,15 +295,7 @@ export default function App({ dive }: { dive: Dive }) {
       <Drawer
         ref={chapters}
         aria-label="Chapters"
-        head={
-          <button
-            type="button"
-            onClick={() => go(COVER)}
-            className="rounded text-left text-lg font-bold tracking-tight"
-          >
-            {dive.title}
-          </button>
-        }
+        head={<h2 className="text-2xl font-bold tracking-tight">Chapters</h2>}
         className="left-0 w-[min(22rem,90%)] bg-surface"
       >
         {rail}
