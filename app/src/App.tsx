@@ -179,7 +179,7 @@ export default function App({ dive }: { dive: Dive }) {
     <div className="flex h-full">
       <aside
         id="rail"
-        className={`hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 py-6 ${railOpen ? 'lg:flex' : ''}`}
+        className={`hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 pt-3.5 pb-6 ${railOpen ? 'lg:flex' : ''}`}
       >
         <nav aria-label="Chapters">{rail}</nav>
       </aside>

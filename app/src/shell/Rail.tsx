@@ -1,24 +1,28 @@
 import type { Dive, Source, Step } from '../types'
 import { chapterSeconds, flowAt, flows, minutes, COVER, type Pos } from './nav'
 
-// Chapters on a vertical "depth line" that fills in as the reader goes deeper.
-// The cover is its first stop; the current chapter's flows are smaller stops on it.
+// The dive's title and source, then chapters on a vertical "depth line" that fills in
+// as the reader goes deeper. The current chapter's flows are smaller stops on it.
 // Titles stop at the reading-time column: pr-12 = its min-w-9 plus the gap-3 before it.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
   return (
     <ol>
-      <li className="relative pb-6 pl-8">
-        <span aria-hidden className="absolute top-3 -bottom-3 left-[11px] w-0.5 bg-accent" />
-        <span aria-hidden className="absolute top-1.5 left-1.5 size-3 rounded-[3px] bg-accent" />
+      <li className="mb-6 border-b border-line pb-5">
         <button
           type="button"
           onClick={() => go(COVER)}
-          className="block rounded pr-12 text-left text-[15px] leading-snug font-semibold hover:underline"
+          className="block rounded text-left text-xl leading-tight font-extrabold tracking-tight text-balance hover:underline"
         >
           {dive.title}
         </button>
-        <p className="mt-1 truncate text-xs text-muted">
-          {origin(dive.source)} · {minutes(chapterSeconds(dive.chapters.flatMap((ch) => ch.steps)))}
+        <p className="mt-2 truncate text-sm text-muted">
+          {dive.source.url ? (
+            <a href={dive.source.url} target="_blank" rel="noreferrer" className="hover:text-accent hover:underline">
+              {origin(dive.source)}
+            </a>
+          ) : (
+            origin(dive.source)
+          )}
         </p>
       </li>
       {dive.chapters.map((ch, c) => {
