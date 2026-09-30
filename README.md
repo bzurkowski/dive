@@ -41,7 +41,7 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 - Big picture of the change or the domain, with links to each flow.
 - Walkthrough of every business flow, each with an interactive sequence diagram and code snippets.
 - Short quizzes to check that you follow along :smile:
-- An Ask button on every step that opens Claude Code, VS Code, or Cursor with a prompt about that step, or copies it.
+- An Ask button on every step that opens Claude Code, Cursor, or Codex with a prompt about that step, or copies it.
 
 ## Usage
 
