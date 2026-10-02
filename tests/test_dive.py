@@ -198,19 +198,6 @@ class DiveTest(unittest.TestCase):
                   "big-picture step 3 (diagram 'D') note 2: missing \"focus\""]:
             self.assertIn(e, r.stdout)
 
-    def test_areas(self):
-        work = Path(tempfile.mkdtemp())
-        sh(work, 'git', 'init', '-q')
-        for p, n in [('pay/refund/a.py', 3000), ('pay/refund/b.py', 1500), ('pay/charge/c.py', 2000),
-                     ('pay/types.py', 100), ('pay/util.py', 100), ('pay/package-lock.json', 9000)]:
-            (work / p).parent.mkdir(parents=True, exist_ok=True)
-            (work / p).write_text('x\n' * n)
-        sh(work, 'git', 'add', '.')
-        # pay/ is past 5000 lines: it splits at its subdirectories, small neighbors pack, the lockfile weighs 0
-        self.assertIn('1. pay/charge/ pay/package-lock.json: 2 files, 2000 lines\n'
-                      '  2. pay/refund/ pay/types.py pay/util.py: 4 files, 4700 lines', run(work, 'areas', 'pay').stdout)
-        self.assertIn('1. pay/types.py pay/util.py: 2 files, 200 lines', run(work, 'areas', 'pay/types.py', 'pay/util.py').stdout)
-
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

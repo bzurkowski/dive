@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """Prep and build a dive. Run from inside the repository. Python 3.9+, stdlib only.
 
-  dive.py prep  <dir> --pr <number|url> [--base <branch>]   fetch the PR, write <dir>/diff.json, print its areas
-  dive.py areas <path>...                                   print the areas of a module, or of the files that answer a question
+  dive.py prep  <dir> --pr <number|url> [--base <branch>]   fetch the PR, write <dir>/diff.json
   dive.py build <dir>                                       merge parts, validate, embed code, write <dir>/index.html
   dive.py level <path>... [--rev <rev>]                     print new or familiar from your commits under <path>
 """
 import argparse
 import json
-import posixpath
 import re
 import subprocess
 import sys
@@ -48,7 +46,6 @@ STEP_ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*$')
 CHANGES = ('added', 'changed', 'removed')
 MAX_ACTORS = 30
 MAX_EDGES = 2  # edge steps per flow
-AREA_FILES, AREA_LINES, AREA_LINES_PR = 40, 5000, 1200  # ponytail: one area of the planner's map, first guess, tune after real dives
 
 
 def git(*args, check=True):
@@ -145,57 +142,10 @@ def prep(d, pr, base_ref):
     (d / 'diff.json').write_text(json.dumps(diff, indent=1, ensure_ascii=False), encoding='utf-8')
     adds, dels = sum(f['additions'] for f in files), sum(f['deletions'] for f in files)
     print(f'PR #{n} into {base_ref}: {len(files)} files, +{adds} -{dels}\nbase={base}\nhead={head}')
-    weights = {f['path']: 0 if is_lockfile(f['path']) else f['additions'] + f['deletions'] for f in files}
-    print_areas(areas(weights, AREA_LINES_PR), weights, 'changed lines')
 
 
 def is_lockfile(path):
     return path.rsplit('/', 1)[-1] in LOCKFILES
-
-
-def areas(weights, max_lines):
-    """Split {path: lines} at directories until each part fits one area, then pack small neighbors together.
-    Returns [(prefixes, paths)]: a prefix is a directory ending in / or a file, and stands for its paths."""
-    fits = lambda ps: len(ps) <= AREA_FILES and sum(weights[p] for p in ps) <= max_lines
-
-    def split(prefix, paths):
-        if len(paths) == 1 or fits(paths):
-            return [([prefix], paths)]
-        kids = {}
-        for p in paths:
-            head, sep, _ = p[len(prefix):].partition('/')
-            kids.setdefault(prefix + head + sep, []).append(p)
-        packed = []
-        for k in sorted(kids):
-            for g in split(k, kids[k]):
-                if packed and fits(packed[-1][1] + g[1]):
-                    packed[-1] = (packed[-1][0] + g[0], packed[-1][1] + g[1])
-                else:
-                    packed.append(g)
-        return packed
-
-    paths = sorted(weights)
-    if len(paths) < 2:
-        return [(paths, paths)] if paths else []
-    root = posixpath.commonpath(paths)
-    return split(root + '/' if root else '', paths)
-
-
-def print_areas(groups, weights, unit, by_file=False):
-    print('Areas:')
-    for i, (prefixes, paths) in enumerate(groups, 1):
-        shown = ' '.join(paths if by_file else (p or '.' for p in prefixes))
-        print(f'  {i}. {shown}: {len(paths)} files, {sum(weights[p] for p in paths)} {unit}')
-
-
-def scope_areas(paths):
-    """Print the areas of the tracked files under paths. Files given one by one (a question) print one by one."""
-    files = [f for f in git('ls-files', '-z', '--', *paths).split('\0') if f]
-    if not files:
-        sys.exit(f"No tracked files under {' '.join(paths)}.")
-    weights = {f: 0 if is_lockfile(f) or not Path(f).is_file() else Path(f).read_bytes().count(b'\n') for f in files}
-    print(f'{len(files)} files, {sum(weights.values())} lines')
-    print_areas(areas(weights, AREA_LINES), weights, 'lines', by_file=all(Path(p).is_file() for p in paths))
 
 
 def lang(path):
@@ -569,8 +519,6 @@ def main():
     p.add_argument('--base')
     b = sub.add_parser('build')
     b.add_argument('dir', type=Path)
-    ar = sub.add_parser('areas')
-    ar.add_argument('paths', nargs='+')
     lv = sub.add_parser('level')
     lv.add_argument('paths', nargs='+')
     lv.add_argument('--rev', default='HEAD')
@@ -579,8 +527,6 @@ def main():
         prep(a.dir, a.pr, a.base)
     elif a.cmd == 'build':
         build(a.dir)
-    elif a.cmd == 'areas':
-        scope_areas(a.paths)
     else:
         print('level=%s\nreason=%s' % level(a.paths, a.rev))
 
