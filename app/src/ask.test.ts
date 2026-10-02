@@ -33,8 +33,7 @@ const code = askContext(dive, { c: 1, s: 1, f: 0 }, url)
 eq([code.cwd, code.dir, code.flow, code.refs], ['/Users/me/my repo', 'docs/dives/pr-1-x', 'flow', ['src/a.ts:3-5']])
 eq(code.step, 'W › flow › C (note 1 of 3)')
 const prompt = askPrompt(code, ' why? \n')
-for (const s of ['Trace of this flow: docs/dives/pr-1-x/notes/flow-flow.md', 'src/a.ts:3-5', 'h1'])
-  ok(prompt.includes(s), s)
+for (const s of ['## flow flow` in docs/dives/pr-1-x/plan.md', 'src/a.ts:3-5', 'h1']) ok(prompt.includes(s), s)
 ok(prompt.endsWith(' why?'), 'ends with the trimmed question')
 eq(focusText(dive.chapters[1].steps[1], 0, code), 'note 1 of 3, src/a.ts:3-5: new', 'live region, code note')
 const hop = askContext(dive, { c: 1, s: 0, f: 0 }, url)
@@ -48,7 +47,7 @@ eq(askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///tmp/x/page.html').dir, '/tmp/
 // A shared file (Downloads) has no notes folder beside it: no trace line, the commit lines stay.
 const shared = askPrompt(askContext(dive, { c: 1, s: 1, f: 0 }, 'file:///Users/me/Downloads/index.html'), 'q')
 ok(
-  !shared.includes('Trace of this flow') && shared.includes('git show h1:') && shared.includes('git diff b0 h1'),
+  !shared.includes('Plan of this flow') && shared.includes('git show h1:') && shared.includes('git diff b0 h1'),
   shared,
 )
 

@@ -19,7 +19,7 @@ export interface Source {
   repo?: string // "owner/name", used for GitHub links
   base?: string // base commit sha (pr)
   head?: string // head commit sha (pr), else the commit the dive was built at
-  links?: Link[] // knowledge-base pages and tickets used as sources
+  links?: Link[] // knowledge-base pages and tickets used as sources; the build adds every card link
 }
 
 export type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus' | 'recap'

@@ -16,7 +16,7 @@ export interface AskContext {
   step: string // "Walkthrough › Retry › Send the request (note 2 of 4)"
   refs: string[] // "path:12-30", or "old path:12-30" for a note on deleted lines
   note?: string
-  flow?: string // flow id: its trace is <dir>/notes/flow-<id>.md
+  flow?: string // flow id: its plan is `## flow <id>` of <dir>/plan.md
 }
 
 const noteRef = (n: CodeNote) => `${n.side === 'old' ? 'old ' : ''}${n.file}:${n.lines[0]}-${n.lines[1]}`
@@ -86,10 +86,8 @@ export function askPrompt(ctx: AskContext, question: string): string {
     `Step: ${step}`,
     refs.length > 0 && `Code: ${refs.join(', ')}`,
     note && `Note: ${note}`,
-    // The notes folder sits next to the dive in the repo; a shared copy of the file travels without it.
-    cwd &&
-      flow &&
-      `Trace of this flow: ${dir}/notes/flow-${flow}.md, other traces in the same folder. Read it first, then the code.`,
+    // The plan sits next to the dive in the repo; a shared copy of the file travels without it.
+    cwd && flow && `Plan of this flow: \`## flow ${flow}\` in ${dir}/plan.md. Read it first, then the code.`,
     head && `The code is at commit ${head}: read a file with \`git show ${head}:<path>\`.`,
     pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`; old lines are at ${base}.`,
     `\nMy question: ${question.trim()}`,
