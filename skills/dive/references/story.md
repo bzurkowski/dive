@@ -22,11 +22,11 @@ The chapters, in order. Leave out a chapter that has nothing true to say.
 | `glossary` | The words the rest of the dive uses | same | `terms` steps |
 | `big-picture` | The story from far above | same | overview, concepts, quiz |
 | `walkthrough` | The change, flow by flow | The main flows | flows |
-| `review-focus` | The risks: suspected bugs, open questions, what to check before approval | Suspected bugs, traps for the next person who changes the code, docs the code contradicts | 1-2 cards |
-| `recap` | "Also changed", the other tests, where to read next, "Other flows" | The other tests, where to read next, "Other flows" | 1-3 cards |
+| `review-focus` | The risks: suspected bugs, open questions, what to check before approval | Suspected bugs, traps for the next person who changes the code, docs the code contradicts | one card for the open questions, one card per flow with risks |
+| `recap` | "Also changed", where to read next, "Other flows" | Where to read next, "Other flows" | 1-3 cards |
 
 - Every risk goes in `review-focus`. The other chapters say what the code does.
-- **Also changed** (PR): one recap card with one `- ` line per mechanical change: the path in backticks and what changed (a rename, formatting, generated code, docs, imports or exports, a boilerplate test, a lockfile). Mechanical changes get no code notes.
+- **Also changed** (PR): one recap card with one `- ` line per change that no code note shows: the path in backticks, its lines when the walkthrough shows other lines of the file, and what changed. Most are mechanical: a rename, formatting, generated code, docs, imports or exports, a boilerplate test, a lockfile. Mechanical changes get no code notes.
 - **Other flows**: a recap card with one line per flow that the story plan's `Left out:` names, with its trigger.
 - **Once**: say each fact once, in the step where the reader sees it in code. Later steps and chapters build on it.
 
@@ -68,21 +68,23 @@ The sequences are the spine of the dive: the reader maps each message to the cod
 - **Actors**: An actor is a code unit whose code the walkthrough shows, named by its code name (`RefundStore`, `retryRefund`), or an external system (Postgres, a queue, a vendor API). A pure helper or value object is not an actor: name it in the text of the hop or message.
 - **Groups**: An actor's `group` is the deployable app or package that owns it (a service, a library, the database), or `outside` for a system the scope does not own. Keep the actors of one group next to each other. The app draws one band over each run of neighbors in a group.
 - **Messages**: One message per call, return, or queued message. Show one pass of a loop. Each message starts from an actor that has control: the one the previous message reached, or a caller still waiting on its call. Use `return` for replies, `error` for failures, and `async` for queued work. An in-process check is a message from an actor to itself. Every message has a message note.
-- **Main path**: the path a `flow` step draws. It is the path the change or the question is about (for a module, the usual path). It may be a failure path: when the point of a PR is new failure handling, that handling is the main path, with the rejection as an `error` message.
+- **Main path**: the path a `flow` step draws. It is the path the change or the question is about (for a module, the usual path). It may be a failure path: when the point of a PR is new failure handling, that handling is the main path, with the rejection as an `error` message. Side paths off it, and internals of vendored or inlined code that the scope does not use, stay out.
 - **Links**: a message's `step` names the code step of the same flow that shows the code that sends or handles it. In the `flow` step, every changed call (PR) or every call into code in scope (otherwise) links to one. In a PR, only changed messages link. Returns, errors and messages from external systems may have no link. Several messages may link to one code step. Edge messages may link too (**Edge steps**).
 - **PR marks**: mark the actors and messages that the PR adds, changes, or removes with `change`, in the flow and in its edge steps.
 
 ## Edge steps
 
-An edge step draws one edge case of its flow as a sequence. It starts at the message where the path leaves the main path and ends at the outcome: a status, an error, a retry. Its actors are the flow's actors that its messages use, with the same ids and labels, plus any actors the outline adds for it. The code it touches lives in the flow's code steps: its messages may link to the ones that show the guard.
+An edge case is designed behavior that changes an outcome the reader cares about: state (a timeout, a failed status), money (no fee paid), a retry, or a double-submit guard. Plain input validation is not an edge case. In a PR, only the edge cases that the PR adds or changes count. A guard on the main path is a code note in its code step. Draw the edge cases whose outcomes matter most as edge steps, at most 2 per flow.
+
+An edge step draws one edge case of its flow as a sequence. It starts at the message where the path leaves the main path and ends at the outcome: a status, an error, a retry. Its actors are the flow's actors that its messages use, with the same ids and labels, plus any actors its messages need. The code it touches lives in the flow's code steps: its messages may link to the ones that show the guard.
 
 ## Code steps
 
 A code step shows one piece of logic. Its `title` and `say` hold for the whole step. Title the logic: "A fetch failure becomes a NetworkError". Code notes follow execution order and may cross files. Each code note sits on the lines it explains. To point at other lines, give them their own code note.
 
 - **Load-bearing**: put code notes only on load-bearing lines, the lines the story plan's one sentence depends on. In a PR, only new, changed or removed lines qualify. When the order of unchanged checks matters, say it in one sentence in `say`. For a module or question, the lines are on the main path or answer the question. Follow a call into a function when the call is load-bearing, and note a type or constant where the code uses it. Keep every load-bearing code note, however long the step gets.
-- **New names**: the story plan's `New names:` line gives the flow that introduces each function, constant or type from the scope. In that flow, the first code note that names it says in a few words what it does. For a name the glossary defines, a short reminder is enough. Other flows use the name without explaining it again. When the name is load-bearing, its own code note comes where execution reaches it, on the line that matters. Example: one code note on the line of `isRawNetworkError` that checks a message against a list of runtime error messages, then one on that list. The other lines of `isRawNetworkError` get no code note, unless the outline puts an edge case on them.
-- **Tests**: put a test's code note right after the code note on the behavior it proves, in the same step, when the test shows something that note does not. List the other tests in a recap card.
+- **New names**: the first code note that names a function, constant or type from the scope says in a few words what it does. For a name that more than one flow shows, the story plan's `New names:` line gives the flow that does this. For a name the glossary defines, a short reminder is enough. Other flows use the name without explaining it again. When the name is load-bearing, its own code note comes where execution reaches it, on the line that matters. Example: one code note on the line of `isRawNetworkError` that checks a message against a list of runtime error messages, then one on that list. The other lines of `isRawNetworkError` get no code note, unless an edge case sits on them.
+- **Tests**: put a test's code note right after the code note on the behavior it proves, in the same step, when the test shows something that note does not.
 
 ## Quizzes
 

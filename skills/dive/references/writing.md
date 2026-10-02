@@ -18,7 +18,7 @@ Write every string in ASD-STE100 Simplified Technical English, for the reader an
 - Use the one-word verb: "start", not "spin up". "Remove", not "take out". "Read", not "dive into".
 - Use the verb, not its noun: "checks the token", not "performs validation of the token".
 - Stack at most 3 nouns. "retry delay cap" is fine. "refund retry delay cap config" is not. Write "the setting that caps the retry delay".
-- One name for one thing: the name that the code and the outline (its glossary section and New names) use, in every string. If the code says `Refund`, write "refund", not "reimbursement".
+- One name for one thing: the name that the code and the plan (its `Terms:` and `New names:`) use, in every string. If the code says `Refund`, write "refund", not "reimbursement".
 - Wrap code identifiers in backticks in `say`, `body`, `meaning`, `note`, `text`, `question` and `why`: they render as code there. Titles, labels, `term`, `code` and `summary` show backticks as literal characters, so write identifiers there without them.
 
 ## Meaning

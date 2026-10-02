@@ -80,6 +80,18 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(data['chapters'][0]['id'], 'walkthrough')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
+        self.assertIn('Not shown in a code note or the recap (PR): util.py:1-1', r.stdout)
+        self.assertNotIn('links', data['source'])
+
+        dive = json.loads((d / 'dive.json').read_text())
+        link = {'title': 'Issue 7', 'url': 'https://github.com/o/r/issues/7'}
+        card = lambda: {'kind': 'card', 'title': 'Also changed', 'body': '- `util.py` adds X', 'links': [link]}
+        dive['chapters'] += [{'id': 'intro', 'title': 'Intro', 'steps': [card()]}, {'id': 'recap', 'title': 'Recap', 'steps': [card()]}]
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run(work, 'build', str(d))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertNotIn('Not shown', r.stdout)
+        self.assertEqual(json.loads((d / 'dive.json').read_text())['source']['links'], [link])
 
     def test_prep_merged_pr(self):
         work, git = pr_repo()

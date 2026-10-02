@@ -48,7 +48,7 @@ STEP_ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*$')
 CHANGES = ('added', 'changed', 'removed')
 MAX_ACTORS = 30
 MAX_EDGES = 2  # edge steps per flow
-AREA_FILES, AREA_LINES, AREA_LINES_PR = 40, 5000, 1200  # ponytail: one scout's share, first guess, tune after real dives
+AREA_FILES, AREA_LINES, AREA_LINES_PR = 40, 5000, 1200  # ponytail: one area of the planner's map, first guess, tune after real dives
 
 
 def git(*args, check=True):
@@ -154,7 +154,7 @@ def is_lockfile(path):
 
 
 def areas(weights, max_lines):
-    """Split {path: lines} at directories until each part fits one scout, then pack small neighbors together.
+    """Split {path: lines} at directories until each part fits one area, then pack small neighbors together.
     Returns [(prefixes, paths)]: a prefix is a directory ending in / or a file, and stands for its paths."""
     fits = lambda ps: len(ps) <= AREA_FILES and sum(weights[p] for p in ps) <= max_lines
 
@@ -419,6 +419,44 @@ def links(dive):
     return errs
 
 
+def card_links(dive):
+    """The links of every card, without repeats or the PR itself: the sources the cover lists."""
+    src = dive['source']
+    seen = {src.get('url')} | {l.get('url') for l in src.get('links') or [] if isinstance(l, dict)}
+    out = []
+    for c in dive['chapters']:
+        for s in c['steps']:
+            for l in s.get('links') or []:
+                if l['url'] not in seen:
+                    seen.add(l['url'])
+                    out.append(l)
+    return out
+
+
+def not_shown(dive, diff):
+    """Changed hunks that no code note touches, outside lockfiles and the files a recap card names in backticks."""
+    recap = ' '.join(s.get('body', '') for c in dive['chapters'] if c['id'] == 'recap' for s in c['steps'])
+    named = set(re.findall(r'`([^`]+)`', recap))
+    notes = {}
+    for c in dive['chapters']:
+        for s in c['steps']:
+            if s['kind'] == 'code':
+                for n in s['notes']:
+                    notes.setdefault((n['file'], n.get('side', 'new')), []).append(n['lines'])
+    out = []
+    for f in diff['files']:
+        p = f['path']
+        if is_lockfile(p) or p in named:
+            continue
+        for h in f['hunks']:
+            sides = [('new', h['newStart'], h['newLines']), ('old', h['oldStart'], h['oldLines'])]
+            if not any(n and a <= start + n - 1 and start <= b
+                       for side, start, n in sides for a, b in notes.get((p, side), [])):
+                side, start, n = sides[0] if h['newLines'] else sides[1]
+                out.append(f"{'old ' if side == 'old' else ''}{p}:{start}-{start + n - 1}")
+    return out
+
+
 def words(x):
     """Words the reader reads: strings under PROSE keys, anywhere in the dive."""
     if isinstance(x, dict):
@@ -477,6 +515,9 @@ def build(d):
     template = TEMPLATE.read_text(encoding='utf-8')
     if PLACEHOLDER not in template:
         sys.exit(f'{TEMPLATE} has no data placeholder.')
+    src['links'] = (src.get('links') or []) + card_links(dive)
+    if not src['links']:
+        del src['links']
     (d / 'dive.json').write_text(json.dumps(dive, indent=2, ensure_ascii=False), encoding='utf-8')
     for p in parts:  # merged into dive.json; from now on edit dive.json
         p.unlink()
@@ -498,6 +539,9 @@ def build(d):
         edges = sum(s['kind'] == 'edge' for s in steps)
         print(f"  flow '{f['title']}': {words(steps)} words, {count(steps)} code notes, "
               f"{len(f['messages'])} messages, {edges} edge cases")
+    hidden = not_shown(dive, diff) if diff else []
+    if hidden:
+        print('Not shown in a code note or the recap (PR): ' + ', '.join(hidden))
 
 
 def level(paths, rev):

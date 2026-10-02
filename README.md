@@ -29,10 +29,9 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 
 ## How it works
 
-1. Scout subagents explore the domain and connected knowledge sources, such as Notion or Slack.
-2. The orchestrator picks the key flows in the business logic.
-3. A second wave of subagents traces each flow end to end.
-4. Writer subagents turn the traces into the walkthrough.
+1. The orchestrator reads the scope and plans the key flows in the business logic.
+2. Writer subagents run in parallel. One per flow traces it end to end and writes it. One writes the intro from the PR, the history and connected knowledge sources, such as Notion or Slack. One writes the glossary and the big picture.
+3. `dive.py` checks every step and line range, and builds the page.
 
 ## What's in a dive
 

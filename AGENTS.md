@@ -16,9 +16,9 @@ Simple and fast. If the skill is slow or long, people do not use it.
 skills/dive/                  the skill (this is what ships)
   SKILL.md                    entry point: the workflow
   references/                 loaded on demand
-    briefs.md                 every subagent prompt: scouts, tracers, writers, the scout-note and trace formats
-    outline.md                steps 3 and 5, the architect: picking flows, traces to flows, outline format, dive.json frame, checklist
-    story.md                  story rules: chapters, flows, sequences, code steps (architect and writers)
+    briefs.md                 the writers' briefs: flow writer, intro writer, map writer; each writer reads it itself
+    plan.md                   step 2, the planner: reading the scope, picking flows, plan format, dive.json frame, checklist
+    story.md                  story rules: chapters, flows, sequences, edge cases, code steps (writers)
     format.md                 part-file JSON and the rules the build rejects (writers)
     writing.md                prose rules (writers)
   scripts/dive.py             prep (fetch PR, diff.json) + areas (split the scope by directory) + level (new or familiar) + build (validate, bake index.html, reading time)
@@ -47,12 +47,12 @@ Rebuild the template only at checkpoints and commit it. The template holds
 `app/src/types.ts` is the contract. Change its copies with it:
 
 - `skills/dive/references/format.md`: the authored part, as TS, for writers.
-- `## The dive.json frame` in `skills/dive/references/outline.md`: `Dive` and `Source`, for the architect.
+- `## The dive.json frame` in `skills/dive/references/plan.md`: `Dive` and `Source`, for the planner.
 - `CHAPTERS`, `REQUIRED` and `CHANGES` in `skills/dive/scripts/dive.py`, which the build checks.
 
-The build's checks are listed for agents twice: format.md `## Structure` and the `(build)` lines of outline.md `## Checklist`. When a check in `dive.py` changes, change both.
+The build's checks are listed for agents in format.md `## Structure`. When a check in `dive.py` changes, change it there.
 
-`references/briefs.md` repeats four rules word for word, because a subagent sees only its prompt. `## Tracing rules` holds the edge-case definition (outline.md `## From traces to flows`), the actor definition (story.md `## Sequences`), and the hop rule (the first three sentences of story.md Messages, with "hop" for "message"). The trace rules hold the group definition (story.md Groups). Change them together.
+The planner reads plan.md but not story.md, so plan.md `## Plan format` repeats the actor and group definitions of story.md `## Sequences`. Change them together.
 
 ## Commits
 
