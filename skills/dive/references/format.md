@@ -1,6 +1,6 @@
 # Format
 
-Each part file is one `Chapter`, as strict JSON. Walkthrough parts are `walkthrough.<n>.json`, one flow each. Other chapters may be split the same way, such as `review-focus.<n>.json`. The build merges the parts in order.
+Each part file is one `Chapter`, as strict JSON: `<chapter id>.json`, or `walkthrough.<n>.json` for flow `n`. The build merges the parts in order.
 
 ```ts
 interface Dive {
@@ -119,10 +119,10 @@ interface Link { title: string; url: string }
 ## What the build rejects
 
 - A field the types mark without `?` that is missing or empty (`""`, `[]`), or a `kind`, `type`, `side` or `change` outside the listed values.
-- `flow` and `edge` steps outside `walkthrough`, or a `sequence` inside it. A walkthrough part that does not start with its `flow` step. A non-`edge` step after an `edge` step, or more than 2 edge steps in a flow.
+- `flow` and `edge` steps outside `walkthrough`, or a `sequence` inside it. A walkthrough part that does not start with its `flow` step. A non-`edge` step after an `edge` step.
 - A missing or repeated id. Ids are lowercase words joined by dashes (`send-refund`), unique in the whole dive. Every `flow` step and every code step in `walkthrough` needs one.
 - A message `step` that is not a code step of the same flow (in the overview: not a flow id). A code step that no message of its `flow` step links to. Code steps out of the order of their first linking message.
-- A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. More than 30 actors. `change` outside a PR dive.
+- A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. `change` outside a PR dive.
 - A code note on a file that does not exist (in a PR: at head, or changed), or with `lines` outside the file. `side: "old"` on a file the PR did not change.
 - A diagram edge or `focus` that names no node. A diagram with notes where some node is in no note's `focus`.
 - A quiz without 3-4 options and exactly one `"correct": true`.

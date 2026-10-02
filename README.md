@@ -30,7 +30,7 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 ## How it works
 
 1. The orchestrator reads the scope and plans the key flows in the business logic.
-2. Writer subagents run in parallel. One per flow traces it end to end and writes it. One writes the intro from the PR, the history and connected knowledge sources, such as Notion or Slack. One writes the glossary and the big picture.
+2. Writer subagents run in parallel, one per chapter and one per flow. Each flow writer traces its flow end to end. The intro and review-focus writers also search connected knowledge sources, such as Notion or Slack.
 3. `dive.py` checks every step and line range, and builds the page.
 
 ## What's in a dive

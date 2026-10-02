@@ -175,8 +175,7 @@ class DiveTest(unittest.TestCase):
         quiz = {'kind': 'quiz', 'title': 'Q', 'question': 'Q?', 'options': [
             {'text': 'a', 'why': 'w', 'correct': True}, {'text': 'b', 'why': 'w'}, {'text': 'c', 'why': 'w'}]}
         f1 = flow('b', 'a', 'nope')
-        f1['actors'] += [{'id': f'x{i}', 'label': 'X'} for i in range(30)]
-        f1['actors'][1]['change'] = 'added'
+        f1['actors'][0]['change'] = 'added'
         steps = [f1, code('a'), code('b'), code('lost'), quiz, edge, quiz, edge, edge]
         (d / 'parts' / 'walkthrough.1.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'W', 'steps': steps}))
         (d / 'parts' / 'walkthrough.2.json').write_text(json.dumps({'id': 'walkthrough', 'steps': [code('a2'), flow(fid='f')]}))
@@ -187,12 +186,12 @@ class DiveTest(unittest.TestCase):
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 1)
         self.assertNotIn('Traceback', r.stderr)
-        for e in ["(flow 'Pay'): 31 actors, at most 30", 'actor 2: "change" marks only belong in a PR dive',
+        for e in ['actor 1: "change" marks only belong in a PR dive',
                   'message 3: step "nope" is not a code step of this flow',
                   'walkthrough step 4 (code "lost"): no message of the flow links to it',
                   "flow 'Pay': code steps must follow the order of their first linking message",
                   "walkthrough step 7 (quiz 'Q'): only edge steps may follow an edge step",
-                  "walkthrough flow 'Pay': 3 edge steps, at most 2", 'id "f" is used twice',
+                  'id "f" is used twice',
                   'message 1: step "zz" is not a flow id', "big-picture step 2 (edge 'Edge'): edge steps belong in walkthrough",
                   "big-picture step 3 (diagram 'D'): nodes ['m'] are in no note's focus",
                   "big-picture step 3 (diagram 'D') note 2: missing \"focus\""]:

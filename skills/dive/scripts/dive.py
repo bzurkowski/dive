@@ -44,8 +44,6 @@ NEW_BELOW = 10  # ponytail: first guess, tune after real dives
 SEQUENCES = ('sequence', 'flow', 'edge')
 STEP_ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*$')
 CHANGES = ('added', 'changed', 'removed')
-MAX_ACTORS = 30
-MAX_EDGES = 2  # edge steps per flow
 
 
 def git(*args, check=True):
@@ -246,8 +244,6 @@ def validate(dive, files):
                         errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
             elif k in SEQUENCES:
                 actors = s.get('actors') or []
-                if len(actors) > MAX_ACTORS:
-                    errs.append(f'{w}: {len(actors)} actors, at most {MAX_ACTORS}. Split the flow')
                 ids = {a.get('id') for j, a in enumerate(actors, 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
                 for j, a in enumerate(actors, 1):
                     if isinstance(a, dict) and 'group' in a and not isinstance(a['group'], str):
@@ -339,8 +335,6 @@ def links(dive):
         fw = f"walkthrough flow '{f.get('title', '')}'"
         code = {s.get('id'): i for i, s in rest if s.get('kind') == 'code' and isinstance(s.get('id'), str)}
         edges = [s for _, s in rest if s.get('kind') == 'edge']
-        if len(edges) > MAX_EDGES:
-            errs.append(f'{fw}: {len(edges)} edge steps, at most {MAX_EDGES}')
         seen_edge = False
         for i, s in rest:
             if seen_edge and s.get('kind') != 'edge':
