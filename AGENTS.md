@@ -14,10 +14,13 @@ Simple and fast. If the skill is slow or long, people do not use it.
 
 ```
 skills/dive/                  the skill (this is what ships)
-  SKILL.md                    entry point: prep, plan (with the plan and dive.json formats), write, build
-  references/                 read by the writer subagents
-    writing.md                the three writer jobs, the story, the style
-    format.md                 part-file JSON and what the build rejects
+  SKILL.md                    entry point: the four steps (prep, plan, write, build), for the orchestrator
+  references/                 loaded on demand
+    plan.md                   step 2, the orchestrator: read the scope, pick the flows, plan.md and dive.json formats
+    briefs.md                 step 3, the writers: rules for every writer, then the flow, intro and map writer jobs
+    story.md                  how the dive tells its story: chapters, flows, sequences, code steps (writers)
+    writing.md                Simplified Technical English rules and the slot limits (writers)
+    format.md                 part-file JSON and what the build rejects (writers)
   scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind); never shipped
@@ -44,7 +47,7 @@ Rebuild the template only at checkpoints and commit it. The template holds
 `app/src/types.ts` is the contract. Change its copies with it:
 
 - `skills/dive/references/format.md`: the authored part, as TS, for writers.
-- The `dive.json` frame in `## 2. Plan` of `skills/dive/SKILL.md`: `Dive` and `Source`, for the orchestrator.
+- `## dive.json` in `skills/dive/references/plan.md`: `Dive` and `Source`, for the orchestrator.
 - `CHAPTERS`, `REQUIRED` and `CHANGES` in `skills/dive/scripts/dive.py`, which the build checks.
 
 The build's checks are listed for agents in format.md `## What the build rejects`. When a check in `dive.py` changes, change it there.
