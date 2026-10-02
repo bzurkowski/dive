@@ -14,14 +14,11 @@ Simple and fast. If the skill is slow or long, people do not use it.
 
 ```
 skills/dive/                  the skill (this is what ships)
-  SKILL.md                    entry point: the workflow
-  references/                 loaded on demand
-    briefs.md                 the writers' briefs: flow writer, intro writer, map writer; each writer reads it itself
-    plan.md                   step 2, the planner: reading the scope, picking flows, plan format, dive.json frame, checklist
-    story.md                  story rules: chapters, flows, sequences, edge cases, code steps (writers)
-    format.md                 part-file JSON and the rules the build rejects (writers)
-    writing.md                prose rules (writers)
-  scripts/dive.py             prep (fetch PR, diff.json) + areas (split the scope by directory) + level (new or familiar) + build (validate, bake index.html, reading time)
+  SKILL.md                    entry point: prep, plan (with the plan and dive.json formats), write, build
+  references/                 read by the writer subagents
+    writing.md                the three writer jobs, the story, the style
+    format.md                 part-file JSON and what the build rejects
+  scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind); never shipped
   src/types.ts                data contract: single source of truth for dive.json
@@ -47,12 +44,10 @@ Rebuild the template only at checkpoints and commit it. The template holds
 `app/src/types.ts` is the contract. Change its copies with it:
 
 - `skills/dive/references/format.md`: the authored part, as TS, for writers.
-- `## The dive.json frame` in `skills/dive/references/plan.md`: `Dive` and `Source`, for the planner.
+- The `dive.json` frame in `## 2. Plan` of `skills/dive/SKILL.md`: `Dive` and `Source`, for the orchestrator.
 - `CHAPTERS`, `REQUIRED` and `CHANGES` in `skills/dive/scripts/dive.py`, which the build checks.
 
-The build's checks are listed for agents in format.md `## Structure`. When a check in `dive.py` changes, change it there.
-
-The planner reads plan.md but not story.md, so plan.md `## Plan format` repeats the actor and group definitions of story.md `## Sequences`. Change them together.
+The build's checks are listed for agents in format.md `## What the build rejects`. When a check in `dive.py` changes, change it there.
 
 ## Commits
 
