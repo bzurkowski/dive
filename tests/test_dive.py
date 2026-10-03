@@ -80,17 +80,15 @@ class DiveTest(unittest.TestCase):
         self.assertEqual(data['chapters'][0]['id'], 'walkthrough')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
-        self.assertIn('Not shown in a code note or the recap (PR): util.py:1-1', r.stdout)
         self.assertNotIn('links', data['source'])
 
         dive = json.loads((d / 'dive.json').read_text())
         link = {'title': 'Issue 7', 'url': 'https://github.com/o/r/issues/7'}
-        card = lambda: {'kind': 'card', 'title': 'Also changed', 'body': '- `util.py` adds X', 'links': [link]}
-        dive['chapters'] += [{'id': 'intro', 'title': 'Intro', 'steps': [card()]}, {'id': 'recap', 'title': 'Recap', 'steps': [card()]}]
+        card = lambda: {'kind': 'card', 'title': 'Why', 'body': 'Issue 7 asked for it.', 'links': [link]}
+        dive['chapters'] += [{'id': 'intro', 'title': 'Intro', 'steps': [card()]}, {'id': 'review-focus', 'title': 'Review focus', 'steps': [card()]}]
         (d / 'dive.json').write_text(json.dumps(dive))
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertNotIn('Not shown', r.stdout)
         self.assertEqual(json.loads((d / 'dive.json').read_text())['source']['links'], [link])
 
     def test_prep_merged_pr(self):
@@ -153,14 +151,14 @@ class DiveTest(unittest.TestCase):
         terms = {'kind': 'terms', 'title': 'T', 'terms': ['Refund']}
         (d / 'parts' / 'walkthrough.json').write_text(json.dumps([quiz]))
         (d / 'parts' / 'glossary.json').write_text(json.dumps({'id': 'glossary', 'steps': [terms, 'a step']}))
-        (d / 'parts' / 'recap.json').write_text(json.dumps({'id': 'recap', 'title': 'R', 'steps': [quiz, card]}))
+        (d / 'parts' / 'review-focus.json').write_text(json.dumps({'id': 'review-focus', 'title': 'R', 'steps': [quiz, card]}))
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 1)
         self.assertNotIn('Traceback', r.stderr)
         for e in ['dive.json source: missing "ref"', 'walkthrough.json: must be an object',
                   'chapter glossary: missing "title"', "glossary step 1 (terms 'T') term 1: must be an object",
-                  'glossary step 2: must be an object', "recap step 1 (quiz 'Q') option 3: must be an object",
-                  "recap step 2 (card 'C') link 1: missing \"url\""]:
+                  'glossary step 2: must be an object', "review-focus step 1 (quiz 'Q') option 3: must be an object",
+                  "review-focus step 2 (card 'C') link 1: missing \"url\""]:
             self.assertIn(e, r.stdout)
         self.assertNotIn('exactly one correct', r.stdout)
 

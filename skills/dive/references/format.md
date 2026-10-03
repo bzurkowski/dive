@@ -17,7 +17,7 @@ interface Source {
   links?: Link[] // knowledge-base pages and tickets used as sources
 }
 
-type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus' | 'recap'
+type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus'
 
 interface Chapter { id: ChapterId; title: string; steps: Step[] }
 

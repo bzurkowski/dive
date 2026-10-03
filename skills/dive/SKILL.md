@@ -24,7 +24,6 @@ The reader meets the chapters in this order. Each chapter has its own writer, an
 | Big picture | The view from far above: a map of the flows, and the concepts that they depend on, such as a state machine or the data model. |
 | Walkthrough | The **flows**, one after another. A flow is one trigger and the path that it runs to its effect: a sequence diagram, then the code behind its messages. |
 | Review focus | The risks: suspected bugs, traps, open questions, and docs that the code contradicts. |
-| Recap | What the walkthrough left out: in a PR, the changes with no logic in them. Then the flows that the dive did not pick, and where to read next. |
 
 ## 1. Prep
 
@@ -61,8 +60,6 @@ Write `docs/dives/<slug>/plan.md`:
 - Story: <the dive in one sentence>
 - Level: <new or familiar> - <the reason>
 - Terms: <the domain words that every writer uses for the same things>
-- Also changed: <PR only: the changes with no logic in them (renames, formatting, generated code, imports, lockfiles), each as `path` - what changed>
-- Left out: <each flow you did not pick, with its trigger>
 
 ## Actors
 - <id: a short lowercase word> <label: the code name or the external system> (<group: the app or package that owns it, or outside>)
@@ -85,9 +82,9 @@ Write the frame of `docs/dives/<slug>/dive.json`. Leave out `url` outside a PR. 
 
 ## 3. Write
 
-In one message, spawn all the writers as subagents on your own model: the intro, glossary, big-picture, review-focus and recap writers, and a flow writer for each flow of the plan. Each writer reads its own job, so the prompt is short:
+In one message, spawn all the writers as subagents on your own model: the intro, glossary, big-picture and review-focus writers, and a flow writer for each flow of the plan. Each writer reads its own job, so the prompt is short:
 
-> Write your part of the dive in `docs/dives/<slug>/`, a walkthrough of <argument> (kind `<kind>`). Read `<skill>/references/writers.md` and do the job of the <intro | glossary | big-picture | flow writer for the flow `<id>`, number `<n>` | review-focus | recap> writer. `<skill>` is `<the absolute path of <skill>>`.
+> Write your part of the dive in `docs/dives/<slug>/`, a walkthrough of <argument> (kind `<kind>`). Read `<skill>/references/writers.md` and do the job of the <intro | glossary | big-picture | flow writer for the flow `<id>`, number `<n>` | review-focus> writer. `<skill>` is `<the absolute path of <skill>>`.
 
 In a PR, add the URL, `<base>` and `<head>` to every prompt. For the intro and review-focus writers, add the names of the knowledge tools.
 
@@ -97,7 +94,6 @@ Wait until every writer has returned. Check that `docs/dives/<slug>/parts/` has 
 
 Run `python3 <skill>/scripts/dive.py build docs/dives/<slug>`. It checks every part, embeds the code, and writes `index.html`.
 
-- When the build reports errors, fix them in the part files and build again. A successful build merges the parts into `dive.json` and deletes them, so make each later fix in `dive.json`.
-- In a PR, the build lists the changed hunks that no code note shows. Add each one to the recap card "Also changed", then build again.
+When the build reports errors, fix them in the part files and build again. A successful build merges the parts into `dive.json` and deletes them, so make each later fix in `dive.json`.
 
 Open the page: `open` on macOS, `xdg-open` on Linux. Tell the user the path, the level and its reason, the reading time, and the story in one sentence. Leave the files uncommitted.

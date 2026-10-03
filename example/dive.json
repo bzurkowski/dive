@@ -41,10 +41,6 @@
       {
         "title": "Release notes v2.0.0-0",
         "url": "https://github.com/sindresorhus/ky/releases/tag/v2.0.0-0"
-      },
-      {
-        "title": "Readme: NetworkError",
-        "url": "https://github.com/sindresorhus/ky#networkerror"
       }
     ],
     "repo": "sindresorhus/ky",
@@ -966,37 +962,6 @@
             {
               "title": "Release notes v2.0.0",
               "url": "https://github.com/sindresorhus/ky/releases/tag/v2.0.0"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "recap",
-      "title": "Recap",
-      "steps": [
-        {
-          "kind": "card",
-          "title": "Also changed",
-          "body": "- `source/core/Ky.ts`: imports `NetworkError`, `isRawNetworkError` and `isNetworkError` (lines 2 and 24-25).\n- `source/utils/type-guards.ts`: imports `NetworkError` (line 3).\n- `source/index.ts`: exports `NetworkError` (line 73) and `isNetworkError` (line 79).\n- `source/errors/KyError.ts`: the doc comment lists `NetworkError` among the subclasses.\n- `source/errors/HTTPError.ts`: the doc comment now names the `options` property. This change does not relate to network errors.\n- `source/types/hooks.ts`: the hook docs now name `NetworkError` and `isNetworkError()`. A comment no longer calls network errors `TypeError`s.\n- `source/types/retry.ts`: docs. The doc now says that a `Retry-After` above `maxRetryAfter` caps the delay at `maxRetryAfter`. Before, it said that Ky cancels the request. The `shouldRetry` doc now names network errors.\n- `source/types/options.ts`: the `retry` doc lists all fields. It adds the network-error paragraph. It drops the delay formula and the sentence \"Retries are not triggered following a timeout\".\n- `readme.md`: docs. The network retry paragraph (line 265), `shouldRetry` (line 292), the hook docs (lines 456 and 529), `KyError` (line 1089), `HTTPError` (line 1114), and the new `NetworkError` section (lines 1179-1199).\n- `test/hooks.ts:1974`: a test name now says `NetworkError`, not network `TypeError`."
-        },
-        {
-          "kind": "card",
-          "title": "Other tests",
-          "body": "These tests pin behavior that the walkthrough did not show.\n\n- `test/retry.ts:1653`: `shouldRetry: () => true` still retries a `TypeError` that is not a network error. With `limit: 2`, fetch runs 3 times.\n- `test/retry.ts:1717`: `shouldRetry` gets the `NetworkError`, with the `TypeError` at `cause`.\n- `test/retry.ts:1755`: `shouldRetry` returns `undefined` for a `NetworkError`. The default rule then retries it.\n- `test/hooks.ts:1122`: a `beforeRetry` hook rethrows the `NetworkError`. `beforeError` still runs.\n- `test/hooks.ts:647`, `:1122`, `:2170`, `:3908` and `:4079`: the fake `fetch` now throws `TypeError('Failed to fetch')`. Before, it threw a plain `Error` or a `TypeError` with another message. Ky no longer retries those errors.\n- `test/memory-leak.ts:34`: a POST of a stream body to `invalid:` now rejects with a `NetworkError`. The stream still does not leak."
-        },
-        {
-          "kind": "card",
-          "title": "Other flows to read next",
-          "body": "Two other triggers reach the same retry decision. This dive does not walk them.\n\n- A timeout: the timer at `source/utils/timeout.ts:16-22` fires before fetch settles. It aborts the request and rejects with a `TimeoutError`.\n- A non-ok response: `source/core/Ky.ts:127-149` creates an `HTTPError`. It passes the error to `#retryFromError`.\n\nFor the public API, read the readme section on `NetworkError`. For the design discussion, read issue #545.",
-          "links": [
-            {
-              "title": "Readme: NetworkError",
-              "url": "https://github.com/sindresorhus/ky#networkerror"
-            },
-            {
-              "title": "Best way to handle Fetch errors such as Failed to fetch (#545)",
-              "url": "https://github.com/sindresorhus/ky/issues/545"
             }
           ]
         }

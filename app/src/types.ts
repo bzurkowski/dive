@@ -22,7 +22,7 @@ export interface Source {
   links?: Link[] // knowledge-base pages and tickets used as sources. The build adds every card link
 }
 
-export type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus' | 'recap'
+export type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus'
 
 export interface Chapter {
   id: ChapterId

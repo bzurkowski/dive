@@ -109,10 +109,3 @@ Look for suspected bugs, traps (behavior that surprises a caller), open question
 
 You set the time of the whole dive, so keep to a budget: at most 25 tool calls, and the 5 most serious risks. Check a risk in the source of the repo. Read dependencies (`node_modules`, vendored code) or the git history only when the risk depends on them. When the budget ends, write the risks that you have checked.
 
-## Recap writer
-
-You write `parts/recap.json`, mostly from the plan:
-
-- In a PR, the card "Also changed": each change on the Also changed line of the plan, with its path in backticks. The build reads these paths.
-- The card "Other flows": each flow on the Left out line of the plan, with its trigger.
-- The card "Read next": the code, the tests and the docs next to the scope that the reader can read next, each with what it adds.

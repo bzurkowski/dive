@@ -17,14 +17,14 @@ eq(move(dive, flat, END, -1), { c: 0, s: 1, f: 0 }, 'end moves back to the last 
 eq(move(dive, flat, COVER, 1), { c: 0, s: 0, f: 0 }, 'cover moves to the first step')
 eq(move(dive, flat, { c: 0, s: 0, f: 0 }, -1), COVER, 'first step moves back to the cover')
 
-// Hashes: an intro with a 3-message sequence, then a recap.
+// Hashes: an intro with a 3-message sequence, then a review focus.
 const msg = { from: 'a', to: 'b', label: 'l', note: 'n' }
 const seq = { kind: 'sequence', title: 's', say: '', actors: [], messages: [msg, msg, msg] } as const
 const three = {
   ...dive,
   chapters: [
     { id: 'intro', title: 'Intro', steps: [card, seq] },
-    { id: 'recap', title: 'Recap', steps: [seq, card] },
+    { id: 'review-focus', title: 'Review focus', steps: [seq, card] },
   ],
 } as Dive
 for (const p of [COVER, END, { c: 0, s: 1, f: 2 }, { c: 1, s: 0, f: 1 }])
@@ -76,7 +76,7 @@ const walk = {
   ...dive,
   chapters: [
     { id: 'walkthrough', title: 'Walkthrough', steps: [flow, quiz, edge, edge, flow, quiz, flow, quiz, edge] },
-    { id: 'recap', title: 'Recap', steps: [card] },
+    { id: 'review-focus', title: 'Review focus', steps: [card] },
   ],
 } as Dive
 const wflat = flatten(walk)

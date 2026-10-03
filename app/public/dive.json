@@ -776,17 +776,6 @@
      "body": "- Is 5 attempts the right limit for all payment methods?\n- Does every gateway error set `retryable` correctly?\n- The attempt count goes up before the call. Is that the intended order?"
     }
    ]
-  },
-  {
-   "id": "recap",
-   "title": "Recap",
-   "steps": [
-    {
-     "kind": "card",
-     "title": "Also changed",
-     "body": "- `src/refunds/retry.ts`: the import of `GatewayError`."
-    }
-   ]
   }
  ],
  "files": {

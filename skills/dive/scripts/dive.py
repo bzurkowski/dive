@@ -16,7 +16,7 @@ from pathlib import Path
 TEMPLATE = Path(__file__).resolve().parent.parent / 'assets' / 'template.html'
 DATA_TAG = '<script id="dive-data" type="application/json">'
 PLACEHOLDER = DATA_TAG + '__DIVE_DATA__</script>'
-CHAPTERS = ['intro', 'glossary', 'big-picture', 'walkthrough', 'review-focus', 'recap']
+CHAPTERS = ['intro', 'glossary', 'big-picture', 'walkthrough', 'review-focus']
 REQUIRED = {
     'card': ('title', 'body'),
     'terms': ('title', 'terms'),
@@ -378,30 +378,6 @@ def card_links(dive):
     return out
 
 
-def not_shown(dive, diff):
-    """Changed hunks that no code note touches, outside lockfiles and the files a recap card names in backticks."""
-    recap = ' '.join(s.get('body', '') for c in dive['chapters'] if c['id'] == 'recap' for s in c['steps'])
-    named = set(re.findall(r'`([^`]+)`', recap))
-    notes = {}
-    for c in dive['chapters']:
-        for s in c['steps']:
-            if s['kind'] == 'code':
-                for n in s['notes']:
-                    notes.setdefault((n['file'], n.get('side', 'new')), []).append(n['lines'])
-    out = []
-    for f in diff['files']:
-        p = f['path']
-        if is_lockfile(p) or p in named:
-            continue
-        for h in f['hunks']:
-            sides = [('new', h['newStart'], h['newLines']), ('old', h['oldStart'], h['oldLines'])]
-            if not any(n and a <= start + n - 1 and start <= b
-                       for side, start, n in sides for a, b in notes.get((p, side), [])):
-                side, start, n = sides[0] if h['newLines'] else sides[1]
-                out.append(f"{'old ' if side == 'old' else ''}{p}:{start}-{start + n - 1}")
-    return out
-
-
 def words(x):
     """Words the reader reads: strings under PROSE keys, anywhere in the dive."""
     if isinstance(x, dict):
@@ -418,7 +394,7 @@ def load(path, errs):
 
 
 def assemble(d, parts, partial=False):
-    """dive.json with the parts merged in, validated: (dive, diff, files, skipped, errors). Writes nothing."""
+    """dive.json with the parts merged in, validated: (dive, files, skipped, errors). Writes nothing."""
     errs = []
     dive = load(d / 'dive.json', errs)
     if not isinstance(dive, dict):
@@ -450,13 +426,13 @@ def assemble(d, parts, partial=False):
             if v and not src.get(k):
                 src[k] = v
     files, skipped = embed_files(dive, diff)
-    return dive, diff, files, skipped, errs + validate(dive, files, partial)
+    return dive, files, skipped, errs + validate(dive, files, partial)
 
 
 def build(d):
     order = lambda p: (p.name.split('.')[0], int(p.name.split('.')[1]) if p.name.count('.') == 2 and p.name.split('.')[1].isdigit() else 0)
     parts = sorted((d / 'parts').glob('*.json'), key=order) if (d / 'parts').is_dir() else []
-    dive, diff, files, skipped, errs = assemble(d, parts)
+    dive, files, skipped, errs = assemble(d, parts)
     if errs:
         print(f'{len(errs)} errors. Fix them in parts/ or dive.json, then build again:')
         print('\n'.join(f'  {e}' for e in errs))
@@ -490,9 +466,6 @@ def build(d):
         edges = sum(s['kind'] == 'edge' for s in steps)
         print(f"  flow '{f['title']}': {words(steps)} words, {count(steps)} code notes, "
               f"{len(f['messages'])} messages, {edges} edge cases")
-    hidden = not_shown(dive, diff) if diff else []
-    if hidden:
-        print('Not shown in a code note or the recap (PR): ' + ', '.join(hidden))
 
 
 def check(part):
