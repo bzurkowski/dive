@@ -18,7 +18,7 @@ skills/dive/                  the skill (this is what ships)
   references/                 the writers, loaded on demand
     writers.md                the reader, the writing style with before-and-after examples, then one job per chapter
     format.md                 part-file JSON and what the build rejects
-  scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time)
+  scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time) + check (validate one part)
   assets/template.html        built walkthrough app, data placeholder inside
 app/                          walkthrough app source (Vite + React + TS + Tailwind), never shipped
   src/types.ts                data contract: single source of truth for dive.json

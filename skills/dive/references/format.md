@@ -118,6 +118,8 @@ interface Link { title: string; url: string }
 
 ## What the build rejects
 
+`dive.py check` runs these checks on one part. It does not check the links from the overview to the flows, because the flows are in other parts.
+
 - A field the types mark without `?` that is missing or empty (`""`, `[]`), or a `kind`, `type`, `side` or `change` outside the listed values.
 - `flow` and `edge` steps outside `walkthrough`, or a `sequence` inside it. A walkthrough part that does not start with its `flow` step. A non-`edge` step after an `edge` step.
 - A missing or repeated id. Ids are lowercase words joined by dashes (`send-refund`), unique in the whole dive. Every `flow` step and every code step in `walkthrough` needs one.

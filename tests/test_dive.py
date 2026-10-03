@@ -197,6 +197,23 @@ class DiveTest(unittest.TestCase):
                   "big-picture step 3 (diagram 'D') note 2: missing \"focus\""]:
             self.assertIn(e, r.stdout)
 
+    def test_check_validates_one_part(self):
+        work, git = pr_repo()
+        d = work / 'd'
+        (d / 'parts').mkdir(parents=True)
+        (d / 'dive.json').write_text(json.dumps({'title': 'T', 'summary': 'S', 'source': {'kind': 'module', 'ref': '.'}, 'chapters': []}))
+        over = {**flow(), 'kind': 'sequence', 'messages': [{'from': 'a', 'to': 'a', 'label': 'l', 'note': 'n', 'step': 'f'}]}
+        part = d / 'parts' / 'big-picture.json'
+        part.write_text(json.dumps({'id': 'big-picture', 'title': 'B', 'steps': [over]}))
+        r = run(work, 'check', str(part))
+        self.assertEqual(r.returncode, 0, r.stdout)  # the flow "f" is in another part
+        quiz = {'kind': 'quiz', 'title': 'Q', 'question': 'Q?', 'options': [{'text': 'a', 'why': 'w', 'correct': True}]}
+        part.write_text(json.dumps({'id': 'big-picture', 'title': 'B', 'steps': [over, quiz]}))
+        r = run(work, 'check', str(part))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("big-picture step 2 (quiz 'Q'): needs 3-4 options", r.stdout)
+        self.assertEqual(sorted(p.name for p in d.rglob('*')), ['big-picture.json', 'dive.json', 'parts'])
+
     def test_level(self):
         work = Path(tempfile.mkdtemp())
         sh(work, 'git', 'init', '-q')

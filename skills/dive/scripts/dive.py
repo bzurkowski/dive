@@ -3,6 +3,7 @@
 
   dive.py prep  <dir> --pr <number|url> [--base <branch>]   fetch the PR, write <dir>/diff.json
   dive.py build <dir>                                       merge parts, validate, embed code, write <dir>/index.html
+  dive.py check <dir>/parts/<part>.json                     validate one part alone, write nothing
   dive.py level <path>... [--rev <rev>]                     print new or familiar from your commits under <path>
 """
 import argparse
@@ -188,7 +189,7 @@ def embed_files(dive, diff):
     return files, skipped
 
 
-def validate(dive, files):
+def validate(dive, files, partial=False):
     errs = []
 
     def need(obj, where, keys=()):
@@ -282,7 +283,7 @@ def validate(dive, files):
                 opts = [o for j, o in enumerate(opts, 1) if need(o, f'{w} option {j}', ('text', 'why'))]
                 if sum(o.get('correct') is True for o in opts) != 1:
                     errs.append(f'{w}: needs exactly one correct option (correct: true)')
-    return errs + links(dive)
+    return errs + links(dive, partial)
 
 
 def change_errs(x, pr):
@@ -304,7 +305,7 @@ def split_flows(steps):
     return flows
 
 
-def links(dive):
+def links(dive, partial=False):
     """Where each kind may go, step ids, and message links between steps."""
     errs, ids, overview = [], set(), []
     for c in dive['chapters']:
@@ -356,7 +357,7 @@ def links(dive):
         if order != sorted(order):
             errs.append(f'{fw}: code steps must follow the order of their first linking message')
     flow_ids = {f.get('id') for _, f, _ in flows}
-    for w, s in overview:
+    for w, s in [] if partial else overview:  # partial: the flows are in other parts
         for j, m in enumerate(msgs(s), 1):
             if 'step' in m and m['step'] not in flow_ids:
                 errs.append(f"{w} message {j}: step \"{m['step']}\" is not a flow id ({', '.join(map(str, flow_ids)) or 'no flows'})")
@@ -416,14 +417,13 @@ def load(path, errs):
         return None
 
 
-def build(d):
+def assemble(d, parts, partial=False):
+    """dive.json with the parts merged in, validated: (dive, diff, files, skipped, errors). Writes nothing."""
     errs = []
     dive = load(d / 'dive.json', errs)
     if not isinstance(dive, dict):
         sys.exit(f'Cannot read {d}/dive.json: {errs[0] if errs else "it must be a JSON object"}')
     chapters = {c.get('id'): c for c in dive.get('chapters') or [] if isinstance(c, dict)}
-    order = lambda p: (p.name.split('.')[0], int(p.name.split('.')[1]) if p.name.count('.') == 2 and p.name.split('.')[1].isdigit() else 0)
-    parts = sorted((d / 'parts').glob('*.json'), key=order) if (d / 'parts').is_dir() else []
     merged = {}
     for p in parts:  # parts/<id>.json, or <id>.1.json, <id>.2.json: one per flow of the walkthrough
         c = load(p, errs)
@@ -450,7 +450,13 @@ def build(d):
             if v and not src.get(k):
                 src[k] = v
     files, skipped = embed_files(dive, diff)
-    errs += validate(dive, files)
+    return dive, diff, files, skipped, errs + validate(dive, files, partial)
+
+
+def build(d):
+    order = lambda p: (p.name.split('.')[0], int(p.name.split('.')[1]) if p.name.count('.') == 2 and p.name.split('.')[1].isdigit() else 0)
+    parts = sorted((d / 'parts').glob('*.json'), key=order) if (d / 'parts').is_dir() else []
+    dive, diff, files, skipped, errs = assemble(d, parts)
     if errs:
         print(f'{len(errs)} errors. Fix them in parts/ or dive.json, then build again:')
         print('\n'.join(f'  {e}' for e in errs))
@@ -459,6 +465,7 @@ def build(d):
     template = TEMPLATE.read_text(encoding='utf-8')
     if PLACEHOLDER not in template:
         sys.exit(f'{TEMPLATE} has no data placeholder.')
+    src = dive['source']
     src['links'] = (src.get('links') or []) + card_links(dive)
     if not src['links']:
         del src['links']
@@ -488,6 +495,13 @@ def build(d):
         print('Not shown in a code note or the recap (PR): ' + ', '.join(hidden))
 
 
+def check(part):
+    """Validate one part file before the other writers finish. Links from the overview to flows are not checked."""
+    errs = assemble(part.resolve().parent.parent, [part], partial=True)[-1]
+    print('\n'.join(errs) if errs else f'{part.name}: no errors')
+    sys.exit(1 if errs else 0)
+
+
 def level(paths, rev):
     """(level, reason): new if the user has few recent commits under paths, else familiar."""
     if (git('rev-parse', '--is-shallow-repository', check=False) or '').strip() == 'true':
@@ -513,6 +527,8 @@ def main():
     p.add_argument('--base')
     b = sub.add_parser('build')
     b.add_argument('dir', type=Path)
+    c = sub.add_parser('check')
+    c.add_argument('part', type=Path)
     lv = sub.add_parser('level')
     lv.add_argument('paths', nargs='+')
     lv.add_argument('--rev', default='HEAD')
@@ -521,6 +537,8 @@ def main():
         prep(a.dir, a.pr, a.base)
     elif a.cmd == 'build':
         build(a.dir)
+    elif a.cmd == 'check':
+        check(a.part)
     else:
         print('level=%s\nreason=%s' % level(a.paths, a.rev))
 
