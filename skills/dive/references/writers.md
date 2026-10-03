@@ -107,6 +107,8 @@ You write `parts/review-focus.json`: the risks that a reviewer or a new owner sh
 
 Look for suspected bugs, traps (behavior that surprises a caller), open questions that the code or the PR leaves, and docs that the code contradicts. Give each risk one step, the most serious first: a code step on the lines that show it, or a card when the risk is not in one place. Say what may go wrong, when, and what it costs. Keep the certainty of the source.
 
+You set the time of the whole dive, so keep to a budget: at most 25 tool calls, and the 5 most serious risks. Check a risk in the source of the repo. Read dependencies (`node_modules`, vendored code) or the git history only when the risk depends on them. When the budget ends, write the risks that you have checked.
+
 ## Recap writer
 
 You write `parts/recap.json`, mostly from the plan:
