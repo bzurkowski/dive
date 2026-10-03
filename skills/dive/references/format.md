@@ -125,7 +125,7 @@ interface Link { title: string; url: string }
 - A missing or repeated id. Ids are lowercase words joined by dashes (`send-refund`), unique in the whole dive. Every `flow` step and every code step in `walkthrough` needs one.
 - A message `step` that is not a code step of the same flow (in the overview: not a flow id). A code step that no message of its `flow` step links to. Code steps out of the order of their first linking message.
 - A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. `change` outside a PR dive.
-- A code note on a file that does not exist (in a PR: at head, or changed), or with `lines` outside the file. `side: "old"` on a file the PR did not change.
+- A code note on a test file, or on a file that does not exist (in a PR: at head, or changed), or with `lines` outside the file. `side: "old"` on a file the PR did not change.
 - A diagram edge or `focus` that names no node. A diagram with notes where some node is in the `focus` of no note.
 - A quiz without 3-4 options and exactly one `"correct": true`.
 

@@ -29,6 +29,8 @@ REQUIRED = {
 }
 LOCKFILES = {'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', 'poetry.lock', 'Pipfile.lock',
              'uv.lock', 'Cargo.lock', 'Gemfile.lock', 'composer.lock', 'go.sum'}
+TEST_FILE = re.compile(r'(^|/)([Tt]ests?|__tests__|__mocks__|mocks?|spec|e2e|integration-tests|fixtures|testdata)/'
+                       r'|(^|/)test_[^/]*$|[._-](test|spec)s?\.[^/]*$|[a-z0-9](Tests?|Spec)\.[^/]*$')
 MAX_LINES = 3000  # unreferenced changed files longer than this are not embedded
 LANGS = {'ts': 'ts', 'tsx': 'tsx', 'js': 'js', 'jsx': 'jsx', 'mjs': 'js', 'cjs': 'js', 'json': 'json',
          'py': 'python', 'go': 'go', 'java': 'java', 'kt': 'kotlin', 'kts': 'kotlin', 'rb': 'ruby', 'rs': 'rust',
@@ -85,7 +87,7 @@ def default_branch(remote):
 
 
 def diff_files(base, head, context=3):
-    """Changed files with hunks, in the order of git."""
+    """Changed files with hunks, in the order of git, without test files."""
     names = git('diff', *DIFF, '--name-status', '-z', base, head).split('\0')
     files, i = [], 0
     while i < len(names) - 1:
@@ -114,7 +116,7 @@ def diff_files(base, head, context=3):
         f['deletions'] = sum(l[0] == '-' for h in hunks for l in h['lines'])
         if not hunks and '\nBinary files ' in '\n' + chunk:
             f['binary'] = True
-    return files
+    return [f for f in files if not TEST_FILE.search(f['path'])]
 
 
 def prep(d, pr, base_ref):
@@ -232,7 +234,9 @@ def validate(dive, files, partial=False):
                         continue
                     p, ln, side = n.get('file'), n.get('lines'), n.get('side', 'new')
                     f = files.get(p)
-                    if p and not f:
+                    if p and TEST_FILE.search(p):
+                        errs.append(f'{w} note {j}: {p} is a test file. Show production code only')
+                    elif p and not f:
                         errs.append(f'{w} note {j}: file not found: {p}')
                     if side not in ('new', 'old'):
                         errs.append(f'{w} note {j}: side must be "new" or "old"')

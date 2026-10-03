@@ -29,6 +29,7 @@ def pr_repo():
     sh(work, 'git', 'remote', 'set-head', 'origin', 'main')
     (work / 'app.py').write_text('def pay(x):\n    if x < 0:\n        raise ValueError(x)\n    return x\n')
     (work / 'util.py').write_text('X = 1\n')
+    (work / 'app_test.py').write_text('assert True\n')
     git('add', '.'); git('commit', '-qm', 'pr'); git('push', '-q', 'origin', 'HEAD:refs/pull/1/head')
     git('reset', '-q', '--hard', 'HEAD~1')  # user's tree stays on base
     git('config', 'color.ui', 'always'); git('config', 'diff.external', 'echo')  # user settings prep must survive
@@ -135,6 +136,10 @@ class DiveTest(unittest.TestCase):
         (d / 'dive.json').write_text(json.dumps(dive))
         r = run(work, 'build', str(d))
         self.assertIn('file not found: ../secret.txt', r.stdout)
+        note['file'] = 'src/__tests__/app.spec.ts'
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run(work, 'build', str(d))
+        self.assertIn('src/__tests__/app.spec.ts is a test file', r.stdout)
         note['file'] = 'app.py'
         (d / 'dive.json').write_text(json.dumps(dive))
         r = run(work, 'build', str(d))
