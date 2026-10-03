@@ -1,4 +1,4 @@
-/* Keyframes without `to` end at the element's own style. */
+/* Keyframes without `to` end at the style of the element itself. */
 @keyframes dive-draw {
   from {
     stroke-dashoffset: 1;

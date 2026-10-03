@@ -1,6 +1,6 @@
 import type { Term } from '../types.ts'
 
-// Letters of s skipped to find q's letters in order, or -1 when they are not all there.
+// Letters of s skipped to find the letters of q in order, or -1 when they are not all there.
 // Tries every start, so "ab" in "aab" skips none.
 export function gaps(s: string, q: string): number {
   let best = -1
@@ -14,7 +14,7 @@ export function gaps(s: string, q: string): number {
   return best
 }
 
-// Fuzzy on term, then code; plain substring on meaning. Ties keep glossary order.
+// Fuzzy on term, then code. Plain substring on meaning. Ties keep glossary order.
 export function searchTerms(terms: Term[], query: string): Term[] {
   const q = query.trim().toLowerCase()
   if (!q) return terms

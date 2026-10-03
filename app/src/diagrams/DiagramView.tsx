@@ -235,7 +235,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
               ))}
             </div>
           )}
-          {/* Every note in one cell: the bar keeps the tallest note's height, so the diagram above never resizes. */}
+          {/* Every note in one cell: the bar keeps the height of the tallest note, so the diagram above never resizes. */}
           <div className="grid max-w-3xl">
             {notes.map((n, i) => (
               <p

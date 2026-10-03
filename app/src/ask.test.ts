@@ -2,7 +2,7 @@ import { deepStrictEqual as eq, ok } from 'node:assert/strict'
 import { askContext, askPrompt, askTargets, focusText } from './ask.ts'
 import type { Dive } from './types.ts'
 
-// An overview message links the flow; the flow's message shows code step c1.
+// An overview message links the flow. The message of the flow shows code step c1.
 const msg = (step?: string) => ({ from: 'a', to: 'b', label: 'call', note: 'n', step })
 const seq = (kind: string, step?: string) => ({
   kind,

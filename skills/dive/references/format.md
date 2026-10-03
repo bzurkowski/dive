@@ -7,7 +7,7 @@ interface Dive {
   title: string // "Retry failed refunds"
   summary: string // 1-2 short sentences: what this is and why it matters
   source: Source
-  chapters: Chapter[] // fixed order, see ChapterId; empty chapters are left out
+  chapters: Chapter[] // fixed order (see ChapterId), without empty chapters
 }
 
 interface Source {
@@ -28,7 +28,7 @@ type Step = CardStep | TermsStep | CodeStep | SequenceStep | DiagramStep | QuizS
 interface CardStep {
   kind: 'card'
   title: string
-  body: string // short text; "- " lines render as bullets, `backticks` as code
+  body: string // short text. "- " lines render as bullets, `backticks` as code
   links?: Link[]
 }
 
@@ -47,15 +47,15 @@ interface Term {
 
 interface CodeStep {
   kind: 'code'
-  id?: string // target of Message.step; required in a flow
+  id?: string // target of Message.step, required in a flow
   title: string // names the piece of logic, never a file
   say: string
-  notes: CodeNote[] // in execution order, across files; → moves note to note
+  notes: CodeNote[] // in execution order, across files. → moves note to note
 }
 
 interface CodeNote {
-  file: string // repo path; the build embeds this file
-  lines: [number, number] // inclusive range; new-file numbers unless side = 'old'
+  file: string // repo path. The build embeds this file
+  lines: [number, number] // inclusive range, in new-file numbers unless side = 'old'
   side?: 'new' | 'old' // 'old' for deleted lines
   text: string // 1-3 short sentences, like a PR self-review comment
 }
@@ -77,7 +77,7 @@ interface SequenceStep {
 interface Actor {
   id: string
   label: string // the code unit ("EnterEarnActionService") or the system ("Postgres")
-  group?: string // deployable app or "outside"; drawn as a band, collapsible into one lane
+  group?: string // deployable app or "outside", drawn as a band that collapses into one lane
   change?: Change // PR: a unit the change adds, changes or removes
 }
 
@@ -99,7 +99,7 @@ interface DiagramStep {
   say: string
   nodes: { id: string; label: string; group?: string }[]
   edges: { from: string; to: string; label?: string }[]
-  notes?: DiagramNote[] // → moves note to note; focused nodes are highlighted
+  notes?: DiagramNote[] // → moves note to note. Focused nodes are highlighted
 }
 
 interface DiagramNote { focus: string[]; text: string } // focus: node ids
@@ -108,7 +108,7 @@ interface QuizStep {
   kind: 'quiz'
   title: string
   question: string
-  options: QuizOption[] // 3-4 plausible options, exactly one correct; the app shuffles them
+  options: QuizOption[] // 3-4 plausible options, exactly one correct. The app shuffles them
 }
 
 interface QuizOption { text: string; correct?: boolean; why: string } // why: one sentence, why this option is right or wrong
@@ -124,7 +124,7 @@ interface Link { title: string; url: string }
 - A message `step` that is not a code step of the same flow (in the overview: not a flow id). A code step that no message of its `flow` step links to. Code steps out of the order of their first linking message.
 - A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. `change` outside a PR dive.
 - A code note on a file that does not exist (in a PR: at head, or changed), or with `lines` outside the file. `side: "old"` on a file the PR did not change.
-- A diagram edge or `focus` that names no node. A diagram with notes where some node is in no note's `focus`.
+- A diagram edge or `focus` that names no node. A diagram with notes where some node is in the `focus` of no note.
 - A quiz without 3-4 options and exactly one `"correct": true`.
 
 ## Example: `parts/walkthrough.1.json`

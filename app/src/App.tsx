@@ -348,7 +348,7 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
   )
 }
 
-// The prompt follows the step and focus; the agent's link only prefills its prompt box.
+// The prompt follows the step and focus. The link of the agent only prefills its prompt box.
 // The agent picked is App state: remembered for this visit only.
 function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: string; setAgent: (a: string) => void }) {
   const [question, setQuestion] = useState('')

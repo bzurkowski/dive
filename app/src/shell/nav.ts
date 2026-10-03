@@ -66,7 +66,7 @@ export type Flat = { c: number; s: number }[]
 
 export const flatten = (dive: Dive): Flat => dive.chapters.flatMap((ch, c) => ch.steps.map((_, s) => ({ c, s })))
 
-// #/end, or #/c[/s[/f]] with step and focus clamped; anything else is the cover.
+// #/end, or #/c[/s[/f]] with step and focus clamped. Anything else is the cover.
 export function parseHash(dive: Dive, hash: string): Pos {
   const path = hash.replace(/^#\/?|\/$/g, '')
   if (path === 'end') return END
@@ -113,8 +113,8 @@ export function flows(steps: Step[]): Flow[] {
 
 export const flowAt = (fl: Flow[], s: number) => fl.find((f) => s >= f.s && s < f.end)
 
-// Target of "skip to the next flow": the step after p's flow. Null outside a flow
-// and on the flow's last position, where → lands there anyway.
+// Target of "skip to the next flow": the step after the flow of p. Null outside a flow
+// and on the last position of the flow, where → lands there anyway.
 export function skipFlow(dive: Dive, flat: Flat, p: Pos): Pos | null {
   const steps = dive.chapters[p.c]?.steps
   const f = steps && flowAt(flows(steps), p.s)

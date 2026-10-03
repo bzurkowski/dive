@@ -10,7 +10,7 @@ export interface Tokens {
 }
 
 // Each grammar adds to the template size.
-// ponytail: no ruby (its embedded grammars add ~2 MB); ruby renders as plain text.
+// ponytail: no ruby (its embedded grammars add ~2 MB). Ruby renders as plain text.
 const LANGS: Record<string, LanguageInput> = {
   typescript: () => import('shiki/langs/typescript.mjs'),
   tsx: () => import('shiki/langs/tsx.mjs'),

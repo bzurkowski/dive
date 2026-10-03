@@ -20,7 +20,7 @@ The reader meets the chapters in this order. Each chapter has its own writer, an
 | Chapter | What it holds |
 |---|---|
 | Intro | Why the code exists. PR: the problem and the decision. Module: what the code is for, and who uses it. Question: the answer first. |
-| Glossary | The domain words that the rest of the dive uses, defined for the reader's level. |
+| Glossary | The domain words that the rest of the dive uses, defined for the level of the reader. |
 | Big picture | The view from far above: a map of the flows, and the concepts that they depend on, such as a state machine or the data model. |
 | Walkthrough | The **flows**, one after another. A flow is one trigger and the path that it runs to its effect: a sequence diagram, then the code behind its messages. |
 | Review focus | The risks: suspected bugs, traps, open questions, and docs that the code contradicts. |
@@ -34,15 +34,15 @@ Find the scope:
 
 - **PR**: run `gh pr view <pr> --json title,body,url,baseRefName`, then `python3 <skill>/scripts/dive.py prep docs/dives/<slug> --pr <url> --base <base branch>`. It fetches the PR without touching the working tree, writes `diff.json`, and prints the `base=` and `head=` shas.
 - **Module**: the path.
-- **Question**: search the code for the question's key terms. The scope is the files that answer it.
+- **Question**: search the code for the key terms of the question. The scope is the files that answer it.
 
-Find the reader's **level**, `new` or `familiar`. If the user said how well they know the area ("I'm new to payments"), use their words. Otherwise run `python3 <skill>/scripts/dive.py level <dir>...` on the 1-3 directories of the main path, with `--rev <base>` in a PR. It prints the level and the reason.
+Find the **level** of the reader, `new` or `familiar`. If the user said how well they know the area ("I am new to payments"), use their words. Otherwise run `python3 <skill>/scripts/dive.py level <dir>...` on the 1-3 directories of the main path, with `--rev <base>` in a PR. It prints the level and the reason.
 
 Note the connected knowledge tools, such as Notion, Confluence, Jira or Slack. The intro and review-focus writers can search them.
 
 ## 2. Plan
 
-The writers work from the plan and the code, and never see each other's work. So the plan holds all that they must agree on: the flows and their order, the shared actors, and the terms.
+The writers work from the plan and the code, and never see the work of the other writers. So the plan holds all that they must agree on: the flows and their order, the shared actors, and the terms.
 
 Read the scope only as deep as you need to name the flows:
 
@@ -50,7 +50,7 @@ Read the scope only as deep as you need to name the flows:
 - **Module**: the files under the path and their entry points: routes, handlers, jobs, consumers, commands, exports.
 - **Question**: the files that your search found.
 
-Pick the flows that matter most. A trigger is a user action, a job, a webhook, a consumer, or a CI event. In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is one writer's share, and the slowest writer sets the time of the whole dive. So when one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
+Pick the flows that matter most. A trigger is a user action, a job, a webhook, a consumer, or a CI event. In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is the share of one writer, and the slowest writer sets the time of the whole dive. So when one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
 
 Write `docs/dives/<slug>/plan.md`:
 
@@ -73,7 +73,7 @@ Effect: <where the flow ends>
 Path: <the files it runs through, in order>
 ```
 
-**Actors** lists only the actors that more than one flow shows, so that every writer draws them the same way. **Path** is the writer's head start. The writer follows the code wherever it goes.
+**Actors** lists only the actors that more than one flow shows, so that every writer draws them the same way. **Path** gives the writer a head start. The writer follows the code wherever it goes.
 
 Write the frame of `docs/dives/<slug>/dive.json`. Leave out `url` outside a PR. The build fills in the chapters from the part files, the git fields, and the links.
 

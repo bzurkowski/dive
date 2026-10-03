@@ -10,7 +10,7 @@ export function Notice({ children }: { children: ReactNode }) {
   )
 }
 
-// Paragraphs split on blank lines; "- " lines become bullets.
+// Paragraphs split on blank lines. "- " lines become bullets.
 function Rich({ text }: { text: string }) {
   const blocks: { ul: boolean; lines: string[] }[] = []
   let block: (typeof blocks)[number] | undefined

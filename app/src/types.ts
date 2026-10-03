@@ -8,7 +8,7 @@ export interface Dive {
   title: string // "Retry failed refunds"
   summary: string // 1-2 short sentences: what this is and why it matters
   source: Source
-  chapters: Chapter[] // fixed order, see ChapterId; empty chapters are left out
+  chapters: Chapter[] // fixed order (see ChapterId), without empty chapters
   files?: Record<string, FileData> // baked by dive.py build, keyed by repo path
 }
 
@@ -19,7 +19,7 @@ export interface Source {
   repo?: string // "owner/name", used for GitHub links
   base?: string // base commit sha (pr)
   head?: string // head commit sha (pr), else the commit the dive was built at
-  links?: Link[] // knowledge-base pages and tickets used as sources; the build adds every card link
+  links?: Link[] // knowledge-base pages and tickets used as sources. The build adds every card link
 }
 
 export type ChapterId = 'intro' | 'glossary' | 'big-picture' | 'walkthrough' | 'review-focus' | 'recap'
@@ -37,7 +37,7 @@ export type Step = CardStep | TermsStep | CodeStep | SequenceStep | DiagramStep 
 export interface CardStep {
   kind: 'card'
   title: string
-  body: string // short text; "- " lines render as bullets, `backticks` as code
+  body: string // short text. "- " lines render as bullets, `backticks` as code
   links?: Link[]
 }
 
@@ -56,15 +56,15 @@ export interface Term {
 
 export interface CodeStep {
   kind: 'code'
-  id?: string // target of Message.step; required in the walkthrough
+  id?: string // target of Message.step, required in the walkthrough
   title: string // names the piece of logic, never a file
   say: string
-  notes: CodeNote[] // in execution order, across files; → moves note to note
+  notes: CodeNote[] // in execution order, across files. → moves note to note
 }
 
 export interface CodeNote {
   file: string // repo path, key into Dive.files
-  lines: [number, number] // inclusive range; new-file numbers unless side = 'old'
+  lines: [number, number] // inclusive range, in new-file numbers unless side = 'old'
   side?: 'new' | 'old' // 'old' for deleted lines
   text: string // 1-3 short sentences, like a PR self-review comment
 }
@@ -86,7 +86,7 @@ export interface SequenceStep {
 export interface Actor {
   id: string
   label: string // the code unit ("EnterEarnActionService") or the system ("Postgres")
-  group?: string // deployable app or "outside"; drawn as a band, collapsible into one lane
+  group?: string // deployable app or "outside", drawn as a band that collapses into one lane
   change?: Change // PR: a unit the change adds, changes or removes
 }
 
@@ -108,7 +108,7 @@ export interface DiagramStep {
   say: string
   nodes: { id: string; label: string; group?: string }[]
   edges: { from: string; to: string; label?: string }[]
-  notes?: DiagramNote[] // → moves note to note; focused nodes are highlighted
+  notes?: DiagramNote[] // → moves note to note. Focused nodes are highlighted
 }
 
 export interface DiagramNote {
@@ -120,7 +120,7 @@ export interface QuizStep {
   kind: 'quiz'
   title: string
   question: string
-  options: QuizOption[] // 3-4 plausible options, exactly one correct; the app shuffles them
+  options: QuizOption[] // 3-4 plausible options, exactly one correct. The app shuffles them
 }
 
 export interface QuizOption {
@@ -136,7 +136,7 @@ export interface Link {
 
 // Baked by dive.py build. Never authored.
 export interface FileData {
-  lang: string // shiki language id, e.g. "ts", "python"; "text" if unknown
+  lang: string // shiki language id, e.g. "ts" or "python", or "text" if unknown
   diff: boolean // true: `text` is a full-context unified diff body (' ', '+', '-' prefixed lines, no headers)
   text: string // file content (diff = false) or diff body (diff = true)
   status?: 'added' | 'modified' | 'deleted' | 'renamed'

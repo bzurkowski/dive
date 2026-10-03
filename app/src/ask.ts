@@ -11,7 +11,7 @@ export interface AskContext {
   base?: string
   head?: string
   repo?: string // "owner/name"
-  dir?: string // the dive's folder: "docs/dives/<slug>" when cwd is known, else the absolute folder of a file:// page
+  dir?: string // the folder of the dive: "docs/dives/<slug>" when cwd is known, else the absolute folder of a file:// page
   cwd?: string // absolute repo root, only for a file:// page under <root>/docs/dives/<slug>/
   step: string // "Walkthrough › Retry › Send the request (note 2 of 4)"
   refs: string[] // "path:12-30", or "old path:12-30" for a note on deleted lines
@@ -82,14 +82,14 @@ export function focusText(step: Step, f: number, { refs, note }: AskContext): st
 export function askPrompt(ctx: AskContext, question: string): string {
   const { title, ref, pr, base, head, dir, cwd, step, refs, note, flow } = ctx
   return [
-    `I'm reading the dive "${title}"${dir ? ` (${dir}/index.html)` : ''}, a walkthrough of ${ref}.`,
+    `I am reading the dive "${title}"${dir ? ` (${dir}/index.html)` : ''}, a walkthrough of ${ref}.`,
     `Step: ${step}`,
     refs.length > 0 && `Code: ${refs.join(', ')}`,
     note && `Note: ${note}`,
     // The plan sits next to the dive in the repo; a shared copy of the file travels without it.
     cwd && flow && `Plan of this flow: \`## flow ${flow}\` in ${dir}/plan.md. Read it first, then the code.`,
     head && `The code is at commit ${head}: read a file with \`git show ${head}:<path>\`.`,
-    pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`; old lines are at ${base}.`,
+    pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`. Old lines are at ${base}.`,
     `\nMy question: ${question.trim()}`,
   ]
     .filter(Boolean)
@@ -97,7 +97,7 @@ export function askPrompt(ctx: AskContext, question: string): string {
 }
 
 // The agents in the Ask menu. icon: a 24×24 path from simple-icons.
-// ponytail: claude-cli caps q at 5000 chars and nothing here trims to it; shorten refs and notes if prompts outgrow it.
+// ponytail: claude-cli caps q at 5000 chars and nothing here trims to it. Shorten refs and notes if prompts outgrow it.
 export function askTargets(ctx: AskContext, prompt: string): { label: string; href: string; icon: string }[] {
   const enc = encodeURIComponent
   const q = enc(prompt)

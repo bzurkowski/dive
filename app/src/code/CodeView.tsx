@@ -13,7 +13,7 @@ export interface CodeLink {
 
 type Props = StepViewProps<CodeStep> & {
   files?: Record<string, FileData>
-  blob?: string // GitHub blob URL prefix; the file path is appended
+  blob?: string // GitHub blob URL prefix. The file path is appended
   links?: CodeLink[]
   onLink?: (i: number) => void
 }
@@ -30,7 +30,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
     const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
     // Span start at 20% from the top, unless that pushes the card below the fold.
     const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
-    // 'auto' follows the container's CSS: smooth unless the reader prefers reduced motion.
+    // 'auto' follows the CSS of the container: smooth unless the reader prefers reduced motion.
     b.scrollTo({ top, behavior: scrolled.current ? 'auto' : 'instant' })
     scrolled.current = true
   }, [step, focus])
@@ -62,7 +62,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
         </nav>
       )}
       <div ref={box} onClick={pick} className="min-h-0 flex-1 overflow-auto motion-safe:scroll-smooth">
-        {/* dive.py build embeds every note's file */}
+        {/* dive.py build embeds the file of every note */}
         {[...new Set(step.notes.map((n) => n.file))].map((path) => (
           <FileBody key={path} step={step} path={path} file={files![path]} focus={focus} blob={blob} />
         ))}
@@ -102,7 +102,7 @@ function FileBody({
   }, [file, parsed])
 
   const covers = (s: [number, number] | null, r: number) => !!s && s[0] <= r && r <= s[1]
-  // The active note owns its rows; any other row goes to the first note covering it.
+  // The active note owns its rows. Any other row goes to the first note covering it.
   const owner = (r: number) => (covers(spans[focus], r) ? focus : spans.findIndex((s) => covers(s, r)))
 
   const active = step.notes[focus]

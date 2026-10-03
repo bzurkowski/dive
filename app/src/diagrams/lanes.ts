@@ -4,13 +4,13 @@ import type { Actor } from '../types.ts'
 export const actorLabel = (actors: Actor[], id: string) => actors.find((a) => a.id === id)?.label ?? id
 
 export interface Lane {
-  label: string // the actor's label, or the name of a collapsed group
+  label: string // the label of the actor, or the name of a collapsed group
   group?: string
   actors: Actor[] // one, or every actor of a collapsed group
 }
 
 // Lifelines of a sequence. Grouped, each group collapses into one lane at its
-// first actor. `of` maps actor id → lane; a duplicate id keeps its first actor.
+// first actor. `of` maps actor id → lane. A duplicate id keeps its first actor.
 export function lanes(actors: Actor[], grouped: boolean) {
   const list: Lane[] = []
   const of = new Map<string, number>()

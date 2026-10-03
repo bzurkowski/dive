@@ -58,7 +58,7 @@ body {
   @apply bg-bg text-fg font-sans antialiased;
 }
 
-/* Tailwind v4 dropped the pointer on buttons; everything clickable here is a button. */
+/* Tailwind v4 dropped the pointer on buttons. Everything clickable here is a button. */
 @layer base {
   button:not(:disabled) {
     cursor: pointer;

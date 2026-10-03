@@ -57,7 +57,7 @@ const odd = [
 eq(
   lanes(odd, true).lanes.map((l) => `${l.label}/${l.group}`),
   ['app/undefined', 'Y/undefined', 'app/app'],
-  'empty group is no group; a group named like an actor keeps its own lane',
+  'empty group is no group, and a group named like an actor keeps its own lane',
 )
 
 // 9 lanes of 100px in a 356px view: lanes 0-2 fit at the start, 6 hide on the right.

@@ -8,7 +8,7 @@ const root = createRoot(document.getElementById('root')!)
 const fonts = ['Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Mono Variable']
 loadDive()
   .then(async (dive) => {
-    // Diagrams measure text on a canvas, so load every font subset the dive's text needs (latin-ext is separate).
+    // Diagrams measure text on a canvas, so load every font subset that the text of the dive needs (latin-ext is separate).
     const text = JSON.stringify(dive.chapters)
     await Promise.all(fonts.map((f) => document.fonts.load(`1em "${f}"`, text).catch(() => {})))
     root.render(

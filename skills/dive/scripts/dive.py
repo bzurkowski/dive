@@ -84,7 +84,7 @@ def default_branch(remote):
 
 
 def diff_files(base, head, context=3):
-    """Changed files with hunks, in git's order."""
+    """Changed files with hunks, in the order of git."""
     names = git('diff', *DIFF, '--name-status', '-z', base, head).split('\0')
     files, i = [], 0
     while i < len(names) - 1:
@@ -463,7 +463,7 @@ def build(d):
     if not src['links']:
         del src['links']
     (d / 'dive.json').write_text(json.dumps(dive, indent=2, ensure_ascii=False), encoding='utf-8')
-    for p in parts:  # merged into dive.json; from now on edit dive.json
+    for p in parts:  # merged into dive.json. From now on, edit dive.json
         p.unlink()
     if parts and not any((d / 'parts').iterdir()):
         (d / 'parts').rmdir()

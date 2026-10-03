@@ -24,14 +24,14 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
 }
 
 // Group by app is one choice for every sequence in the dive. Storage can be
-// blocked; the choice then holds for this visit only.
+// blocked. Then the choice holds for this visit only.
 const KEY = 'dive-grouped'
 let groupedPref = false
 try {
   groupedPref = localStorage.getItem(KEY) === '1'
 } catch {}
 
-// Messages up to `focus` are shown; later ones are faint ghosts.
+// Messages up to `focus` are shown. Later ones are faint ghosts.
 // The active message carries its note as a callout right under it.
 export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<SequenceStep>) {
   const [ref, { w }] = useSize<HTMLDivElement>()
@@ -180,13 +180,13 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const dir = self ? -1 : Math.sign(x2 - x1)
               const dash = removed ? '2 4' : m.type === 'return' ? '5 4' : undefined
               const open = m.type === 'async'
-              // A filled head covers the last 8px of the line; an open one needs the line up to its tip.
+              // A filled head covers the last 8px of the line. An open one needs the line up to its tip.
               const end = x2 - dir * (open ? 0 : 8)
               const line = self ? `M${x1} ${y} h${LOOP} v${DROP} H${end}` : `M${x1} ${y} H${end}`
               const head = open
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
-              // The active message keeps the reading tone; its change sign stays colored.
+              // The active message keeps the reading tone. Its change sign stays colored.
               const tone = m.type === 'error' ? 'text-bad' : on ? 'text-accent' : mark ? mark.tone : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const link = m.step && onJump ? LINK : ''
@@ -275,7 +275,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
             ))}
           </ol>
 
-          {/* Scroll target: the lanes of the active message and its callout, from its row to the callout's end. */}
+          {/* Scroll target: the lanes of the active message and its callout, from its row to the end of the callout. */}
           <div
             ref={anchor}
             className="pointer-events-none absolute scroll-mt-28 scroll-mb-12 pt-12"
