@@ -134,7 +134,7 @@ const ask = {
     { text: 'b', why: 'w' },
   ],
 }
-const quizzes = { ...dive, chapters: [{ id: 'recap', title: 'R', steps: [ask, card, ask, ask] }] } as Dive
+const quizzes = { ...dive, chapters: [{ id: 'review-focus', title: 'R', steps: [ask, card, ask, ask] }] } as Dive
 eq(quizTally(dive, {}), '', 'no quiz, no tally')
 eq(quizTally(quizzes, {}), 'No quiz answered', 'none answered')
 eq(quizTally(quizzes, { '0/0': 0, '0/2': 1 }), '1 of 3 quiz answers right, 1 skipped', 'a skip counts in the total')
