@@ -311,7 +311,7 @@ export default function App({ dive }: { dive: Dive }) {
           {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
           <button
             type="button"
-            className={`${fill} min-w-0 truncate`}
+            className={`${fill} min-w-0 truncate max-sm:shrink-0`}
             onClick={() => go(next)}
             aria-label={nextLabel}
             title={nextLabel}
