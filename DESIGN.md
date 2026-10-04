@@ -16,6 +16,10 @@ colors:
   ok: "#1b7a45"
   bad: "#c0271d"
   edge: "#a2560c"
+  cat-data: "#059669"
+  cat-messaging: "#0284c7"
+  cat-provider: "#7c3aed"
+  cat-person: "#848a96"
   bg-dark: "#131519"
   surface-dark: "#1a1d23"
   fg-dark: "#e7e9ee"
@@ -30,6 +34,10 @@ colors:
   ok-dark: "#5ccb8c"
   bad-dark: "#f28b82"
   edge-dark: "#e8ad64"
+  cat-data-dark: "#00ad71"
+  cat-messaging-dark: "#259ed6"
+  cat-provider-dark: "#8e66f1"
+  cat-person-dark: "#6e7380"
 typography:
   display:
     fontFamily: "Atkinson Hyperlegible Next Variable, ui-sans-serif, system-ui, sans-serif"
@@ -209,7 +217,9 @@ The palette is graphite on paper. Color appears only where it carries a meaning.
 - **Cool Paper** (`bg`): the page behind everything. Also used for inactive note cards, inputs inside panels and actor boxes.
 - **White Sheet** (`surface`): the sheet that content sits on. The rail, header, footer, step stage, cards, popovers and buttons.
 - **Pencil Gray** (`muted`): secondary text such as reading times, line numbers, captions and inactive rail items.
-- **Hairline** (`line`): every border and divider, the sequence lifelines, and future rail stations. At 60% opacity it is also the fill of inline code.
+- **Hairline** (`line`): every border and divider, and future rail stations. At 60% opacity it is also the fill of inline code.
+
+Sequence actors take the color of their category on the head border and the dashed lifeline: ink for a service, `cat-data` green, `cat-messaging` blue, `cat-provider` violet and `cat-person` gray. These hues are their own tokens, apart from the diff green and change blue, and each reaches 3:1 against both paper tones in both themes. The Legend button under the sequence names them.
 
 Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and teal, at a 10% fill with a 60% stroke. They only tell groups apart and never mean state. Syntax highlighting uses the Shiki `github-light` and `github-dark` themes.
 
@@ -218,7 +228,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 
 **The Graphite Accent Rule.** The accent is ink. Emphasis comes from weight, a darker border or the highlighter, never from a new hue.
 
-**The Meaning-Only Color Rule.** Every hue has a job: a diff, a verdict, an edge case, a change, or a diagram group. A color that only decorates doesn't ship.
+**The Meaning-Only Color Rule.** Every hue has a job: a diff, a verdict, an edge case, a change, an actor category, or a diagram group. A color that only decorates doesn't ship.
 
 ## Typography
 
@@ -308,7 +318,7 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter on their line numbers only, like a stroke in the margin, with ink numbers and a 4px ink band on the left. The code itself never turns yellow, so diff rows keep their plain tint. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with their line range. The footer counter says which note is active. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.
 
 ### Sequence diagram (signature)
-Actors are boxes on dashed lifelines, under optional uppercase group bands. "Group by app" merges lanes; it is pinned to the stage's bottom-right corner and the diagram scrolls under it. Lanes fill the stage and grow to fit the longest actor name, which is never cut off. A wider diagram scrolls sideways, and lanes past an edge get a caption hint at that end of the lane header ("← 3 lanes", "2 lanes →") that scrolls to them. Messages appear one at a time. The active message draws its line (0.45s), gets a highlighter-backed Mono label, and drops a callout card under it with its note and "Show code →" or "Go to flow →". Calls are solid lines, returns dashed, async messages have open arrowheads, errors are in `bad`, and removed messages are struck through.
+Actors are boxes on dashed lifelines, under optional uppercase group bands. The box border and the lifeline take the color of the category of the actor. "Group by app" merges lanes, and a merged lane keeps the category that its actors share, or else draws as a service. "Legend" sits beside it and opens a key of the categories in the diagram. Both are pinned to the stage's bottom-right corner, the diagram scrolls under them, and each choice holds for every sequence of the dive. Lanes fill the stage and grow to fit the longest actor name, which is never cut off. A wider diagram scrolls sideways, and lanes past an edge get a caption hint at that end of the lane header ("← 3 lanes", "2 lanes →") that scrolls to them. Messages appear one at a time. The active message draws its line (0.45s), gets a highlighter-backed Mono label, and drops a callout card under it with its note and "Show code →" or "Go to flow →". Calls are solid lines, returns dashed, async messages have open arrowheads, errors are in `bad`, and removed messages are struck through.
 
 ### Quiz option
 A white option with a 2px hairline border that turns ink on hover. After a pick, the correct option turns green and is labeled "Correct", a wrong pick turns red and is labeled "Your pick", and the rest fade to 70%. Each option shows its one-line why, and the verdict line under the options scrolls into view. The pick and the shuffled order hold for the visit, so a revisit shows the same verdict.

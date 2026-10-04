@@ -1,5 +1,9 @@
 import { deepStrictEqual as eq } from 'node:assert/strict'
-import { bands, cut, lanes } from './lanes.ts'
+import type { Actor } from '../types.ts'
+import { bands, cut, lanes as lanesOf } from './lanes.ts'
+
+// The fixtures are partial actors, like those of an older dive.
+const lanes = (actors: object[], grouped: boolean) => lanesOf(actors as Actor[], grouped)
 
 const actors = [
   { id: 'worker', label: 'runWorker', group: 'app' },
@@ -37,6 +41,20 @@ eq(
   'grouped actors',
 )
 eq([...grouped.of.values()], [0, 0, 1, 0, 2], 'actor → lane')
+
+// A collapsed lane keeps the category that its actors share. Mixed, or none (an older dive), it is a service.
+const cats = [
+  { id: 'a', label: 'A', group: 'g', category: 'data' },
+  { id: 'b', label: 'B', group: 'g', category: 'data' },
+  { id: 'c', label: 'C', group: 'h', category: 'data' },
+  { id: 'd', label: 'D', group: 'h', category: 'provider' },
+  { id: 'e', label: 'E' },
+]
+eq(
+  lanes(cats, true).lanes.map((l) => l.category),
+  ['data', 'service', 'service'],
+  'lane category: shared, mixed, missing',
+)
 
 const plain = [
   { id: 'a', label: 'A' },

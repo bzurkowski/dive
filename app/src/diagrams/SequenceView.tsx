@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Change, SequenceStep, StepViewProps } from '../types'
+import type { Category, Change, SequenceStep, StepViewProps } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
 import { actorLabel, bands, cut, lanes } from './lanes'
@@ -23,20 +23,45 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 
-// Group by app is one choice for every sequence in the dive. Storage can be
-// blocked. Then the choice holds for this visit only.
-const KEY = 'dive-grouped'
-let groupedPref = false
-try {
-  groupedPref = localStorage.getItem(KEY) === '1'
-} catch {}
+// The color of an actor head and its lifeline. The legend lists them in this order.
+const CATEGORY: Record<Category, { name: string; ink: string; border: string }> = {
+  service: { name: 'Service', ink: 'text-fg', border: 'border-fg' },
+  data: { name: 'Data', ink: 'text-cat-data', border: 'border-cat-data' },
+  messaging: { name: 'Messaging', ink: 'text-cat-messaging', border: 'border-cat-messaging' },
+  provider: { name: 'Provider', ink: 'text-cat-provider', border: 'border-cat-provider' },
+  person: { name: 'Person', ink: 'text-cat-person', border: 'border-cat-person' },
+}
+
+const BUTTON =
+  'rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg'
+
+// Group by app and the legend are each one choice for every sequence in the dive.
+// Storage can be blocked. Then the choice holds for this visit only.
+const prefs: Record<string, boolean> = {}
+for (const key of ['dive-grouped', 'dive-legend'])
+  try {
+    prefs[key] = localStorage.getItem(key) === '1'
+  } catch {}
+
+function usePref(key: string) {
+  const [on, set] = useState(!!prefs[key])
+  const save = (next: boolean) => {
+    prefs[key] = next
+    try {
+      localStorage.setItem(key, next ? '1' : '0')
+    } catch {}
+    set(next)
+  }
+  return [on, save] as const
+}
 
 // Messages up to `focus` are shown. Later ones are faint ghosts.
 // The active message carries its note as a callout right under it.
 export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<SequenceStep>) {
   const [ref, { w }] = useSize<HTMLDivElement>()
   const anchor = useRef<HTMLDivElement>(null)
-  const [pref, setPref] = useState(groupedPref)
+  const [pref, setPref] = usePref('dive-grouped')
+  const [legend, setLegend] = usePref('dive-legend')
   const [scrollX, setScrollX] = useState(0)
   // Offer grouping only where it merges lanes.
   const merged = lanes(step.actors, true)
@@ -45,14 +70,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const view = grouped ? merged : lanes(step.actors, false)
   const runs = grouped ? [] : bands(view.lanes)
   const n = view.lanes.length
-
-  const toggle = () => {
-    groupedPref = !grouped
-    try {
-      localStorage.setItem(KEY, groupedPref ? '1' : '0')
-    } catch {}
-    setPref(groupedPref)
-  }
+  const present = (Object.keys(CATEGORY) as Category[]).filter((c) => view.lanes.some((l) => l.category === c))
 
   // Columns fill the stage and fit lane names; a wider diagram scrolls. Each row has
   // one label, so labels may run past lifelines without colliding.
@@ -142,7 +160,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               return (
                 <div key={i} className="relative shrink-0 px-2" style={{ width: cw }}>
                   <div
-                    className="truncate rounded-lg border border-line bg-bg px-3 py-2 text-center text-[13px] font-semibold"
+                    className={`truncate rounded-lg border ${CATEGORY[l.category].border} bg-bg px-3 py-2 text-center text-[13px] font-semibold`}
                     title={group ? `${l.label}: ${l.actors.map((a) => a.label).join(', ')}` : l.label}
                   >
                     {l.label}
@@ -162,14 +180,15 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
 
         <div className="relative">
           <svg width={width} height={height} className="block" role="img" aria-label={step.title}>
-            {view.lanes.map((_, i) => (
+            {view.lanes.map((l, i) => (
               <line
                 key={i}
                 x1={(i + 0.5) * cw}
                 x2={(i + 0.5) * cw}
                 y1={0}
                 y2={height}
-                className="stroke-line"
+                className={CATEGORY[l.category].ink}
+                stroke="currentColor"
                 strokeDasharray="4 4"
               />
             ))}
@@ -304,18 +323,30 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           </div>
         </div>
         {/* Pinned to the stage's bottom-right corner; the diagram scrolls under it both ways. */}
-        {canGroup && (
-          <div className="sticky bottom-0 left-0 z-10 h-0" style={{ width: w }}>
-            <button
-              type="button"
-              aria-pressed={grouped}
-              onClick={toggle}
-              className="absolute right-3 bottom-3 rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg"
-            >
-              Group by app
-            </button>
+        <div className="sticky bottom-0 left-0 z-10 h-0" style={{ width: w }}>
+          <div className="absolute right-3 bottom-3 flex flex-col items-end gap-2">
+            {legend && (
+              <ul aria-label="Actor colors" className="rounded-lg border border-line bg-surface px-3 py-2 text-xs">
+                {present.map((c) => (
+                  <li key={c} className="flex items-center gap-2 py-0.5">
+                    <span className={`h-3 w-4 rounded-sm border-2 bg-bg ${CATEGORY[c].border}`} />
+                    {CATEGORY[c].name}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex gap-2">
+              <button type="button" aria-pressed={legend} onClick={() => setLegend(!legend)} className={BUTTON}>
+                Legend
+              </button>
+              {canGroup && (
+                <button type="button" aria-pressed={grouped} onClick={() => setPref(!grouped)} className={BUTTON}>
+                  Group by app
+                </button>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
