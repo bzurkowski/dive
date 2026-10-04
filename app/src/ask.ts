@@ -1,5 +1,6 @@
+import { actorLabel } from './diagrams/lanes.ts'
 import { flowAt, flows, focusLabel, type Pos } from './shell/nav.ts'
-import type { CodeNote, Dive, SequenceStep } from './types.ts'
+import type { CodeNote, Dive, SequenceStep, Step } from './types.ts'
 
 // Ask your agent about the current step: the facts the page holds, the prompt wording, the deep links.
 
@@ -62,13 +63,20 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
     case 'flow':
     case 'edge': {
       const m = step.messages[pos.f]
-      ctx.note = `${m.label}: ${m.note}`
+      const who = (id: string) => actorLabel(step.actors, id)
+      ctx.note = `${who(m.from)} → ${who(m.to)}: ${m.label}. ${m.note}`
       if (step.kind === 'sequence') ctx.flow = m.step
       for (const s of dive.chapters.flatMap((c) => c.steps))
         if (s.kind === 'code' && s.id && s.id === m.step) ctx.refs = [...new Set(s.notes.map(noteRef))]
     }
   }
   return ctx
+}
+
+// What the live region reads for the focus: "note 2 of 6, src/a.ts:3-5: text" or "message 5 of 15, A → B: label. note".
+export function focusText(step: Step, f: number, { refs, note }: AskContext): string {
+  const head = [focusLabel(step, f), step.kind === 'code' && refs[0]].filter(Boolean).join(', ')
+  return [head, note].filter(Boolean).join(': ')
 }
 
 export function askPrompt(ctx: AskContext, question: string): string {

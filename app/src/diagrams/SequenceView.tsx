@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Change, SequenceStep, StepViewProps } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
-import { bands, cut, lanes } from './lanes'
+import { actorLabel, bands, cut, lanes } from './lanes'
 import { textWidth, useSize } from './util'
 
 const ROW = 56 // height of a message row
@@ -283,6 +283,14 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               )
             })}
           </svg>
+          {/* To a screen reader the svg is one image: the messages as text, in order. */}
+          <ol className="sr-only">
+            {step.messages.map((m, i) => (
+              <li key={i} aria-current={i === focus ? 'step' : undefined}>
+                {actorLabel(step.actors, m.from)} → {actorLabel(step.actors, m.to)}: {m.label}
+              </li>
+            ))}
+          </ol>
 
           {/* Scroll target: the lanes of the active message and its callout, from its row to the callout's end. */}
           <div

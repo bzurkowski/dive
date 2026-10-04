@@ -231,6 +231,7 @@ function NoteCard({ notes, i, focus }: { notes: CodeNote[]; i: number; focus: nu
     <div
       data-note={i}
       data-card={i}
+      aria-current={active || undefined}
       className={`mx-4 my-2 cursor-pointer rounded-lg border px-4 py-3 font-sans transition-colors duration-200 ${
         active ? 'border-accent bg-surface text-fg' : 'border-line bg-bg text-muted'
       }`}

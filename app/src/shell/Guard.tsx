@@ -17,8 +17,15 @@ export class Guard extends Component<Props, State> {
     if (prevState.error && prev.children !== this.props.children) this.setState({ error: undefined })
   }
   render() {
+    // The plain sentence is for the reader; the error itself is for the dive's author.
     return this.state.error ? (
-      <Notice>This step could not be shown: {this.state.error.message}</Notice>
+      <Notice>
+        This step could not be shown. Its data may not match what this version of Dive expects.
+        <details className="mt-2 text-xs text-muted">
+          <summary className="cursor-pointer">Technical details</summary>
+          <p className="mt-1">{String(this.state.error)}</p>
+        </details>
+      </Notice>
     ) : (
       this.props.children
     )

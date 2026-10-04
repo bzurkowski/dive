@@ -219,9 +219,10 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
       </div>
 
       {note && (
-        <div className="flex items-start gap-4 border-t border-line px-6 py-3.5">
+        <div className="flex items-start gap-4 border-t border-line px-6 py-3.5 max-sm:flex-col max-sm:gap-1">
           {notes.length > 1 && (
-            <div className="flex shrink-0 gap-1.5 pt-2">
+            // Each dot pads out to a 24px hit area; the background stays an 8px dot.
+            <div className="-mx-2 flex shrink-0">
               {notes.map((_, i) => (
                 <button
                   key={i}
@@ -229,7 +230,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
                   aria-label={`Note ${i + 1} of ${notes.length}`}
                   aria-current={i === focus ? 'step' : undefined}
                   onClick={() => onFocus(i)}
-                  className={`h-2 w-2 rounded-full transition-colors ${i === focus ? 'bg-accent' : 'bg-line hover:bg-muted'}`}
+                  className={`box-content size-2 rounded-full bg-clip-content p-2 transition-colors ${i === focus ? 'bg-accent' : 'bg-line hover:bg-muted'}`}
                 />
               ))}
             </div>
@@ -239,6 +240,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
             {notes.map((n, i) => (
               <p
                 key={i}
+                aria-current={i === focus || undefined}
                 className={`[grid-area:1/1] text-[15px] leading-relaxed ${i === focus ? 'dive-pop' : 'invisible'}`}
               >
                 <Inline text={n.text} />

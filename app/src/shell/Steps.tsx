@@ -4,9 +4,9 @@ import type { CardStep, Link, QuizStep, Term, TermsStep } from '../types'
 
 export function Notice({ children }: { children: ReactNode }) {
   return (
-    <p role="status" className="m-4 rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted">
+    <div role="status" className="m-4 rounded-md border border-line bg-surface px-4 py-3 text-sm">
       {children}
-    </p>
+    </div>
   )
 }
 

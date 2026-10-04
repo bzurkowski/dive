@@ -1,5 +1,8 @@
 import type { Actor } from '../types.ts'
 
+// An actor's label by id; an unknown id stands for itself.
+export const actorLabel = (actors: Actor[], id: string) => actors.find((a) => a.id === id)?.label ?? id
+
 export interface Lane {
   label: string // the actor's label, or the name of a collapsed group
   group?: string

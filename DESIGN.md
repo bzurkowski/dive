@@ -295,12 +295,13 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 
 ### Inputs / Fields
 - **Style:** a hairline border on white, 8px corners and a muted placeholder. Used for glossary search and the Ask agent select.
-- **Composer:** the Ask question box sits inside a hairline frame on `bg`, with the agent select on the left and Copy and Open on the right. The frame takes the focus ring when the textarea is focused.
+- **Composer:** the Ask question box sits inside a hairline frame on `bg`, with the agent select on the left and Copy and Open on the right. The frame takes the focus ring when the textarea is focused. Enter opens the agent once a question is typed.
 
 ### Navigation
 - **The depth line (rail):** the dive title links to the cover, with the source (`owner/repo #842`) linked under it. Chapters are stations on a vertical 2px line. Passed stations and segments are filled ink, the current station is an open ring with a soft ink halo, and future ones are hairline. Each chapter shows its reading time on the right. Only the current chapter expands, listing its steps and its flows as smaller stations on the same line. The current step is semibold ink, and edge cases follow under a dashed amber rule.
 - **Header:** quiet buttons only, with the 2px progress hairline.
-- **Keyboard:** ← and → (also j and k, or Space) move. `g` opens the glossary and `a` opens Ask. Shortcuts are shown with `kbd` on the cover.
+- **Keyboard:** ← and → (also j and k, or Space) move. On a card, terms or quiz page that runs past the screen, Space first scrolls it, and Shift+Space scrolls back up. `g` opens the glossary and `a` opens Ask. Shortcuts are shown with `kbd` on the cover. "Skip to the step" is the first Tab stop, hidden until it has focus.
+- **Screen readers:** a polite live region reads the step title on a step change and the focused note or message on every move ("note 2 of 6, source/core/Ky.ts:813-816: …"). A sequence carries its messages as a hidden ordered list, and the active note, dot or message has `aria-current`.
 
 ### Code view (signature)
 Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter, ink line numbers and a 4px ink band on the left. Diff rows keep their tint, so on them the highlighter goes in the gutter, like a stroke in the margin. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with their line range. The footer counter says which note is active. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.

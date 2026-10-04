@@ -1,5 +1,5 @@
 import { deepStrictEqual as eq, ok } from 'node:assert/strict'
-import { askContext, askPrompt, askTargets } from './ask.ts'
+import { askContext, askPrompt, askTargets, focusText } from './ask.ts'
 import type { Dive } from './types.ts'
 
 // An overview message links the flow; the flow's message shows code step c1.
@@ -36,6 +36,9 @@ const prompt = askPrompt(code, ' why? \n')
 for (const s of ['Trace of this flow: docs/dives/pr-1-x/notes/flow-flow.md', 'src/a.ts:3-5', 'h1'])
   ok(prompt.includes(s), s)
 ok(prompt.endsWith(' why?'), 'ends with the trimmed question')
+eq(focusText(dive.chapters[1].steps[1], 0, code), 'note 1 of 3, src/a.ts:3-5: new', 'live region, code note')
+const hop = askContext(dive, { c: 1, s: 0, f: 0 }, url)
+eq(focusText(dive.chapters[1].steps[0], 0, hop), 'a → b: call. n', 'one message: no counter, no refs')
 eq(askContext(dive, { c: 1, s: 1, f: 1 }, url).refs, ['old src/a.ts:1-2'], 'old side')
 eq(askContext(dive, { c: 1, s: 0, f: 0 }, url).refs, ['src/a.ts:3-5', 'old src/a.ts:1-2'], 'message refs its code step')
 

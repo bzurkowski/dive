@@ -1,8 +1,9 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
-import { askContext, askPrompt, askTargets } from './ask'
+import { askContext, askPrompt, askTargets, focusText } from './ask'
 import { Inline } from './Inline'
 import { CodeView, type CodeLink } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
+import { actorLabel } from './diagrams/lanes'
 import { SequenceView } from './diagrams/SequenceView'
 import { Cover, End } from './shell/Cover'
 import { Guard } from './shell/Guard'
@@ -41,7 +42,7 @@ export default function App({ dive }: { dive: Dive }) {
     dive.chapters.forEach((ch, c) =>
       ch.steps.forEach((st, s) => {
         if (st.kind !== 'flow') return
-        const actor = (id: string) => st.actors.find((a) => a.id === id)?.label ?? id
+        const actor = (id: string) => actorLabel(st.actors, id)
         st.messages.forEach((msg, f) => {
           if (!msg.step) return
           const link = { from: actor(msg.from), to: actor(msg.to), label: msg.label, pos: { c, s, f } }
@@ -99,6 +100,14 @@ export default function App({ dive }: { dive: Dive }) {
       return toggleGlossary()
     }
     if (open || (e.key === ' ' && t.closest('button, a'))) return
+    // On a page step, Space scrolls the page while it has more that way, then moves.
+    const kind = dive.chapters[pos.c]?.steps[pos.s]?.kind
+    const page = e.key === ' ' && ['card', 'terms', 'quiz'].includes(kind)
+    const box = page && document.getElementById('step')?.firstElementChild
+    if (box && (e.shiftKey ? box.scrollTop : box.scrollHeight - box.clientHeight - box.scrollTop) > 1) {
+      e.preventDefault()
+      return box.scrollBy({ top: (e.shiftKey ? -0.9 : 0.9) * box.clientHeight })
+    }
     if (e.key === 'a') {
       e.preventDefault() // else the a lands in the question box that opening focuses
       return document.getElementById('ask')?.togglePopover()
@@ -118,12 +127,14 @@ export default function App({ dive }: { dive: Dive }) {
   const step = chapter?.steps[pos.s]
   const found = searchTerms(terms, query)
   // One tree on every screen, so the live region and the glossary outlive the cover and end screens:
-  // a live region only announces changes, not its own mount.
+  // a live region only announces changes, not its own mount. Only changed text is read, so a step
+  // change reads the step title and the focused note or message, and a focus change only the latter.
   const frame = (screen: ReactNode) => (
     <>
-      <p className="sr-only" aria-live="polite">
-        {step && `${chapter.title}: ${step.title}`}
-      </p>
+      <div className="sr-only" aria-live="polite">
+        <p>{step && `${chapter.title}: ${step.title}`}</p>
+        <p>{step && focusText(step, pos.f, askContext(dive, pos, location.href))}</p>
+      </div>
       {screen}
       <Drawer
         ref={glossary}
@@ -189,6 +200,13 @@ export default function App({ dive }: { dive: Dive }) {
 
   return frame(
     <div className="flex h-full">
+      <button
+        type="button"
+        onClick={() => document.getElementById('step')?.focus()}
+        className={`${btn} sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2`}
+      >
+        Skip to the step
+      </button>
       <aside
         id="rail"
         className={`hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface px-5 pt-3.5 pb-6 ${railOpen ? 'lg:flex' : ''}`}
@@ -248,7 +266,7 @@ export default function App({ dive }: { dive: Dive }) {
           </div>
         </header>
 
-        <main className="min-h-0 flex-1" key={`${pos.c}-${pos.s}`}>
+        <main id="step" tabIndex={-1} className="min-h-0 flex-1 focus-visible:outline-none!" key={`${pos.c}-${pos.s}`}>
           <Guard>
             <StepView
               dive={dive}
@@ -398,8 +416,8 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
-              e.preventDefault() // Enter opens, Shift+Enter adds a line
-              open.current?.click()
+              e.preventDefault() // Enter opens once there is a question, Shift+Enter adds a line
+              if (question.trim()) open.current?.click()
             }}
             rows={3}
             aria-label="Your question (optional)"
