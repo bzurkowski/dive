@@ -1,0 +1,679 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T09:58:48+00:00",
+  "title": "Design System: Dive",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "oklch(96.4% 0.003 264.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 264.5)",
+          "oklch(26.4% 0.003 264.5)",
+          "oklch(37.9% 0.003 264.5)",
+          "oklch(49.3% 0.003 264.5)",
+          "oklch(60.7% 0.003 264.5)",
+          "oklch(72.1% 0.003 264.5)",
+          "oklch(83.6% 0.003 264.5)",
+          "oklch(95.0% 0.003 264.5)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White Sheet",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(26.4% 0.000 89.9)",
+          "oklch(37.9% 0.000 89.9)",
+          "oklch(49.3% 0.000 89.9)",
+          "oklch(60.7% 0.000 89.9)",
+          "oklch(72.1% 0.000 89.9)",
+          "oklch(83.6% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "fg": {
+        "role": "primary",
+        "displayName": "Graphite Ink",
+        "canonical": "oklch(23.9% 0.014 267.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.014 267.0)",
+          "oklch(26.4% 0.014 267.0)",
+          "oklch(37.9% 0.014 267.0)",
+          "oklch(49.3% 0.014 267.0)",
+          "oklch(60.7% 0.014 267.0)",
+          "oklch(72.1% 0.014 267.0)",
+          "oklch(83.6% 0.014 267.0)",
+          "oklch(95.0% 0.014 267.0)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Pencil Gray",
+        "canonical": "oklch(49.3% 0.025 268.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.025 268.2)",
+          "oklch(26.4% 0.025 268.2)",
+          "oklch(37.9% 0.025 268.2)",
+          "oklch(49.3% 0.025 268.2)",
+          "oklch(60.7% 0.025 268.2)",
+          "oklch(72.1% 0.025 268.2)",
+          "oklch(83.6% 0.025 268.2)",
+          "oklch(95.0% 0.025 268.2)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(89.7% 0.009 264.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 264.5)",
+          "oklch(26.4% 0.009 264.5)",
+          "oklch(37.9% 0.009 264.5)",
+          "oklch(49.3% 0.009 264.5)",
+          "oklch(60.7% 0.009 264.5)",
+          "oklch(72.1% 0.009 264.5)",
+          "oklch(83.6% 0.009 264.5)",
+          "oklch(95.0% 0.009 264.5)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Graphite Ink (accent)",
+        "canonical": "oklch(23.9% 0.014 267.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.014 267.0)",
+          "oklch(26.4% 0.014 267.0)",
+          "oklch(37.9% 0.014 267.0)",
+          "oklch(49.3% 0.014 267.0)",
+          "oklch(60.7% 0.014 267.0)",
+          "oklch(72.1% 0.014 267.0)",
+          "oklch(83.6% 0.014 267.0)",
+          "oklch(95.0% 0.014 267.0)"
+        ]
+      },
+      "mark": {
+        "role": "primary",
+        "displayName": "Highlighter Yellow",
+        "canonical": "oklch(94.2% 0.122 99.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.122 99.8)",
+          "oklch(26.4% 0.122 99.8)",
+          "oklch(37.9% 0.122 99.8)",
+          "oklch(49.3% 0.122 99.8)",
+          "oklch(60.7% 0.122 99.8)",
+          "oklch(72.1% 0.122 99.8)",
+          "oklch(83.6% 0.122 99.8)",
+          "oklch(95.0% 0.122 99.8)"
+        ]
+      },
+      "add": {
+        "role": "secondary",
+        "displayName": "Diff Green tint",
+        "canonical": "oklch(95.1% 0.026 150.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 150.8)",
+          "oklch(26.4% 0.026 150.8)",
+          "oklch(37.9% 0.026 150.8)",
+          "oklch(49.3% 0.026 150.8)",
+          "oklch(60.7% 0.026 150.8)",
+          "oklch(72.1% 0.026 150.8)",
+          "oklch(83.6% 0.026 150.8)",
+          "oklch(95.0% 0.026 150.8)"
+        ]
+      },
+      "del": {
+        "role": "secondary",
+        "displayName": "Diff Red tint",
+        "canonical": "oklch(94.6% 0.021 17.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.021 17.5)",
+          "oklch(26.4% 0.021 17.5)",
+          "oklch(37.9% 0.021 17.5)",
+          "oklch(49.3% 0.021 17.5)",
+          "oklch(60.7% 0.021 17.5)",
+          "oklch(72.1% 0.021 17.5)",
+          "oklch(83.6% 0.021 17.5)",
+          "oklch(95.0% 0.021 17.5)"
+        ]
+      },
+      "chg": {
+        "role": "secondary",
+        "displayName": "Change Blue tint",
+        "canonical": "oklch(94.0% 0.029 259.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.029 259.6)",
+          "oklch(26.4% 0.029 259.6)",
+          "oklch(37.9% 0.029 259.6)",
+          "oklch(49.3% 0.029 259.6)",
+          "oklch(60.7% 0.029 259.6)",
+          "oklch(72.1% 0.029 259.6)",
+          "oklch(83.6% 0.029 259.6)",
+          "oklch(95.0% 0.029 259.6)"
+        ]
+      },
+      "chg-ink": {
+        "role": "secondary",
+        "displayName": "Change Blue",
+        "canonical": "oklch(48.8% 0.243 264.376)",
+        "tonalRamp": [
+          "oklch(15.0% 0.243 264.4)",
+          "oklch(26.4% 0.243 264.4)",
+          "oklch(37.9% 0.243 264.4)",
+          "oklch(49.3% 0.243 264.4)",
+          "oklch(60.7% 0.243 264.4)",
+          "oklch(72.1% 0.243 264.4)",
+          "oklch(83.6% 0.243 264.4)",
+          "oklch(95.0% 0.243 264.4)"
+        ]
+      },
+      "ok": {
+        "role": "secondary",
+        "displayName": "Diff Green",
+        "canonical": "oklch(51.3% 0.119 153.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.119 153.5)",
+          "oklch(26.4% 0.119 153.5)",
+          "oklch(37.9% 0.119 153.5)",
+          "oklch(49.3% 0.119 153.5)",
+          "oklch(60.7% 0.119 153.5)",
+          "oklch(72.1% 0.119 153.5)",
+          "oklch(83.6% 0.119 153.5)",
+          "oklch(95.0% 0.119 153.5)"
+        ]
+      },
+      "bad": {
+        "role": "secondary",
+        "displayName": "Diff Red",
+        "canonical": "oklch(52.6% 0.190 29.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.190 29.1)",
+          "oklch(26.4% 0.190 29.1)",
+          "oklch(37.9% 0.190 29.1)",
+          "oklch(49.3% 0.190 29.1)",
+          "oklch(60.7% 0.190 29.1)",
+          "oklch(72.1% 0.190 29.1)",
+          "oklch(83.6% 0.190 29.1)",
+          "oklch(95.0% 0.190 29.1)"
+        ]
+      },
+      "edge": {
+        "role": "tertiary",
+        "displayName": "Edge Amber",
+        "canonical": "oklch(53.4% 0.126 56.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.126 56.3)",
+          "oklch(26.4% 0.126 56.3)",
+          "oklch(37.9% 0.126 56.3)",
+          "oklch(49.3% 0.126 56.3)",
+          "oklch(60.7% 0.126 56.3)",
+          "oklch(72.1% 0.126 56.3)",
+          "oklch(83.6% 0.126 56.3)",
+          "oklch(95.0% 0.126 56.3)"
+        ]
+      },
+      "bg-dark": {
+        "role": "neutral",
+        "displayName": "Cool Paper (dark)",
+        "canonical": "oklch(19.5% 0.009 264.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 264.4)",
+          "oklch(26.4% 0.009 264.4)",
+          "oklch(37.9% 0.009 264.4)",
+          "oklch(49.3% 0.009 264.4)",
+          "oklch(60.7% 0.009 264.4)",
+          "oklch(72.1% 0.009 264.4)",
+          "oklch(83.6% 0.009 264.4)",
+          "oklch(95.0% 0.009 264.4)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "White Sheet (dark)",
+        "canonical": "oklch(23.0% 0.012 264.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 264.3)",
+          "oklch(26.4% 0.012 264.3)",
+          "oklch(37.9% 0.012 264.3)",
+          "oklch(49.3% 0.012 264.3)",
+          "oklch(60.7% 0.012 264.3)",
+          "oklch(72.1% 0.012 264.3)",
+          "oklch(83.6% 0.012 264.3)",
+          "oklch(95.0% 0.012 264.3)"
+        ]
+      },
+      "fg-dark": {
+        "role": "primary",
+        "displayName": "Graphite Ink (dark)",
+        "canonical": "oklch(93.4% 0.007 268.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 268.5)",
+          "oklch(26.4% 0.007 268.5)",
+          "oklch(37.9% 0.007 268.5)",
+          "oklch(49.3% 0.007 268.5)",
+          "oklch(60.7% 0.007 268.5)",
+          "oklch(72.1% 0.007 268.5)",
+          "oklch(83.6% 0.007 268.5)",
+          "oklch(95.0% 0.007 268.5)"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Pencil Gray (dark)",
+        "canonical": "oklch(70.9% 0.018 267.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.018 267.7)",
+          "oklch(26.4% 0.018 267.7)",
+          "oklch(37.9% 0.018 267.7)",
+          "oklch(49.3% 0.018 267.7)",
+          "oklch(60.7% 0.018 267.7)",
+          "oklch(72.1% 0.018 267.7)",
+          "oklch(83.6% 0.018 267.7)",
+          "oklch(95.0% 0.018 267.7)"
+        ]
+      },
+      "line-dark": {
+        "role": "neutral",
+        "displayName": "Hairline (dark)",
+        "canonical": "oklch(30.9% 0.017 266.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.017 266.4)",
+          "oklch(26.4% 0.017 266.4)",
+          "oklch(37.9% 0.017 266.4)",
+          "oklch(49.3% 0.017 266.4)",
+          "oklch(60.7% 0.017 266.4)",
+          "oklch(72.1% 0.017 266.4)",
+          "oklch(83.6% 0.017 266.4)",
+          "oklch(95.0% 0.017 266.4)"
+        ]
+      },
+      "accent-dark": {
+        "role": "primary",
+        "displayName": "Graphite Ink (accent) (dark)",
+        "canonical": "oklch(93.4% 0.007 268.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 268.5)",
+          "oklch(26.4% 0.007 268.5)",
+          "oklch(37.9% 0.007 268.5)",
+          "oklch(49.3% 0.007 268.5)",
+          "oklch(60.7% 0.007 268.5)",
+          "oklch(72.1% 0.007 268.5)",
+          "oklch(83.6% 0.007 268.5)",
+          "oklch(95.0% 0.007 268.5)"
+        ]
+      },
+      "mark-dark": {
+        "role": "primary",
+        "displayName": "Highlighter Yellow (dark)",
+        "canonical": "oklch(34.7% 0.068 99.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.068 99.9)",
+          "oklch(26.4% 0.068 99.9)",
+          "oklch(37.9% 0.068 99.9)",
+          "oklch(49.3% 0.068 99.9)",
+          "oklch(60.7% 0.068 99.9)",
+          "oklch(72.1% 0.068 99.9)",
+          "oklch(83.6% 0.068 99.9)",
+          "oklch(95.0% 0.068 99.9)"
+        ]
+      },
+      "add-dark": {
+        "role": "secondary",
+        "displayName": "Diff Green tint (dark)",
+        "canonical": "oklch(25.1% 0.036 154.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.036 154.4)",
+          "oklch(26.4% 0.036 154.4)",
+          "oklch(37.9% 0.036 154.4)",
+          "oklch(49.3% 0.036 154.4)",
+          "oklch(60.7% 0.036 154.4)",
+          "oklch(72.1% 0.036 154.4)",
+          "oklch(83.6% 0.036 154.4)",
+          "oklch(95.0% 0.036 154.4)"
+        ]
+      },
+      "del-dark": {
+        "role": "secondary",
+        "displayName": "Diff Red tint (dark)",
+        "canonical": "oklch(25.4% 0.041 18.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.041 18.0)",
+          "oklch(26.4% 0.041 18.0)",
+          "oklch(37.9% 0.041 18.0)",
+          "oklch(49.3% 0.041 18.0)",
+          "oklch(60.7% 0.041 18.0)",
+          "oklch(72.1% 0.041 18.0)",
+          "oklch(83.6% 0.041 18.0)",
+          "oklch(95.0% 0.041 18.0)"
+        ]
+      },
+      "chg-dark": {
+        "role": "secondary",
+        "displayName": "Change Blue tint (dark)",
+        "canonical": "oklch(29.2% 0.049 259.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.049 259.5)",
+          "oklch(26.4% 0.049 259.5)",
+          "oklch(37.9% 0.049 259.5)",
+          "oklch(49.3% 0.049 259.5)",
+          "oklch(60.7% 0.049 259.5)",
+          "oklch(72.1% 0.049 259.5)",
+          "oklch(83.6% 0.049 259.5)",
+          "oklch(95.0% 0.049 259.5)"
+        ]
+      },
+      "chg-ink-dark": {
+        "role": "secondary",
+        "displayName": "Change Blue (dark)",
+        "canonical": "oklch(80.9% 0.105 251.813)",
+        "tonalRamp": [
+          "oklch(15.0% 0.105 251.8)",
+          "oklch(26.4% 0.105 251.8)",
+          "oklch(37.9% 0.105 251.8)",
+          "oklch(49.3% 0.105 251.8)",
+          "oklch(60.7% 0.105 251.8)",
+          "oklch(72.1% 0.105 251.8)",
+          "oklch(83.6% 0.105 251.8)",
+          "oklch(95.0% 0.105 251.8)"
+        ]
+      },
+      "ok-dark": {
+        "role": "secondary",
+        "displayName": "Diff Green (dark)",
+        "canonical": "oklch(76.1% 0.138 156.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.138 156.1)",
+          "oklch(26.4% 0.138 156.1)",
+          "oklch(37.9% 0.138 156.1)",
+          "oklch(49.3% 0.138 156.1)",
+          "oklch(60.7% 0.138 156.1)",
+          "oklch(72.1% 0.138 156.1)",
+          "oklch(83.6% 0.138 156.1)",
+          "oklch(95.0% 0.138 156.1)"
+        ]
+      },
+      "bad-dark": {
+        "role": "secondary",
+        "displayName": "Diff Red (dark)",
+        "canonical": "oklch(74.5% 0.127 25.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.127 25.8)",
+          "oklch(26.4% 0.127 25.8)",
+          "oklch(37.9% 0.127 25.8)",
+          "oklch(49.3% 0.127 25.8)",
+          "oklch(60.7% 0.127 25.8)",
+          "oklch(72.1% 0.127 25.8)",
+          "oklch(83.6% 0.127 25.8)",
+          "oklch(95.0% 0.127 25.8)"
+        ]
+      },
+      "edge-dark": {
+        "role": "tertiary",
+        "displayName": "Edge Amber (dark)",
+        "canonical": "oklch(78.8% 0.114 70.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.114 70.8)",
+          "oklch(26.4% 0.114 70.8)",
+          "oklch(37.9% 0.114 70.8)",
+          "oklch(49.3% 0.114 70.8)",
+          "oklch(60.7% 0.114 70.8)",
+          "oklch(72.1% 0.114 70.8)",
+          "oklch(83.6% 0.114 70.8)",
+          "oklch(95.0% 0.114 70.8)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The dive title on the cover only; 2.25rem below 640px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Card, terms and quiz step titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Code, sequence and diagram step titles; drawer headings."
+      },
+      "narration": {
+        "displayName": "Narration",
+        "purpose": "The say sentence under a visual step title."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Card text and quiz options."
+      },
+      "note": {
+        "displayName": "Note",
+        "purpose": "Code note cards and diagram notes."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Header buttons, crumbs, counters, rail step list."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Note meta, reading times, chips."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Code rows; Shiki github-light / github-dark."
+      },
+      "message": {
+        "displayName": "Message",
+        "purpose": "Sequence message labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Ask popover and sequence callout: only layers that float over the page."
+      },
+      {
+        "name": "backdrop",
+        "value": "rgb(0 0 0 / 0.35)",
+        "purpose": "Behind modal drawers (dialog::backdrop)."
+      },
+      {
+        "name": "focus",
+        "value": "outline: 2px solid var(--color-accent); outline-offset: 2px",
+        "purpose": "Every :focus-visible."
+      },
+      {
+        "name": "note-band",
+        "value": "inset 4px 0 0 var(--color-accent)",
+        "purpose": "Left band on code rows owned by the active note (3px at 40% for other notes)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "draw",
+        "value": "0.45s ease-out",
+        "purpose": "The active sequence message draws its line (stroke-dashoffset)."
+      },
+      {
+        "name": "head",
+        "value": "0.2s 0.35s fade",
+        "purpose": "Arrowhead fades in as the line finishes."
+      },
+      {
+        "name": "pop",
+        "value": "0.3s ease-out, translateY(-4px) to 0",
+        "purpose": "Callouts and diagram notes appear."
+      },
+      {
+        "name": "fade",
+        "value": "opacity 200–300ms",
+        "purpose": "Focus moves: rows, messages and nodes fade in and out."
+      },
+      {
+        "name": "reduced",
+        "value": "prefers-reduced-motion: reduce",
+        "purpose": "All animations off; scrolling and progress transitions only under motion-safe."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Previous and Next in the footer.",
+      "html": "<button class=\"ds-btn\">Next</button>",
+      "css": ".ds-btn { font: 500 1rem/1.5 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: 8px 16px; cursor: pointer; } .ds-btn:hover { border-color: var(--color-accent); } .ds-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Start the dive and Back to the start only.",
+      "html": "<button class=\"ds-btn-primary\">Start the dive</button>",
+      "css": ".ds-btn-primary { font: 600 1.125rem/1.75rem var(--font-sans); color: var(--color-surface); background: var(--color-accent); border: 0; border-radius: 8px; padding: 12px 24px; cursor: pointer; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ask Button",
+      "kind": "button",
+      "refersTo": "button-ask",
+      "description": "The one filled button in the footer; opens the Ask composer.",
+      "html": "<button class=\"ds-btn-ask\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 5v14l11-7z\"/></svg><span>Ask your agent</span></button>",
+      "css": ".ds-btn-ask { display: inline-flex; align-items: center; gap: 8px; font: 500 1rem/1.5 var(--font-sans); color: var(--color-bg); background: var(--color-accent); border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; } .ds-btn-ask svg { width: 16px; height: 16px; fill: currentColor; } .ds-btn-ask:hover { opacity: 0.85; } .ds-btn-ask:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Text-only header actions: Chapters, Glossary, Close.",
+      "html": "<button class=\"ds-btn-quiet\">Glossary</button>",
+      "css": ".ds-btn-quiet { font: 500 0.875rem/1.25rem var(--font-sans); color: var(--color-muted); background: none; border: 0; border-radius: 4px; padding: 4px 8px; cursor: pointer; } .ds-btn-quiet:hover { color: var(--color-fg); } .ds-btn-quiet:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Glossary search.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search terms\" aria-label=\"Search terms\">",
+      "css": ".ds-input { font: 400 1rem/1.5 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: 8px 12px; width: 100%; } .ds-input::placeholder { color: var(--color-muted); } .ds-input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Depth Line",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "Chapters as stations on a vertical line; the current step is highlighter-marked.",
+      "html": "<ol class=\"ds-rail\"><li class=\"past\"><span class=\"dot\"></span><span class=\"t\">Why this change</span><span class=\"m\">2 min</span></li><li class=\"cur\"><span class=\"dot\"></span><span class=\"t\">Walkthrough</span><span class=\"m\">12 min</span><ol><li><mark>A known failure becomes NetworkError</mark></li><li>Retry only the known error types</li></ol></li><li><span class=\"dot\"></span><span class=\"t\">Recap</span><span class=\"m\">2 min</span></li></ol>",
+      "css": ".ds-rail { list-style: none; margin: 0; padding: 16px 20px; width: 18rem; background: var(--color-surface); font-family: var(--font-sans); color: var(--color-muted); } .ds-rail > li { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; padding: 0 0 20px 32px; } .ds-rail > li::before { content: \"\"; position: absolute; left: 11px; top: 12px; bottom: -12px; width: 2px; background: var(--color-line); } .ds-rail > li.past::before { background: var(--color-accent); } .ds-rail > li:last-child::before { display: none; } .ds-rail .dot { position: absolute; left: 6px; top: 6px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 9999px; border: 2px solid var(--color-line); background: var(--color-surface); z-index: 1; } .ds-rail .past .dot { border-color: var(--color-accent); background: var(--color-accent); } .ds-rail .cur .dot { border-color: var(--color-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 20%, transparent); } .ds-rail .t { font-size: 15px; } .ds-rail .past .t { color: var(--color-fg); } .ds-rail .cur .t { color: var(--color-fg); font-weight: 600; } .ds-rail .m { font-size: 0.75rem; } .ds-rail ol { flex-basis: 100%; list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.875rem; line-height: 1.375; } .ds-rail ol li { margin-bottom: 8px; } .ds-rail mark { background: var(--color-mark); color: var(--color-fg); font-weight: 600; border-radius: 2px; padding: 0 4px; margin: 0 -4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }"
+    },
+    {
+      "name": "Code Note Card",
+      "kind": "card",
+      "refersTo": "note-card-active",
+      "description": "Margin note under the lines it explains; active card is white with an ink border.",
+      "html": "<div class=\"ds-note\"><div class=\"meta\"><span class=\"n\">1/8</span><span>Lines 827–828</span></div><p>The <code>catch</code> first asks <code>isRawNetworkError</code>, the check copied from <code>is-network-error</code>.</p></div><div class=\"ds-note idle\"><div class=\"meta\"><span class=\"n\">5/8</span><span>Lines 829–830</span></div><p>A match becomes a <code>NetworkError</code> for <code>this.request</code>.</p></div>",
+      "css": ".ds-note { font: 400 15px/1.625 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-accent); border-radius: 8px; padding: 12px 16px; margin: 8px 0; cursor: pointer; transition: color 0.2s, background 0.2s, border-color 0.2s; } .ds-note.idle { color: var(--color-muted); background: var(--color-bg); border-color: var(--color-line); } .ds-note p { margin: 0; } .ds-note .meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; font-size: 0.75rem; color: var(--color-muted); } .ds-note .n { border-radius: 9999px; padding: 0 8px; font-weight: 500; background: var(--color-mark); color: var(--color-fg); } .ds-note.idle .n { background: var(--color-line); color: var(--color-muted); } .ds-note code { font: 0.88em var(--font-mono); background: color-mix(in srgb, var(--color-line) 60%, transparent); border-radius: 4px; padding: 1px 4px; }"
+    },
+    {
+      "name": "Sequence Callout",
+      "kind": "custom",
+      "refersTo": "sequence-callout",
+      "description": "The active message's note, floating under its arrow with the system's only shadow.",
+      "html": "<div class=\"ds-callout\"><span class=\"tip\"></span>The new guard throws the <code>TypeError</code> because it is not a <code>NetworkError</code>.<button>Show code →</button></div>",
+      "css": ".ds-callout { position: relative; width: 300px; font: 400 14px/1.375 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 8px; padding: 10px 14px; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); margin-top: 8px; } .ds-callout .tip { position: absolute; top: -7px; left: 40px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--color-surface); border-top: 1px solid var(--color-line); border-left: 1px solid var(--color-line); } .ds-callout code { font: 0.88em var(--font-mono); background: color-mix(in srgb, var(--color-line) 60%, transparent); border-radius: 4px; padding: 1px 4px; } .ds-callout button { display: block; margin-top: 6px; padding: 0; border: 0; background: none; font: 600 13px var(--font-sans); color: var(--color-accent); cursor: pointer; } .ds-callout button:hover { text-decoration: underline; } .ds-callout button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiz Option",
+      "kind": "custom",
+      "refersTo": "quiz-option",
+      "description": "Answer options; after a pick, verdict colors on a 2px border.",
+      "html": "<button class=\"ds-quiz\">It retries every error up to the limit</button><button class=\"ds-quiz ok\"><span class=\"row\"><span>Only known network errors are retried</span><b>Correct</b></span></button><button class=\"ds-quiz bad\"><span class=\"row\"><span>It never retries a TypeError</span><b>Your pick</b></span></button>",
+      "css": ".ds-quiz { display: block; width: 100%; text-align: left; margin-bottom: 12px; font: 400 1.125rem/1.375 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 2px solid var(--color-line); border-radius: 8px; padding: 12px 16px; cursor: pointer; } .ds-quiz:hover { border-color: var(--color-accent); } .ds-quiz:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; } .ds-quiz .row { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; } .ds-quiz b { font-size: 0.875rem; } .ds-quiz.ok, .ds-quiz.ok:hover { border-color: var(--color-ok); } .ds-quiz.ok b { color: var(--color-ok); } .ds-quiz.bad, .ds-quiz.bad:hover { border-color: var(--color-bad); } .ds-quiz.bad b { color: var(--color-bad); }"
+    },
+    {
+      "name": "Flow Link Chip",
+      "kind": "chip",
+      "refersTo": "chip-flow-link",
+      "description": "Above a code step: jumps back to the flow message it shows.",
+      "html": "<button class=\"ds-chip\">Ky#fetch → Ky#retry · <span>throw new NetworkError(...)</span></button>",
+      "css": ".ds-chip { font: 400 0.75rem/1rem var(--font-sans); color: var(--color-muted); background: none; border: 1px solid var(--color-line); border-radius: 9999px; padding: 2px 8px; cursor: pointer; white-space: nowrap; } .ds-chip span { font-family: var(--font-mono); } .ds-chip:hover { border-color: var(--color-accent); color: var(--color-fg); } .ds-chip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Marked-Up Printout",
+    "overview": "A dive looks like a printout of the code that a patient colleague has marked up for you. The ink is graphite on cool paper. Margin notes sit right under the lines they explain, and a yellow highlighter covers the one thing to read now. The mood is patient, guided and clear. The interface sets the pace one step at a time and keeps its own chrome out of the way of the code.\n\nThe page has almost no color. Ink and paper carry the structure. A pale page and a white sheet, separated by hairline borders, do the layering, and the highlighter marks focus. Every other hue has a job: green and red for diffs and quiz answers, amber for optional edge cases, blue for changed units in a PR, and a few tints that tell diagram groups apart.\n\nEach screen holds one idea. Code, sequence and diagram steps fill the viewport with one bordered stage. Card, terms and quiz steps sit in a narrow reading column. Anything not in focus fades instead of disappearing, so the reader keeps their place in the whole.\n\nBoth themes are complete. The dark theme is the same printout at night, with the same roles and the same rules. The reader's choice is saved as `dive-theme`, and the OS setting applies when nothing is saved.",
+    "keyCharacteristics": [
+      "Graphite and paper, with a single yellow highlighter for the current focus.",
+      "Flat surfaces separated by hairline borders and two paper tones, not by shadows.",
+      "One idea per screen: a narration sentence above one visual, moved with ← and →.",
+      "Whatever isn't in focus fades and stays visible, so context is never lost.",
+      "One type family, Atkinson Hyperlegible, with its Mono cut reserved for real code.",
+      "One offline file: fonts are bundled and nothing is fetched at runtime."
+    ],
+    "rules": [
+      {
+        "name": "The Highlighter Rule",
+        "body": "Yellow marks the current focus and nothing else. If two unrelated things on a screen are yellow, one of them is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Graphite Accent Rule",
+        "body": "The accent is ink. Emphasis comes from weight, a darker border or the highlighter, never from a new hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Meaning-Only Color Rule",
+        "body": "Every hue has a job: a diff, a verdict, an edge case, a change, or a diagram group. A color that only decorates doesn't ship.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Means Code Rule",
+        "body": "Monospace is only for real code: identifiers, file paths, message labels and code rows. UI never borrows it for flavor.",
+        "section": "typography"
+      },
+      {
+        "name": "The Bundled Type Rule",
+        "body": "Both cuts ship inside the file. A dive renders the same offline, in an email attachment, with no network.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Paper Rule",
+        "body": "Surfaces are flat at rest. A shadow means \"this floats above the page\", so cards, buttons and panels never get one.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Fade, Don't Hide Rule",
+        "body": "Focus is shown by fading everything else. Code rows outside the active note drop to 55% opacity. Past messages sit at 60% and future ones at 15%, and both brighten on hover. Unlit diagram nodes fade the same way.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** show one idea per screen: a title, one narration sentence, and one visual.",
+      "**Do** use Highlighter Yellow (`mark`) only for the current focus.",
+      "**Do** fade what isn't in focus (55%, 60%, 15%) instead of hiding it.",
+      "**Do** keep the accent graphite. Emphasize with weight, an ink border or the highlighter.",
+      "**Do** define every color in both themes and check a change in light and dark.",
+      "**Do** put motion behind `prefers-reduced-motion`. The draw (0.45s), pop (0.3s, 4px rise) and fade (0.2s) are the whole vocabulary.",
+      "**Do** bundle fonts and assets. The file has to work offline."
+    ],
+    "donts": [
+      "**Don't** make it look like a SaaS dashboard: no KPI tiles, card grids or colorful status badges.",
+      "**Don't** add marketing gloss: no gradients, glassmorphism, glows or decorative illustration.",
+      "**Don't** turn it into a docs site with long scrolling pages and heading sidebars. A dive moves in steps.",
+      "**Don't** clone an IDE: no editor tabs, minimaps or file trees. Code always appears inside a step, framed by narration.",
+      "**Don't** give resting cards, panels or buttons a shadow. Shadows are only for floating layers.",
+      "**Don't** introduce a brand hue or use green, red, amber or blue outside their meanings.",
+      "**Don't** use monospace for UI text."
+    ]
+  }
+}
