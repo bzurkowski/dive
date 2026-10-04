@@ -70,7 +70,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
         type="button"
         onClick={() => ref.current?.scrollBy({ left: dir * Math.max(cw, w - cw) })}
         aria-label={`Show ${count} on the ${dir < 0 ? 'left' : 'right'}`}
-        className={`rounded px-1 py-0.5 text-xs text-muted hover:text-fg ${dir < 0 ? 'sticky left-2' : ''}`}
+        className={`sticky rounded px-1 py-0.5 text-xs text-muted hover:text-fg ${dir < 0 ? 'left-2' : 'right-2 ml-auto'}`}
       >
         {dir < 0 ? `← ${count}` : `${count} →`}
       </button>
@@ -113,22 +113,10 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     >
       <div style={{ width }}>
         <div className="sticky top-0 z-10 bg-surface/90 pb-1 backdrop-blur">
-          {canGroup || cutL || cutR ? (
+          {cutL || cutR ? (
             <div className="flex items-center px-2 pt-2 pb-1.5">
               {hint(cutL, -1)}
-              <div className="sticky right-2 ml-auto flex items-center gap-2">
-                {hint(cutR, 1)}
-                {canGroup && (
-                  <button
-                    type="button"
-                    aria-pressed={grouped}
-                    onClick={toggle}
-                    className="rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg"
-                  >
-                    Group by app
-                  </button>
-                )}
-              </div>
+              {hint(cutR, 1)}
             </div>
           ) : (
             <div className="h-4" />
@@ -290,7 +278,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           {/* Scroll target: the lanes of the active message and its callout, from its row to the callout's end. */}
           <div
             ref={anchor}
-            className="pointer-events-none absolute scroll-mt-28 scroll-mb-8 pt-12"
+            className="pointer-events-none absolute scroll-mt-28 scroll-mb-12 pt-12"
             style={{ left: anchorLeft, top: active.ey - 34, width: anchorW }}
           >
             <div
@@ -315,6 +303,19 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
             </div>
           </div>
         </div>
+        {/* Pinned to the stage's bottom-right corner; the diagram scrolls under it both ways. */}
+        {canGroup && (
+          <div className="sticky bottom-0 left-0 z-10 h-0" style={{ width: w }}>
+            <button
+              type="button"
+              aria-pressed={grouped}
+              onClick={toggle}
+              className="absolute right-3 bottom-3 rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg"
+            >
+              Group by app
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
