@@ -185,9 +185,8 @@ const RowView = memo(function RowView(p: {
   const { row } = p
   const line = row.type === 'del' ? p.tokens?.old?.[row.old! - 1] : p.tokens?.new?.[row.new! - 1]
   const tint = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : ''
-  // An active diff row keeps its tint; the highlighter goes in its gutter instead.
-  const gut = tint && p.active ? 'bg-mark' : ''
-  const bg = tint || (p.active ? 'bg-mark' : '')
+  // The highlighter marks only the line numbers of the active note; the code keeps its diff tint.
+  const mark = p.active ? 'bg-mark' : ''
   const band = p.active
     ? 'shadow-[inset_4px_0_0_var(--color-accent)]'
     : p.note >= 0
@@ -195,18 +194,18 @@ const RowView = memo(function RowView(p: {
       : ''
   // Ink on the highlighter: muted falls under 4.5:1 on the dark olive.
   const ink = p.active ? 'text-fg' : 'text-muted'
-  const num = `select-none pr-3 text-right tabular-nums ${ink} ${gut}`
+  const num = `select-none pr-3 text-right tabular-nums ${ink} ${mark}`
   return (
     <div
       data-note={p.note >= 0 ? p.note : undefined}
       data-anchor={p.anchor || undefined}
-      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr] max-sm:grid-cols-[2.75rem_2.75rem_0.75rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
+      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr] max-sm:grid-cols-[2.75rem_2.75rem_0.75rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${tint} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
     >
-      {/* The first gutter cell repaints the row's band, which its own background would hide. */}
-      {p.diff && <span className={`${num} ${gut && band}`}>{row.old ?? ''}</span>}
-      <span className={num}>{row.new ?? ''}</span>
+      {/* The first number cell repaints the row's band, which its highlighter would hide. */}
+      {p.diff && <span className={`${num} ${mark && band}`}>{row.old ?? ''}</span>}
+      <span className={`${num} ${p.diff ? '' : mark && band}`}>{row.new ?? ''}</span>
       {p.diff && (
-        <span className={`select-none text-center ${ink} ${gut}`}>
+        <span className={`select-none text-center ${ink}`}>
           {row.type === 'add' ? '+' : row.type === 'del' ? '−' : ''}
         </span>
       )}
