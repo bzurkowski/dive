@@ -51,7 +51,7 @@ Read the scope only as deep as you need to name the flows:
 - **Module**: the files under the path and their entry points: routes, handlers, jobs, consumers, commands, exports.
 - **Question**: the files that your search found.
 
-Pick the flows that matter most. A trigger is a user action, a job, a webhook, a consumer, or a CI event. In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is the share of one writer, and the slowest writer sets the time of the whole dive. So when one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
+Pick the flows that matter most. A trigger is a user action, a job, a webhook, a consumer, or a CI event. In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is the share of one writer, and the slowest writer sets the time of the whole dive. So each flow has one trigger. When one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
 
 Write `docs/dives/<slug>/plan.md`:
 
