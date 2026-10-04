@@ -4,7 +4,7 @@ You write one chapter of a dive, or one flow of its walkthrough. A dive explains
 
 ## Start
 
-1. Read `docs/dives/<slug>/plan.md`: the flows and their order, the shared actors, and the terms.
+1. Read `docs/dives/<slug>/plan.md`: the flows and their order, the shared actors, and the terms. The plan comes from a quick read of the scope. Check each claim of the plan in the code before you repeat it.
 2. Read [format.md](format.md): the JSON of a part file, and what the build rejects.
 3. Read the code that your job needs, then write your part file in `docs/dives/<slug>/parts/`. Other writers work at the same time, so write only your own file, and do not read theirs: they can be half written.
 4. Run `python3 <skill>/scripts/dive.py check docs/dives/<slug>/parts/<your file>`. It runs the checks of the build on your part alone. Fix each error, then run it again.

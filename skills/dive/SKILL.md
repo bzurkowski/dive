@@ -68,7 +68,7 @@ Write `docs/dives/<slug>/plan.md`:
 
 ## flow <id: lowercase words joined by dashes>: <title>
 Trigger: <the trigger> - <path>:<line>
-Effect: <where the flow ends>
+Effect: <where the flow ends, as <path>:<line> or an external system>
 Path: <the files it runs through, in order>
 ```
 
