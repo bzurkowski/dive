@@ -233,7 +233,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 - **Headline** (700, 1.875rem, 1.25): the title of a card, terms or quiz step. The end screen uses 2.25rem.
 - **Title** (700, 1.5rem, 1.25): the title of a code, sequence or diagram step, and drawer headings. The rail's dive title is 1.25rem at weight 800.
 - **Narration** (400, 17px, 1.375): the `say` sentence under a visual step's title, capped at max-w-5xl.
-- **Body** (400, 1.125rem, 1.625): card text and quiz options. The cover summary is 1.25rem with a 62ch measure. Glossary meanings are 1rem.
+- **Body** (400, 1.125rem, 1.625): card text and quiz options. The cover summary is 1.25rem with a 62ch measure, with `backticks` as inline code. Glossary meanings are 1rem.
 - **Note** (400, 15px, 1.625): code note cards and diagram notes. The sequence callout uses 14px at 1.375.
 - **Label** (500, 0.875rem): header buttons, crumbs, the position counter and the rail's step list. The rail's chapter titles are 15px.
 - **Caption** (400, 0.75rem): note meta, reading times, file status and the flow-link chips. Group bands use 11px, weight 600, uppercase, with wide tracking.
@@ -252,7 +252,7 @@ Steps use one of two layouts:
 - **Stage:** used for code, sequence and diagram steps. A crumb, the title and the narration sit at the top, and one bordered `surface` panel fills the rest of the height and scrolls on its own. Padding is 16px, rising to 24px from 640px.
 - **Page:** used for card, terms and quiz steps. A centered reading column (max-w-2xl, terms max-w-4xl) with 48–64px of vertical padding.
 
-The cover is a max-w-3xl column with generous top space and a numbered chapter list ruled with hairlines. The end screen is a centered max-w-xl column. The glossary opens as a right drawer (`min(30rem, 100%)`).
+The cover is a max-w-3xl column with generous top space and a numbered chapter list ruled with hairlines. Above the title, the source line names the kind and links the rail's source ("Pull request: owner/repo #842"). The end screen is the printout's last page, in the same column: the quiz tally ("2 of 3 quiz answers right, 1 skipped"), the review-focus steps as a hairline-ruled "What to check" list that links to each step, then the hand-off. A dive with no review focus or no quiz leaves those parts out. The glossary opens as a right drawer (`min(30rem, 100%)`).
 
 Spacing follows Tailwind's 4px scale. Chrome is snug: header and footer padding is 10px by 16px, and buttons are 8px by 16px. Reading areas get room: drawers have 24px of padding and page steps 48–64px vertically. Some secondary text hides below 640px, such as "your agent" in Ask, the Skip button and the footer counter. Next shortens to "Edge cases →" or a plain "Next" so the footer stays on one line, and its accessible name keeps the full destination.
 
@@ -277,9 +277,9 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 ### Buttons
 - **Shape:** gently rounded (8px).
 - **Default:** white sheet, hairline border and ink text at medium weight, with 8px × 16px padding. Used for Previous, and for Ask with the chosen agent's icon and "Ask your agent". On hover the border darkens to ink.
-- **Primary:** solid ink with white text and 12px × 24px padding at 1.125rem semibold. Used only for "Start the dive" and "Back to the start". On hover it drops to 90% opacity.
+- **Primary:** solid ink with white text and 12px × 24px padding at 1.125rem semibold. Used only for "Start the dive" and the end screen's "Open the pull request ↗", or "Back to the start" when the dive has no URL. On hover it drops to 90% opacity.
 - **Next:** solid ink with paper-colored text and 8px × 16px padding, opacity 85% on hover. It is the one filled button in the footer, as the Open square is inside the Ask popover.
-- **Quiet:** text-only header actions (Chapters, Glossary, theme, Close) in Pencil Gray that turn ink on hover.
+- **Quiet:** Pencil Gray text that turns ink on hover. Used for the header actions (Chapters, Glossary, theme, Close) and for "Back to the start" beside the end screen's primary.
 - **Focus:** every control shows a 2px ink outline offset by 2px.
 
 ### Chips
@@ -309,7 +309,7 @@ Each file has a sticky header with its path in Mono (truncated from the left so 
 Actors are boxes on dashed lifelines, under optional uppercase group bands, and "Group by app" merges lanes. Messages appear one at a time. The active message draws its line (0.45s), gets a highlighter-backed Mono label, and drops a callout card under it with its note and "Show code →" or "Go to flow →". Calls are solid lines, returns dashed, async messages have open arrowheads, errors are in `bad`, and removed messages are struck through.
 
 ### Quiz option
-A white option with a 2px hairline border that turns ink on hover. After a pick, the correct option turns green and is labeled "Correct", a wrong pick turns red and is labeled "Your pick", and the rest fade to 70%. Each option shows its one-line why.
+A white option with a 2px hairline border that turns ink on hover. After a pick, the correct option turns green and is labeled "Correct", a wrong pick turns red and is labeled "Your pick", and the rest fade to 70%. Each option shows its one-line why. The pick and the shuffled order hold for the visit, so a revisit shows the same verdict.
 
 ## Do's and Don'ts
 

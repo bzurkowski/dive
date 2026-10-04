@@ -19,6 +19,7 @@ import {
   toHash,
   COVER,
   END,
+  type Picks,
   type Pos,
 } from './shell/nav'
 import { Rail } from './shell/Rail'
@@ -57,6 +58,7 @@ export default function App({ dive }: { dive: Dive }) {
   const chapters = useRef<HTMLDialogElement>(null)
   const [railOpen, setRailOpen] = useState(true)
   const [agent, setAgent] = useState('Claude Code')
+  const [picks, setPicks] = useState<Picks>({}) // for this visit only, like the agent
 
   useEffect(() => {
     document.title = dive.title
@@ -152,7 +154,7 @@ export default function App({ dive }: { dive: Dive }) {
   if (!step)
     return frame(
       <>
-        {pos.c === END.c ? <End dive={dive} go={go} /> : <Cover dive={dive} go={go} />}
+        {pos.c === END.c ? <End dive={dive} picks={picks} go={go} /> : <Cover dive={dive} go={go} />}
         <ThemeButton className="fixed top-3 right-4" />
       </>,
     )
@@ -263,6 +265,8 @@ export default function App({ dive }: { dive: Dive }) {
               onJump={jump}
               links={back}
               onLink={(k) => back && go(back[k].pos)}
+              picked={picks[`${pos.c}/${pos.s}`]}
+              onPick={(k) => setPicks({ ...picks, [`${pos.c}/${pos.s}`]: k })}
             />
           </Guard>
         </main>
@@ -473,6 +477,8 @@ function StepView({
   onJump,
   links,
   onLink,
+  picked,
+  onPick,
 }: {
   dive: Dive
   step: Step
@@ -482,6 +488,8 @@ function StepView({
   onJump: (id: string) => void
   links?: CodeLink[]
   onLink: (i: number) => void
+  picked?: number
+  onPick: (k: number) => void
 }) {
   const visual = (say: string, view: ReactNode) => (
     <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
@@ -530,6 +538,6 @@ function StepView({
     case 'terms':
       return page(<TermsView step={step} />, true)
     case 'quiz':
-      return page(<QuizView step={step} />)
+      return page(<QuizView step={step} picked={picked} onPick={onPick} />)
   }
 }

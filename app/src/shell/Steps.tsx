@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Inline } from '../Inline'
 import type { CardStep, Link, QuizStep, Term, TermsStep } from '../types'
 
@@ -118,10 +118,17 @@ function shuffle<T>(xs: T[]): T[] {
   return a
 }
 
-export function QuizView({ step }: { step: QuizStep }) {
-  const [options] = useState(() => shuffle(step.options))
-  const [picked, setPicked] = useState<number | null>(null)
-  const done = picked !== null
+// Shuffled once per quiz and kept, so a revisit shows the same order. Holds indexes into step.options.
+const orders = new WeakMap<QuizStep, number[]>()
+function order(step: QuizStep): number[] {
+  let o = orders.get(step)
+  if (!o) orders.set(step, (o = shuffle(step.options.map((_, k) => k))))
+  return o
+}
+
+// The pick is an index into step.options and lives in App, so it survives a revisit.
+export function QuizView({ step, picked, onPick }: { step: QuizStep; picked?: number; onPick: (k: number) => void }) {
+  const done = picked !== undefined
   return (
     <article>
       <h1 className={heading}>
@@ -129,28 +136,29 @@ export function QuizView({ step }: { step: QuizStep }) {
       </h1>
       <p className="mt-2 text-muted">Pick one answer.</p>
       <ul className="mt-6 space-y-3">
-        {options.map((o, i) => {
+        {order(step).map((k) => {
+          const o = step.options[k]
           const tone = !done
             ? 'border-line hover:border-accent'
             : o.correct
               ? 'border-ok'
-              : i === picked
+              : k === picked
                 ? 'border-bad'
                 : 'border-line opacity-70'
           return (
-            <li key={i}>
+            <li key={k}>
               <button
                 type="button"
                 aria-disabled={done}
-                aria-pressed={i === picked}
-                onClick={() => setPicked((p) => p ?? i)}
+                aria-pressed={k === picked}
+                onClick={() => !done && onPick(k)}
                 className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : ''}`}
               >
                 <span className="flex items-start gap-3">
                   <span className="grow">
                     <Inline text={o.text} />
                   </span>
-                  {done && (o.correct || i === picked) && (
+                  {done && (o.correct || k === picked) && (
                     <span className={`shrink-0 text-sm font-semibold ${o.correct ? 'text-ok' : 'text-bad'}`}>
                       {o.correct ? 'Correct' : 'Your pick'}
                     </span>
@@ -168,7 +176,7 @@ export function QuizView({ step }: { step: QuizStep }) {
       </ul>
       <p aria-live="polite" className="mt-5 text-lg font-semibold">
         {done &&
-          (options[picked].correct ? (
+          (step.options[picked].correct ? (
             <span className="text-ok">Right.</span>
           ) : (
             <span className="text-bad">Not this one. The correct answer is marked.</span>

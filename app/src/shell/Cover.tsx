@@ -1,28 +1,34 @@
+import { Inline } from '../Inline'
 import type { Dive } from '../types'
-import { chapterSeconds, COVER, minutes, type Pos } from './nav'
+import { chapterSeconds, minutes, origin, quizTally, COVER, type Picks, type Pos } from './nav'
 import { ExternalLink, Links } from './Steps'
 
 const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
 const primary = 'rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
+const focus = (el: HTMLElement | null) => el?.focus() // React's autoFocus skips links
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const total = chapterSeconds(dive.chapters.flatMap((ch) => ch.steps))
   const { source } = dive
+  // "Pull request: sindresorhus/ky #842", or the question itself. Without a repo, origin() says "Pull request".
+  const where = source.kind === 'question' ? source.ref : origin(source)
   return (
     <main className="h-full overflow-y-auto">
       <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
         <p className="text-muted">
-          {KIND[source.kind]}:{' '}
+          {!where.startsWith(KIND[source.kind]) && `${KIND[source.kind]}: `}
           {source.url ? (
-            <ExternalLink href={source.url}>{source.ref}</ExternalLink>
+            <ExternalLink href={source.url}>{where}</ExternalLink>
           ) : (
-            <span className="text-fg">{source.ref}</span>
+            <span className="text-fg">{where}</span>
           )}
         </p>
         <h1 className="mt-4 text-4xl leading-[1.05] font-extrabold tracking-tight text-balance sm:text-[3.5rem]">
           {dive.title}
         </h1>
-        <p className="mt-6 max-w-[62ch] text-xl leading-relaxed">{dive.summary}</p>
+        <p className="mt-6 max-w-[62ch] text-xl leading-relaxed">
+          <Inline text={dive.summary} />
+        </p>
 
         <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
           <button type="button" autoFocus onClick={() => go({ c: 0, s: 0, f: 0 })} className={primary}>
@@ -63,23 +69,51 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   )
 }
 
-export function End({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
+// The last page: what to check in the code, how the quizzes went, then the hand-off to the source.
+export function End({ dive, picks, go }: { dive: Dive; picks: Picks; go: (p: Pos) => void }) {
   const { source } = dive
+  const c = dive.chapters.findIndex((ch) => ch.id === 'review-focus')
+  const tally = quizTally(dive, picks)
   return (
     <main className="h-full overflow-y-auto">
-      <div className="mx-auto max-w-xl px-6 py-24 text-center sm:py-32">
-        <span aria-hidden className="mx-auto grid size-16 place-items-center rounded-full bg-ok/15 text-ok">
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <h1 className="mt-6 text-4xl leading-tight font-bold tracking-tight text-balance">You finished the dive</h1>
+      <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
+        <h1 className="text-4xl leading-tight font-bold tracking-tight text-balance">You finished the dive</h1>
         <p className="mt-3 text-xl leading-relaxed text-muted">{dive.title}</p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-          <button type="button" autoFocus onClick={() => go(COVER)} className={primary}>
+        {tally && <p className="mt-6 text-lg">{tally}.</p>}
+
+        {c >= 0 && (
+          <section className="mt-12">
+            <h2 className="text-xl font-bold tracking-tight">What to check</h2>
+            <ol className="mt-4 border-t border-line">
+              {dive.chapters[c].steps.map((st, s) => (
+                <li key={s} className="border-b border-line">
+                  <button
+                    type="button"
+                    onClick={() => go({ c, s, f: 0 })}
+                    className="w-full py-4 text-left text-lg hover:underline"
+                  >
+                    {st.title}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3">
+          {source.url && (
+            <a ref={focus} href={source.url} target="_blank" rel="noreferrer" className={primary}>
+              Open the {KIND[source.kind].toLowerCase()} <span aria-hidden>↗</span>
+            </a>
+          )}
+          <button
+            type="button"
+            autoFocus={!source.url}
+            onClick={() => go(COVER)}
+            className={source.url ? '-mx-2 rounded px-2 py-1 font-medium text-muted hover:text-fg' : primary}
+          >
             Back to the start
           </button>
-          {source.url && <ExternalLink href={source.url}>Open the {KIND[source.kind].toLowerCase()}</ExternalLink>}
         </div>
         <p className="mt-6 text-sm text-muted">
           Press <kbd>←</kbd> to go back to the last step.

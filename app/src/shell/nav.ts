@@ -1,4 +1,4 @@
-import type { Dive, Step } from '../types.ts'
+import type { Dive, Source, Step } from '../types.ts'
 
 // Chapter, step, and focus inside the step. c = -1 is the cover, c = -2 the end screen.
 export interface Pos {
@@ -27,6 +27,36 @@ export function stepSize(step: Step): number {
 export function focusLabel(step: Step, f: number): string {
   const n = stepSize(step)
   return n > 1 ? `${'messages' in step ? 'message' : 'note'} ${f + 1} of ${n}` : ''
+}
+
+// "sindresorhus/ky #842" for a PR, the path for a module.
+export const origin = (s: Source) =>
+  s.kind === 'pr'
+    ? `${s.repo ?? 'Pull request'} #${(s.url ?? s.ref).match(/\d+/g)?.at(-1) ?? ''}`
+    : s.kind === 'module'
+      ? s.ref
+      : 'Question'
+
+// Quiz picks for this visit: "c/s" to the index of the picked option in step.options.
+export type Picks = Record<string, number>
+
+// "2 of 3 quiz answers right, 1 skipped"; '' when the dive has no quiz.
+export function quizTally(dive: Dive, picks: Picks): string {
+  let m = 0
+  let right = 0
+  let skipped = 0
+  dive.chapters.forEach((ch, c) =>
+    ch.steps.forEach((st, s) => {
+      if (st.kind !== 'quiz') return
+      const p = picks[`${c}/${s}`]
+      m++
+      if (p === undefined) skipped++
+      else if (st.options[p]?.correct) right++
+    }),
+  )
+  if (!m) return ''
+  if (skipped === m) return 'No quiz answered'
+  return `${right} of ${m} quiz answers right${skipped ? `, ${skipped} skipped` : ''}`
 }
 
 export const COVER: Pos = { c: -1, s: 0, f: 0 }

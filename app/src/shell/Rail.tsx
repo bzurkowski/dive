@@ -1,5 +1,5 @@
-import type { Dive, Source, Step } from '../types'
-import { chapterSeconds, flowAt, flows, minutes, COVER, type Pos } from './nav'
+import type { Dive, Step } from '../types'
+import { chapterSeconds, flowAt, flows, minutes, origin, COVER, type Pos } from './nav'
 
 // The dive's title and source, then chapters on a vertical "depth line" that fills in
 // as the reader goes deeper. The current chapter's flows are smaller stops on it.
@@ -66,14 +66,6 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
     </ol>
   )
 }
-
-// "sindresorhus/ky #842" for a PR, the path for a module.
-const origin = (s: Source) =>
-  s.kind === 'pr'
-    ? `${s.repo ?? 'Pull request'} #${(s.url ?? s.ref).match(/\d+/g)?.at(-1) ?? ''}`
-    : s.kind === 'module'
-      ? s.ref
-      : 'Question'
 
 const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
 

@@ -1,6 +1,6 @@
 import { deepStrictEqual as eq } from 'node:assert/strict'
 import type { Dive, Step } from '../types.ts'
-import { COVER, END, flatten, flows, move, parseHash, skipFlow, stepSeconds, toHash } from './nav.ts'
+import { COVER, END, flatten, flows, move, parseHash, quizTally, skipFlow, stepSeconds, toHash } from './nav.ts'
 
 const card = { kind: 'card', title: 't', body: 'b' } as const
 const dive = {
@@ -123,3 +123,19 @@ for (const [st, sec] of [
   [{ kind: 'quiz', title: '', question: '', options: [{ text: '', correct: true, why: '' }] }, 15],
 ] as [Step, number][])
   eq(stepSeconds(st), sec, `${st.kind} seconds`)
+
+// The end screen's quiz tally: picks are "c/s" to the picked option's index.
+const ask = {
+  kind: 'quiz',
+  title: 'q',
+  question: 'q',
+  options: [
+    { text: 'a', why: 'w', correct: true },
+    { text: 'b', why: 'w' },
+  ],
+}
+const quizzes = { ...dive, chapters: [{ id: 'recap', title: 'R', steps: [ask, card, ask, ask] }] } as Dive
+eq(quizTally(dive, {}), '', 'no quiz, no tally')
+eq(quizTally(quizzes, {}), 'No quiz answered', 'none answered')
+eq(quizTally(quizzes, { '0/0': 0, '0/2': 1 }), '1 of 3 quiz answers right, 1 skipped', 'a skip counts in the total')
+eq(quizTally(quizzes, { '0/0': 0, '0/2': 0, '0/3': 1 }), '2 of 3 quiz answers right', 'all answered')
