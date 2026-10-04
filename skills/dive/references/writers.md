@@ -104,7 +104,7 @@ The **main path** is the path that the change or the question is about. For a mo
 
 ## Review-focus writer
 
-You write `parts/review-focus.json`: the risks that a reviewer or a new owner should check. Read the code along the flows of the plan. In a PR, start from the diff, and look at what the change adds or touches. Read the READMEs and docs that use the terms of the plan. When the orchestrator names knowledge tools, search them for the terms of the plan too.
+You write `parts/review-focus.json`: the risks that a reviewer or a new owner should check. Read the code along the flows of the plan. In a PR, start from the diff, and look at what the change adds or touches. Read the READMEs and docs that use the terms of the plan.
 
 Look for suspected bugs, traps (behavior that surprises a caller), open questions that the code or the PR leaves, and docs that the code contradicts. Each risk is a way that production may go wrong. Give each risk one step, the most serious first: a code step on the lines that show it, or a card when the risk is not in one place. Say what may go wrong, when, and what it costs. Keep the certainty of the source.
 

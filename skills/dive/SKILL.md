@@ -39,7 +39,7 @@ Find the scope:
 
 Find the **level** of the reader, `new` or `familiar`. If the user said how well they know the area ("I am new to payments"), use their words. Otherwise run `python3 <skill>/scripts/dive.py level <dir>...` on the 1-3 directories of the main path, with `--rev <base>` in a PR. It prints the level and the reason.
 
-Note the connected knowledge tools, such as Notion, Confluence, Jira or Slack. The intro and review-focus writers can search them.
+Note the connected knowledge tools, such as Notion, Confluence, Jira or Slack. The intro writer can search them.
 
 ## 2. Plan
 
@@ -88,7 +88,7 @@ In one message, spawn all the writers as subagents on your own model: the intro,
 
 > Write your part of the dive in `docs/dives/<slug>/`, a walkthrough of <argument> (kind `<kind>`). Read `<skill>/references/writers.md` and do the job of the <intro | glossary | big-picture | flow writer for the flow `<id>`, number `<n>` | review-focus> writer. `<skill>` is `<the absolute path of <skill>>`.
 
-In a PR, add the URL, `<base>` and `<head>` to every prompt. For the intro and review-focus writers, add the names of the knowledge tools.
+In a PR, add the URL, `<base>` and `<head>` to every prompt. For the intro writer, add the names of the knowledge tools.
 
 Wait until every writer has returned. Check that `docs/dives/<slug>/parts/` has a `walkthrough.<n>.json` for each flow, and spawn the writer again for a part that is missing. If you cannot spawn subagents, do each job yourself, one after another.
 
