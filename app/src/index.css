@@ -75,8 +75,3 @@ dialog::backdrop {
 kbd {
   @apply rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.8em];
 }
-
-/* Highlighter stroke behind inline text. */
-.mark {
-  @apply rounded-sm bg-mark box-decoration-clone px-1 -mx-1;
-}

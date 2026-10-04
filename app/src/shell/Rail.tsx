@@ -71,6 +71,7 @@ const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => 
 
 // Steps flush under the chapter title. A flow's dot sits on the chapter's line and fills
 // once the reader has passed the flow; only the open flow lists its steps.
+// Semibold ink marks the current step; the highlighter stays in the content.
 function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
   const fl = flows(steps)
   const open = flowAt(fl, pos.s)
@@ -82,7 +83,7 @@ function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; g
         aria-current={s === pos.s ? 'step' : undefined}
         className={`w-full rounded text-left text-sm leading-snug ${s === pos.s ? 'font-semibold' : 'text-muted hover:text-fg'}`}
       >
-        <span className={s === pos.s ? 'mark' : ''}>{steps[s].title}</span>
+        {steps[s].title}
       </button>
     </li>
   )
@@ -107,10 +108,10 @@ function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; g
             onClick={() => go({ c, s: f.s, f: 0 })}
             aria-current={f.s === pos.s ? 'step' : undefined}
             className={`w-full rounded text-left text-sm leading-snug ${
-              f === open ? 'font-semibold' : 'font-medium text-muted hover:text-fg'
+              f.s === pos.s ? 'font-semibold' : f === open ? 'font-medium' : 'font-medium text-muted hover:text-fg'
             }`}
           >
-            <span className={f.s === pos.s ? 'mark' : ''}>{steps[f.s].title}</span>
+            {steps[f.s].title}
           </button>
           {f === open && (
             <ol className="mt-1.5 space-y-1">

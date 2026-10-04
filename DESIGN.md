@@ -196,7 +196,7 @@ The palette is graphite on paper. Color appears only where it carries a meaning.
 
 ### Primary
 - **Graphite Ink** (`fg`, also `accent`): the text, and the accent itself. Primary buttons, the focus outline, progress, the active note's band and the rail's filled stations are all ink. The accent is deliberately not a brand hue.
-- **Highlighter Yellow** (`mark`): the one color that means "read this now". It sits behind the current step in the rail, the active sequence message label and the active code rows. In the dark theme it becomes a deep olive under light ink.
+- **Highlighter Yellow** (`mark`): the one color that means "read this now". It marks content only, never navigation: the active sequence message label, the active code rows, and the gutter of active diff rows. In the dark theme it becomes a deep olive under light ink.
 
 ### Secondary
 - **Diff Green** (`add`, ink `ok`) and **Diff Red** (`del`, ink `bad`): added and removed lines, `+n −n` counts, and quiz verdicts (correct, your pick). Error messages in sequences use `bad` ink.
@@ -214,7 +214,7 @@ The palette is graphite on paper. Color appears only where it carries a meaning.
 Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and teal, at a 10% fill with a 60% stroke. They only tell groups apart and never mean state. Syntax highlighting uses the Shiki `github-light` and `github-dark` themes.
 
 ### Named Rules
-**The Highlighter Rule.** Yellow marks the current focus and nothing else. If two unrelated things on a screen are yellow, one of them is wrong.
+**The Highlighter Rule.** Yellow marks the content to read now, never navigation or chrome, which show where you are with weight and ink. If two unrelated things on a screen are yellow, one of them is wrong.
 
 **The Graphite Accent Rule.** The accent is ink. Emphasis comes from weight, a darker border or the highlighter, never from a new hue.
 
@@ -298,12 +298,12 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 - **Composer:** the Ask question box sits inside a hairline frame on `bg`, with the agent select on the left and Copy and Open on the right. The frame takes the focus ring when the textarea is focused.
 
 ### Navigation
-- **The depth line (rail):** the dive title links to the cover, with the source (`owner/repo #842`) linked under it. Chapters are stations on a vertical 2px line. Passed stations and segments are filled ink, the current station is an open ring with a soft ink halo, and future ones are hairline. Each chapter shows its reading time on the right. Only the current chapter expands, listing its steps and its flows as smaller stations on the same line. The current step is highlighter-marked, and edge cases follow under a dashed amber rule.
+- **The depth line (rail):** the dive title links to the cover, with the source (`owner/repo #842`) linked under it. Chapters are stations on a vertical 2px line. Passed stations and segments are filled ink, the current station is an open ring with a soft ink halo, and future ones are hairline. Each chapter shows its reading time on the right. Only the current chapter expands, listing its steps and its flows as smaller stations on the same line. The current step is semibold ink, and edge cases follow under a dashed amber rule.
 - **Header:** quiet buttons only, with the 2px progress hairline.
 - **Keyboard:** ← and → (also j and k, or Space) move. `g` opens the glossary and `a` opens Ask. Shortcuts are shown with `kbd` on the cover.
 
 ### Code view (signature)
-Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter (when they aren't diff rows) and a 4px ink band on the left. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with their line range. The footer counter says which note is active. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.
+Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter, ink line numbers and a 4px ink band on the left. Diff rows keep their tint, so on them the highlighter goes in the gutter, like a stroke in the margin. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with their line range. The footer counter says which note is active. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.
 
 ### Sequence diagram (signature)
 Actors are boxes on dashed lifelines, under optional uppercase group bands, and "Group by app" merges lanes. Messages appear one at a time. The active message draws its line (0.45s), gets a highlighter-backed Mono label, and drops a callout card under it with its note and "Show code →" or "Go to flow →". Calls are solid lines, returns dashed, async messages have open arrowheads, errors are in `bad`, and removed messages are struck through.
