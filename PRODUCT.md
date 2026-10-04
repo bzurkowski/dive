@@ -46,7 +46,7 @@ The walkthrough is built from traces of the real code, not a summary of it. Suba
 
 ## Evidence on Hand
 
-- `example/`: a real dive of sindresorhus/ky PR #842 ("Add NetworkError and tighten retry logic"), with its notes, outline, and built `index.html`.
+- `example/`: a real dive of sindresorhus/ky PR #842 ("Add NetworkError and tighten retry logic"), with its plan, `diff.json`, `dive.json`, and built `index.html`.
 - `docs/screenshots/`: big picture diagram, code walkthrough, and sequence screenshots used in the README.
 - `app/public/dive.json`: a fictional dev fixture (acme/shop PR #42). It is not evidence.
 - No users, testimonials, metrics, or adoption numbers. Don't invent any.
