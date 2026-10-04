@@ -110,7 +110,7 @@ components:
     textColor: "{colors.surface}"
     rounded: "{rounded.lg}"
     padding: "12px 24px"
-  button-ask:
+  button-next:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.bg}"
     rounded: "{rounded.lg}"
@@ -196,7 +196,7 @@ The palette is graphite on paper. Color appears only where it carries a meaning.
 
 ### Primary
 - **Graphite Ink** (`fg`, also `accent`): the text, and the accent itself. Primary buttons, the focus outline, progress, the active note's band and the rail's filled stations are all ink. The accent is deliberately not a brand hue.
-- **Highlighter Yellow** (`mark`): the one color that means "read this now". It sits behind the current step in the rail, the active sequence message label, the active code rows and the active note's counter. In the dark theme it becomes a deep olive under light ink.
+- **Highlighter Yellow** (`mark`): the one color that means "read this now". It sits behind the current step in the rail, the active sequence message label and the active code rows. In the dark theme it becomes a deep olive under light ink.
 
 ### Secondary
 - **Diff Green** (`add`, ink `ok`) and **Diff Red** (`del`, ink `bad`): added and removed lines, `+n −n` counts, and quiz verdicts (correct, your pick). Error messages in sequences use `bad` ink.
@@ -246,7 +246,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 
 ## Layout
 
-The app fills the viewport and never scrolls as a page. A 288px rail (`w-72`) sits on the left from 1024px up, and the reader can hide it. Below 1024px the same rail opens as a Chapters drawer (`min(22rem, 90%)`). A slim header holds the position ("Walkthrough, step 3 of 7"), Glossary and the theme toggle, with a 2px progress hairline along its bottom edge. The footer holds Previous, the focus counter ("1 of 8"), Skip to the next flow, Ask, and Next. The Next label names its destination ("Next chapter: Recap", "Next: edge cases (optional)").
+The app fills the viewport and never scrolls as a page. A 288px rail (`w-72`) sits on the left from 1024px up, and the reader can hide it. Below 1024px the same rail opens as a Chapters drawer (`min(22rem, 90%)`). A slim header holds the position ("Walkthrough, step 3 of 7"), Glossary and the theme toggle, with a 2px progress hairline along its bottom edge. The footer holds Previous, the focus counter ("Note 2 of 6" on code and diagram steps, "Message 5 of 15" on sequences), Skip to the next flow, Ask, and Next. The Next label names its destination ("Next chapter: Recap", "Next: edge cases (optional)").
 
 Steps use one of two layouts:
 - **Stage:** used for code, sequence and diagram steps. A crumb, the title and the narration sit at the top, and one bordered `surface` panel fills the rest of the height and scrolls on its own. Padding is 16px, rising to 24px from 640px.
@@ -254,7 +254,7 @@ Steps use one of two layouts:
 
 The cover is a max-w-3xl column with generous top space and a numbered chapter list ruled with hairlines. The end screen is a centered max-w-xl column. The glossary opens as a right drawer (`min(30rem, 100%)`).
 
-Spacing follows Tailwind's 4px scale. Chrome is snug: header and footer padding is 10px by 16px, and buttons are 8px by 16px. Reading areas get room: drawers have 24px of padding and page steps 48–64px vertically. Some secondary text hides below 640px, such as "your agent" in Ask, the Skip button and the footer counter.
+Spacing follows Tailwind's 4px scale. Chrome is snug: header and footer padding is 10px by 16px, and buttons are 8px by 16px. Reading areas get room: drawers have 24px of padding and page steps 48–64px vertically. Some secondary text hides below 640px, such as "your agent" in Ask, the Skip button and the footer counter. Next shortens to "Edge cases →" or a plain "Next" so the footer stays on one line, and its accessible name keeps the full destination.
 
 ## Elevation & Depth
 
@@ -276,9 +276,9 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 
 ### Buttons
 - **Shape:** gently rounded (8px).
-- **Default:** white sheet, hairline border and ink text at medium weight, with 8px × 16px padding. Used for Previous and Next. On hover the border darkens to ink.
+- **Default:** white sheet, hairline border and ink text at medium weight, with 8px × 16px padding. Used for Previous, and for Ask with the chosen agent's icon and "Ask your agent". On hover the border darkens to ink.
 - **Primary:** solid ink with white text and 12px × 24px padding at 1.125rem semibold. Used only for "Start the dive" and "Back to the start". On hover it drops to 90% opacity.
-- **Ask:** solid ink with paper-colored text, the chosen agent's icon and "Ask your agent", opacity 85% on hover. It is the one filled button in the footer.
+- **Next:** solid ink with paper-colored text and 8px × 16px padding, opacity 85% on hover. It is the one filled button in the footer, as the Open square is inside the Ask popover.
 - **Quiet:** text-only header actions (Chapters, Glossary, theme, Close) in Pencil Gray that turn ink on hover.
 - **Focus:** every control shows a 2px ink outline offset by 2px.
 
@@ -303,7 +303,7 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 - **Keyboard:** ← and → (also j and k, or Space) move. `g` opens the glossary and `a` opens Ask. Shortcuts are shown with `kbd` on the cover.
 
 ### Code view (signature)
-Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter (when they aren't diff rows) and a 4px ink band on the left. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with an `n/N` counter and the line range. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.
+Each file has a sticky header with its path in Mono (truncated from the left so the file name survives), its status, `+n −n`, and "Open on GitHub ↗" that deep-links the active lines. Rows use the diff tints for adds and deletes. The rows owned by the active note get the highlighter (when they aren't diff rows) and a 4px ink band on the left. Rows owned by other notes get a faint 3px band, and every row outside the active note drops to 55% opacity. Note cards sit right under the lines they explain, with their line range. The footer counter says which note is active. Collapsed runs show as "⋯ 14 unchanged lines" and expand on click.
 
 ### Sequence diagram (signature)
 Actors are boxes on dashed lifelines, under optional uppercase group bands, and "Group by app" merges lanes. Messages appear one at a time. The active message draws its line (0.45s), gets a highlighter-backed Mono label, and drops a callout card under it with its note and "Show code →" or "Go to flow →". Calls are solid lines, returns dashed, async messages have open arrowheads, errors are in `bad`, and removed messages are struck through.

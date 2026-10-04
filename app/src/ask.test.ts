@@ -31,9 +31,10 @@ const dive = {
 const url = 'file:///Users/me/my%20repo/docs/dives/pr-1-x/index.html'
 const code = askContext(dive, { c: 1, s: 1, f: 0 }, url)
 eq([code.cwd, code.dir, code.flow, code.refs], ['/Users/me/my repo', 'docs/dives/pr-1-x', 'flow', ['src/a.ts:3-5']])
-ok(code.step.startsWith('W › flow › C'), code.step)
+eq(code.step, 'W › flow › C (note 1 of 3)')
 const prompt = askPrompt(code, ' why? \n')
-for (const s of ['docs/dives/pr-1-x/notes/flow-flow.md', 'src/a.ts:3-5', 'h1']) ok(prompt.includes(s), s)
+for (const s of ['Trace of this flow: docs/dives/pr-1-x/notes/flow-flow.md', 'src/a.ts:3-5', 'h1'])
+  ok(prompt.includes(s), s)
 ok(prompt.endsWith(' why?'), 'ends with the trimmed question')
 eq(askContext(dive, { c: 1, s: 1, f: 1 }, url).refs, ['old src/a.ts:1-2'], 'old side')
 eq(askContext(dive, { c: 1, s: 0, f: 0 }, url).refs, ['src/a.ts:3-5', 'old src/a.ts:1-2'], 'message refs its code step')
@@ -41,6 +42,12 @@ eq(askContext(dive, { c: 1, s: 0, f: 0 }, url).refs, ['src/a.ts:3-5', 'old src/a
 const over = askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///C:/w/docs/dives/s/')
 eq([over.cwd, over.dir, over.flow], ['C:/w', 'docs/dives/s', 'flow'], 'windows, overview links a flow')
 eq(askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///tmp/x/page.html').dir, '/tmp/x', 'elsewhere: its folder')
+// A shared file (Downloads) has no notes folder beside it: no trace line, the commit lines stay.
+const shared = askPrompt(askContext(dive, { c: 1, s: 1, f: 0 }, 'file:///Users/me/Downloads/index.html'), 'q')
+ok(
+  !shared.includes('Trace of this flow') && shared.includes('git show h1:') && shared.includes('git diff b0 h1'),
+  shared,
+)
 
 const web = askContext(dive, { c: 1, s: 1, f: 0 }, 'http://localhost:5173/#/1/1/0')
 eq([web.cwd, web.dir], [undefined, undefined])

@@ -11,6 +11,7 @@ import {
   flatten,
   flowAt,
   flows,
+  focusLabel,
   move,
   parseHash,
   skipFlow,
@@ -171,9 +172,18 @@ export default function App({ dive }: { dive: Dive }) {
         ? 'the end'
         : dive.chapters[skip.c].title)
 
+  const toEdge = last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
+  const nextLabel =
+    next.c === END.c
+      ? 'Finish'
+      : toEdge
+        ? 'Next: edge cases (optional)'
+        : next.c !== pos.c
+          ? `Next chapter: ${dive.chapters[next.c].title}`
+          : 'Next'
+
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
-  const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 
   return frame(
     <div className="flex h-full">
@@ -266,8 +276,8 @@ export default function App({ dive }: { dive: Dive }) {
           >
             Previous
           </button>
-          <p className="min-w-0 grow truncate text-center text-sm text-muted max-sm:invisible">
-            {size > 1 && `${pos.f + 1} of ${size}`}
+          <p className="min-w-0 grow truncate text-center text-sm text-muted first-letter:uppercase max-sm:invisible">
+            {focusLabel(step, pos.f)}
           </p>
           {skip && (
             <button
@@ -280,14 +290,16 @@ export default function App({ dive }: { dive: Dive }) {
             </button>
           )}
           <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
-          <button type="button" className={btn} onClick={() => go(next)} aria-keyshortcuts="ArrowRight">
-            {next.c === END.c
-              ? 'Finish'
-              : last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
-                ? 'Next: edge cases (optional)'
-                : next.c !== pos.c
-                  ? `Next chapter: ${dive.chapters[next.c].title}`
-                  : 'Next'}
+          {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
+          <button
+            type="button"
+            className={fill}
+            onClick={() => go(next)}
+            aria-label={nextLabel}
+            aria-keyshortcuts="ArrowRight"
+          >
+            <span className="max-sm:hidden">{nextLabel}</span>
+            <span className="sm:hidden">{toEdge ? 'Edge cases →' : next.c === END.c ? 'Finish' : 'Next'}</span>
           </button>
         </footer>
       </div>
@@ -347,7 +359,6 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
     }
     setTimeout(() => setCopied(''), 1500)
   }
-  const fill = 'flex items-center justify-center gap-2 rounded-lg bg-accent font-medium text-bg hover:opacity-85'
   const square = 'grid size-8 shrink-0 place-items-center rounded-md'
   return (
     <>
@@ -356,7 +367,7 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
         popoverTarget="ask"
         title="Ask your agent about this step (A)"
         aria-keyshortcuts="a"
-        className={`${fill} shrink-0 px-4 py-2`}
+        className={`${btn} flex shrink-0 items-center gap-2`}
       >
         <Icon d={target.icon} />
         <span>
@@ -429,12 +440,18 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
             ? 'Copied the prompt.'
             : copied === 'fail'
               ? 'Could not copy: the browser blocked the clipboard.'
-              : 'The prompt is filled in, not sent: you continue in your agent.'}
+              : ctx.cwd
+                ? 'The prompt is filled in, not sent: you continue in your agent.'
+                : 'No agent here? Copy the prompt into any chat.'}
         </p>
       </div>
     </>
   )
 }
+
+// Footer buttons: a hairline outline, and solid ink for Next, the footer's one main action.
+const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
+const fill = 'rounded-lg border border-accent bg-accent px-4 py-2 font-medium text-bg hover:opacity-85'
 
 const COPY =
   'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z'

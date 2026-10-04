@@ -23,6 +23,12 @@ export function stepSize(step: Step): number {
   }
 }
 
+// Where the focus sits in its step, "note 2 of 6" or "message 5 of 15"; '' for a one-position step.
+export function focusLabel(step: Step, f: number): string {
+  const n = stepSize(step)
+  return n > 1 ? `${'messages' in step ? 'message' : 'note'} ${f + 1} of ${n}` : ''
+}
+
 export const COVER: Pos = { c: -1, s: 0, f: 0 }
 export const END: Pos = { c: -2, s: 0, f: 0 }
 

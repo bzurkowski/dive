@@ -229,15 +229,10 @@ function NoteCard({ notes, i, focus }: { notes: CodeNote[]; i: number; focus: nu
         active ? 'border-accent bg-surface text-fg' : 'border-line bg-bg text-muted'
       }`}
     >
-      <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-        <span className={`rounded-full px-2 font-medium ${active ? 'bg-mark text-fg' : 'bg-line'}`}>
-          {i + 1}/{notes.length}
-        </span>
-        <span>
-          {a === b ? `Line ${a}` : `Lines ${a}–${b}`}
-          {note.side === 'old' ? ' · removed code' : ''}
-        </span>
-      </div>
+      <p className="mb-1 text-xs text-muted">
+        {a === b ? `Line ${a}` : `Lines ${a}–${b}`}
+        {note.side === 'old' ? ' · removed code' : ''}
+      </p>
       <p className="text-[15px] leading-relaxed">
         <Inline text={note.text} />
       </p>

@@ -1,4 +1,4 @@
-import { flowAt, flows, stepSize, type Pos } from './shell/nav.ts'
+import { flowAt, flows, focusLabel, type Pos } from './shell/nav.ts'
 import type { CodeNote, Dive, SequenceStep } from './types.ts'
 
 // Ask your agent about the current step: the facts the page holds, the prompt wording, the deep links.
@@ -34,7 +34,7 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
   const ch = dive.chapters[pos.c]
   const step = ch.steps[pos.s]
   const fl = flowAt(flows(ch.steps), pos.s)
-  const n = stepSize(step)
+  const at = focusLabel(step, pos.f)
   const crumb = [ch.title, fl && pos.s > fl.s && ch.steps[fl.s].title, step.kind === 'edge' && 'Edge cases', step.title]
   const ctx: AskContext = {
     title: dive.title,
@@ -44,9 +44,7 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
     head: source.head,
     repo: source.repo,
     ...place(url),
-    step:
-      crumb.filter(Boolean).join(' › ') +
-      (n > 1 ? ` (${'messages' in step ? 'message' : 'note'} ${pos.f + 1} of ${n})` : ''),
+    step: crumb.filter(Boolean).join(' › ') + (at && ` (${at})`),
     refs: [],
     flow: fl && (ch.steps[fl.s] as SequenceStep).id,
   }
@@ -74,14 +72,16 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
 }
 
 export function askPrompt(ctx: AskContext, question: string): string {
-  const { title, ref, pr, base, head, dir, step, refs, note, flow } = ctx
-  const trace = dir ? `${dir}/notes/flow-${flow}.md` : `notes/flow-${flow}.md in the dive's folder`
+  const { title, ref, pr, base, head, dir, cwd, step, refs, note, flow } = ctx
   return [
     `I'm reading the dive "${title}"${dir ? ` (${dir}/index.html)` : ''}, a walkthrough of ${ref}.`,
     `Step: ${step}`,
     refs.length > 0 && `Code: ${refs.join(', ')}`,
     note && `Note: ${note}`,
-    flow && `Trace of this flow: ${trace}, other traces in the same folder. Read it first, then the code.`,
+    // The notes folder sits next to the dive in the repo; a shared copy of the file travels without it.
+    cwd &&
+      flow &&
+      `Trace of this flow: ${dir}/notes/flow-${flow}.md, other traces in the same folder. Read it first, then the code.`,
     head && `The code is at commit ${head}: read a file with \`git show ${head}:<path>\`.`,
     pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`; old lines are at ${base}.`,
     `\nMy question: ${question.trim()}`,
