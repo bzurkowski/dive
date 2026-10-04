@@ -208,7 +208,7 @@ The palette is graphite on paper. Color appears only where it carries a meaning.
 ### Neutral
 - **Cool Paper** (`bg`): the page behind everything. Also used for inactive note cards, inputs inside panels and actor boxes.
 - **White Sheet** (`surface`): the sheet that content sits on. The rail, header, footer, step stage, cards, popovers and buttons.
-- **Pencil Gray** (`muted`): secondary text such as crumbs, reading times, line numbers, captions and inactive rail items.
+- **Pencil Gray** (`muted`): secondary text such as reading times, line numbers, captions and inactive rail items.
 - **Hairline** (`line`): every border and divider, the sequence lifelines, and future rail stations. At 60% opacity it is also the fill of inline code.
 
 Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and teal, at a 10% fill with a 60% stroke. They only tell groups apart and never mean state. Syntax highlighting uses the Shiki `github-light` and `github-dark` themes.
@@ -235,7 +235,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 - **Narration** (400, 17px, 1.375): the `say` sentence under a visual step's title, capped at max-w-5xl.
 - **Body** (400, 1.125rem, 1.625): card text and quiz options. The cover summary is 1.25rem with a 62ch measure, with `backticks` as inline code. Glossary meanings are 1rem.
 - **Note** (400, 15px, 1.625): code note cards and diagram notes. The sequence callout uses 14px at 1.375.
-- **Label** (500, 0.875rem): header buttons, crumbs, the position counter and the rail's step list. The rail's chapter titles are 15px.
+- **Label** (500, 0.875rem): header buttons, the position counter and the rail's step list. The rail's chapter titles are 15px.
 - **Caption** (400, 0.75rem): note meta, reading times, file status, the `+n −n` diff counts (tabular numerals), `kbd`, the change badges on actors, diagram edge labels and the flow-link chips. No functional text goes smaller, except the group bands: they use 11px, weight 600, uppercase, with wide tracking.
 - **Code** (Mono, 13px, line height 24px): code rows. Inline code is 0.88em on a `line`/60 pill. Sequence message labels are Mono at 12.5px.
 
@@ -249,7 +249,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 The app fills the viewport and never scrolls as a page. A 288px rail (`w-72`) sits on the left from 1024px up, and the reader can hide it. Below 1024px the same rail opens as a Chapters drawer (`min(22rem, 90%)`). A slim header holds the position ("Walkthrough, step 3 of 7") at every width, Glossary and the theme toggle, with a 2px progress hairline along its bottom edge. The footer holds Previous, the focus counter ("Note 2 of 6" on code and diagram steps, "Message 5 of 15" on sequences), Skip to the next flow, Ask, and Next. The Next label names its destination ("Next chapter: Recap", "Next flow: Pass a custom fetch through", "Next: edge cases (optional)"), and a label too long for the footer truncates with its full text as a tooltip.
 
 Steps use one of two layouts:
-- **Stage:** used for code, sequence and diagram steps. A crumb, the title and the narration sit at the top, and one bordered `surface` panel fills the rest of the height and scrolls on its own. Padding is 16px, rising to 24px from 640px.
+- **Stage:** used for code, sequence and diagram steps. The title and the narration sit at the top, and one bordered `surface` panel fills the rest of the height and scrolls on its own. Padding is 16px, rising to 24px from 640px.
 - **Page:** used for card, terms and quiz steps. A centered reading column (max-w-2xl, terms max-w-4xl) with 48–64px of vertical padding.
 
 The cover is a max-w-3xl column with generous top space and a numbered chapter list ruled with hairlines. Above the title, the source line names the kind and links the rail's source ("Pull request: owner/repo #842"). The end screen is the printout's last page, in the same column: the quiz tally ("2 of 3 quiz answers right, 1 skipped"), the review-focus steps as a hairline-ruled "What to check" list that links to each step, then the hand-off. A dive with no review focus or no quiz leaves those parts out. The glossary opens as a right drawer (`min(30rem, 100%)`).

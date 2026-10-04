@@ -265,15 +265,6 @@ export default function App({ dive }: { dive: Dive }) {
             <StepView
               dive={dive}
               step={step}
-              crumb={
-                flow && (
-                  <p className="mb-1 truncate text-sm text-muted">
-                    {[chapter.title, pos.s > flow.s && chapter.steps[flow.s].title, edge && 'Edge cases']
-                      .filter(Boolean)
-                      .join(' › ')}
-                  </p>
-                )
-              }
               focus={pos.f}
               onFocus={(f) => go({ ...pos, f })}
               onJump={jump}
@@ -488,7 +479,6 @@ const Icon = ({ d, className = '' }: { d: string; className?: string }) => (
 function StepView({
   dive,
   step,
-  crumb,
   focus,
   onFocus,
   onJump,
@@ -499,7 +489,6 @@ function StepView({
 }: {
   dive: Dive
   step: Step
-  crumb: ReactNode
   focus: number
   onFocus: (f: number) => void
   onJump: (id: string) => void
@@ -511,7 +500,6 @@ function StepView({
   const visual = (say: string, view: ReactNode) => (
     <section className="flex h-full min-h-0 flex-col gap-3 px-4 pt-4 pb-3 sm:px-6">
       <div className="max-w-5xl">
-        {crumb}
         <h1 className="text-2xl leading-tight font-bold tracking-tight">{step.title}</h1>
         <p className="mt-1 text-[17px] leading-snug">
           <Inline text={say} />
@@ -522,10 +510,7 @@ function StepView({
   )
   const page = (view: ReactNode, wide = false) => (
     <section className="h-full overflow-y-auto motion-safe:scroll-smooth">
-      <div className={`mx-auto px-6 py-12 sm:py-16 ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>
-        {crumb}
-        {view}
-      </div>
+      <div className={`mx-auto px-6 py-12 sm:py-16 ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>{view}</div>
     </section>
   )
   switch (step.kind) {
