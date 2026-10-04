@@ -51,7 +51,7 @@ Read the scope only as deep as you need to name the flows:
 - **Module**: the files under the path and their entry points: routes, handlers, jobs, consumers, commands, exports.
 - **Question**: the files that your search found.
 
-Pick the flows that matter most. A trigger is a user action, a job, a webhook, a consumer, or a CI event. In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is the share of one writer, and the slowest writer sets the time of the whole dive. So each flow has one trigger. When one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
+Pick the flows that matter most. A trigger is an entry into the domain, where something from outside starts the logic: a user action, a job, a webhook, a consumer, or a CI event. Name it by who enters and what they do: "The customer asks for a refund". In a PR, pick the flows that run through changed code. A small PR or module has one flow. Each flow is the share of one writer, and the slowest writer sets the time of the whole dive. So each flow has one trigger. When one path is much longer than the others, split it where it stops anyway: at a queue, a job, or a wait for the user. Order the flows as the reader should meet them. The order numbers them from 1.
 
 Write `docs/dives/<slug>/plan.md`:
 
@@ -64,7 +64,7 @@ Write `docs/dives/<slug>/plan.md`:
 - Terms: <the domain words that every writer uses for the same things>
 
 ## Actors
-- <id: a short lowercase word> <label: the code name or the external system> (<group: the app or package that owns it, or outside>)
+- <id: a short lowercase word> <label: the code name, the name of the provider, or the role, such as Database> (<group: the app without its path, outside, or none for data and messaging>, <category: person, service, provider, data or messaging>)
 
 ## flow <id: lowercase words joined by dashes>: <title>
 Trigger: <the trigger> - <path>:<line>

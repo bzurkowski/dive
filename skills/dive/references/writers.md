@@ -69,7 +69,7 @@ Order the terms so that each meaning uses only the terms above it, or plain word
 
 You write `parts/big-picture.json`. Read the code that the flows start from, as deep as the concepts need: the entry points, the types, the data model. Then write, in this order:
 
-1. The overview: one `sequence` step, the map of the walkthrough. Its actors are the groups, such as the widget, the backend and the vendor. Each message links to the flow that zooms into it, by the id of the flow in the plan. Leave out the overview when the dive has one flow.
+1. The overview: one `sequence` step, the map of the walkthrough. Its first actors are the entries into the domain, one for each flow: who enters, such as the customer or Stripe. Then come the apps as `service` actors, by their group names, and the providers, data and messaging. Each message links to the flow that zooms into it, by the id of the flow in the plan. Leave out the overview when the dive has one flow.
 2. The concepts that the flows depend on, such as a state machine, the data model, or who calls whom. Each concept is one `diagram` step or one card. The notes of a diagram show its nodes one note at a time, so start with the entry nodes and add a few nodes with each note.
 3. One quiz.
 
@@ -88,10 +88,29 @@ The **main path** is the path that the change or the question is about. For a mo
 
 **The sequence.** Draw the path as it really runs, with as many actors and messages as the reader needs to follow it without the code.
 
-- An actor is a code unit, by its code name (`RefundStore`), or an external system (Postgres, a queue, a vendor API). Its group is the app or package that owns it, or `outside`. Keep the actors of one group next to each other. For the actors in the plan, use the ids, labels and groups of the plan.
 - A message is a call, a return, a queued message, or one pass of a loop. Each message starts from an actor that has control: the one that the last message reached, or a caller that waits for its call. A check inside one unit is a message from the actor to itself.
 - Link a message to the code step that shows its code. Several messages can link to one code step. Returns, errors and calls to external systems can have no link.
 - In a PR, mark the actors and messages that the PR adds, changes or removes with `change`. Keep the unchanged path around them, so that the reader sees where the change sits.
+
+**Actors.** Draw each unit on the logic path that the reader would look for in the code: the entry (a controller, a handler, a consumer, a job, or the UI component or hook that handles the action), the services that decide, the stores, and the clients of providers. A helper that maps, formats or wraps a library call belongs to its caller. When its result changes the path, show it as a message from the caller to itself. The category of an actor sets its label and its group:
+
+| Category | Label | Group |
+|---|---|---|
+| `person` | The role in the domain: "Customer" | `outside` |
+| `service` | The code name, as the code spells it | The app, by its name without the path |
+| `provider` | The name of the company: "Stripe" | `outside` |
+| `data` | "Database". One actor for each type of database: "Relational database", "Graph database" | None |
+| `messaging` | "Message bus". Draw it each time the flow publishes or consumes through it | None |
+
+A label that is not a code name starts with a capital letter. Keep the actors of one group next to each other. For the actors in the plan, use the ids, labels, groups and categories of the plan.
+
+| Before | After |
+|---|---|
+| `refunds/RefundService`, group `services/refund-worker` | `RefundService`, group `refund-worker` |
+| "Payment provider" | "Stripe" |
+| "Postgres" and "Orders DB", two relational databases | One "Database" |
+| A refund event that goes straight from `RefundService` to `LedgerConsumer` | `RefundService` → "Message bus" → `LedgerConsumer` |
+| `formatAmount` as an actor | A message from `RefundService` to itself, or nothing |
 
 **Code steps.** A code step shows one piece of logic. Its title names the logic, not a file: "A fetch failure becomes a NetworkError". Its notes follow the order of execution, and can cross files.
 
