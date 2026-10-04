@@ -17,7 +17,7 @@ const TINTS = [
 const PLAIN = { fill: 'fill-bg', stroke: 'stroke-muted/50' }
 
 const NODE_PX = 14
-const EDGE_PX = 11.5
+const EDGE_PX = 12
 const LINE_H = 18
 
 type Pt = { x: number; y: number }

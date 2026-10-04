@@ -166,7 +166,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                   </div>
                   {mark && (
                     <span
-                      className={`absolute -top-1.5 right-3 rounded px-1 text-[10px] leading-4 font-semibold ${mark.chip}`}
+                      className={`absolute -top-1.5 right-3 rounded px-1 text-xs leading-4 font-semibold ${mark.chip}`}
                     >
                       {mark.badge}
                     </span>

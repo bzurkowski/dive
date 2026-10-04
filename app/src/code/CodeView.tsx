@@ -130,7 +130,7 @@ function FileBody({
             <span className="rounded-full border border-line px-2 text-xs text-muted">{file.status}</span>
           )}
           {file.diff && (
-            <span className="font-mono text-xs">
+            <span className="text-xs tabular-nums">
               <span className="text-ok">+{parsed.adds}</span> <span className="text-bad">−{parsed.dels}</span>
             </span>
           )}

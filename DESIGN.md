@@ -236,11 +236,11 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 - **Body** (400, 1.125rem, 1.625): card text and quiz options. The cover summary is 1.25rem with a 62ch measure, with `backticks` as inline code. Glossary meanings are 1rem.
 - **Note** (400, 15px, 1.625): code note cards and diagram notes. The sequence callout uses 14px at 1.375.
 - **Label** (500, 0.875rem): header buttons, crumbs, the position counter and the rail's step list. The rail's chapter titles are 15px.
-- **Caption** (400, 0.75rem): note meta, reading times, file status and the flow-link chips. Group bands use 11px, weight 600, uppercase, with wide tracking.
+- **Caption** (400, 0.75rem): note meta, reading times, file status, the `+n −n` diff counts (tabular numerals), `kbd`, the change badges on actors, diagram edge labels and the flow-link chips. No functional text goes smaller, except the group bands: they use 11px, weight 600, uppercase, with wide tracking.
 - **Code** (Mono, 13px, line height 24px): code rows. Inline code is 0.88em on a `line`/60 pill. Sequence message labels are Mono at 12.5px.
 
 ### Named Rules
-**The Mono Means Code Rule.** Monospace is only for real code: identifiers, file paths, message labels and code rows. UI never borrows it for flavor.
+**The Mono Means Code Rule.** Monospace is only for real code: identifiers, file paths, message labels and code rows. UI never borrows it for flavor: `kbd` and the diff counts use the sans.
 
 **The Bundled Type Rule.** Both cuts ship inside the file. A dive renders the same offline, in an email attachment, with no network.
 

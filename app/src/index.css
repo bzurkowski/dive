@@ -73,5 +73,5 @@ dialog::backdrop {
 }
 
 kbd {
-  @apply rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.8em];
+  @apply rounded border border-line bg-surface px-1.5 py-0.5 font-sans text-xs;
 }
