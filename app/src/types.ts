@@ -85,10 +85,13 @@ export interface SequenceStep {
 
 export interface Actor {
   id: string
-  label: string // the code unit ("EnterEarnActionService") or the system ("Postgres")
-  group?: string // deployable app or "outside", drawn as a band that collapses into one lane
+  label: string // the code name ("RefundService"), the provider ("Stripe"), or the role ("Database", "Message bus")
+  category: Category // colors the head and the lifeline. Older dives without it draw as 'service'
+  group?: string // the app, without its path, or "outside" for people and providers. Data and messaging take none
   change?: Change // PR: a unit the change adds, changes or removes
 }
+
+export type Category = 'person' | 'service' | 'provider' | 'data' | 'messaging'
 
 export type Change = 'added' | 'changed' | 'removed'
 

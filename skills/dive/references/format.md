@@ -76,10 +76,13 @@ interface SequenceStep {
 
 interface Actor {
   id: string
-  label: string // the code unit ("EnterEarnActionService") or the system ("Postgres")
-  group?: string // deployable app or "outside", drawn as a band that collapses into one lane
+  label: string // the code name ("RefundService"), the provider ("Stripe"), or the role ("Database", "Message bus")
+  category: Category // colors the head and the lifeline. Older dives without it draw as 'service'
+  group?: string // the app, without its path, or "outside" for people and providers. Data and messaging take none
   change?: Change // PR: a unit the change adds, changes or removes
 }
+
+type Category = 'person' | 'service' | 'provider' | 'data' | 'messaging'
 
 type Change = 'added' | 'changed' | 'removed'
 
@@ -120,7 +123,7 @@ interface Link { title: string; url: string }
 
 `dive.py check` runs these checks on one part. It does not check the links from the overview to the flows, because the flows are in other parts.
 
-- A field the types mark without `?` that is missing or empty (`""`, `[]`), or a `kind`, `type`, `side` or `change` outside the listed values.
+- A field the types mark without `?` that is missing or empty (`""`, `[]`), or a `kind`, `type`, `side`, `change` or `category` outside the listed values.
 - `flow` and `edge` steps outside `walkthrough`, or a `sequence` inside it. A walkthrough part that does not start with its `flow` step. A non-`edge` step after an `edge` step.
 - A missing or repeated id. Ids are lowercase words joined by dashes (`send-refund`), unique in the whole dive. Every `flow` step and every code step in `walkthrough` needs one.
 - A message `step` that is not a code step of the same flow (in the overview: not a flow id). A code step that no message of its `flow` step links to. Code steps out of the order of their first linking message.
@@ -142,9 +145,9 @@ interface Link { title: string; url: string }
       "title": "Send one refund attempt",
       "say": "The worker takes each due refund, counts the attempt, and sends it to the gateway once.",
       "actors": [
-        { "id": "worker", "label": "runWorker", "group": "refund worker", "change": "changed" },
-        { "id": "retry", "label": "retryRefund", "group": "refund worker" },
-        { "id": "gateway", "label": "Payment gateway", "group": "outside" }
+        { "id": "worker", "label": "runWorker", "category": "service", "group": "refund worker", "change": "changed" },
+        { "id": "retry", "label": "retryRefund", "category": "service", "group": "refund worker" },
+        { "id": "gateway", "label": "Stripe", "category": "provider", "group": "outside" }
       ],
       "messages": [
         { "from": "worker", "to": "worker", "label": "incrementAttempts(id)", "note": "The count goes up before the call.", "step": "attempt-count", "change": "added" },

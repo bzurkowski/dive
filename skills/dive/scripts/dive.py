@@ -47,6 +47,7 @@ NEW_BELOW = 10  # ponytail: first guess, tune after real dives
 SEQUENCES = ('sequence', 'flow', 'edge')
 STEP_ID = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*$')
 CHANGES = ('added', 'changed', 'removed')
+CATEGORIES = ('person', 'service', 'provider', 'data', 'messaging')
 
 
 def git(*args, check=True):
@@ -253,6 +254,8 @@ def validate(dive, files, partial=False):
                 for j, a in enumerate(actors, 1):
                     if isinstance(a, dict) and 'group' in a and not isinstance(a['group'], str):
                         errs.append(f'{w} actor {j}: group must be a string')
+                    if isinstance(a, dict) and a.get('category') not in CATEGORIES:
+                        errs.append(f'{w} actor {j}: category must be one of {", ".join(CATEGORIES)}')
                     errs.extend(f'{w} actor {j}: {e}' for e in change_errs(a, pr))
                 reached = set()  # the first sender and every receiver so far
                 for j, m in enumerate(s.get('messages') or [], 1):

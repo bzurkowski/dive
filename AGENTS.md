@@ -45,7 +45,7 @@ Rebuild the template only at checkpoints and commit it. The template holds
 
 - `skills/dive/references/format.md`: the authored part, as TS, for writers.
 - The `dive.json` frame in `skills/dive/SKILL.md` step 2: `Dive` and `Source`, for the orchestrator.
-- `CHAPTERS`, `REQUIRED` and `CHANGES` in `skills/dive/scripts/dive.py`, which the build checks.
+- `CHAPTERS`, `REQUIRED`, `CHANGES` and `CATEGORIES` in `skills/dive/scripts/dive.py`, which the build checks.
 
 The checks of the build are listed for agents in format.md `## What the build rejects`. When a check in `dive.py` changes, change it there.
 

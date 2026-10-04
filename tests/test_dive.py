@@ -44,7 +44,7 @@ def run(work, *a):
 
 def flow(*links, fid='f'):
     """A flow step whose messages link to the given code step ids, in order."""
-    return {'kind': 'flow', 'id': fid, 'title': 'Pay', 'say': 'S', 'actors': [{'id': 'a', 'label': 'A'}],
+    return {'kind': 'flow', 'id': fid, 'title': 'Pay', 'say': 'S', 'actors': [{'id': 'a', 'label': 'A', 'category': 'service'}],
             'messages': [{'from': 'a', 'to': 'a', 'label': 'l', 'note': 'n', 'step': x} for x in links]}
 
 
@@ -183,6 +183,7 @@ class DiveTest(unittest.TestCase):
         (d / 'parts' / 'walkthrough.1.json').write_text(json.dumps({'id': 'walkthrough', 'title': 'W', 'steps': steps}))
         (d / 'parts' / 'walkthrough.2.json').write_text(json.dumps({'id': 'walkthrough', 'steps': [code('a2'), flow(fid='f')]}))
         over = {**flow(), 'kind': 'sequence', 'messages': [{'from': 'a', 'to': 'a', 'label': 'l', 'note': 'n', 'step': 'zz'}]}
+        over['actors'][0]['category'] = 'db'
         box = {'kind': 'diagram', 'title': 'D', 'say': 'S', 'nodes': [{'id': 'n', 'label': 'N'}, {'id': 'm', 'label': 'M'}],
                'edges': [], 'notes': [{'focus': ['n'], 'text': 't'}, {'text': 'no focus'}]}
         (d / 'parts' / 'big-picture.json').write_text(json.dumps({'id': 'big-picture', 'title': 'B', 'steps': [over, edge, box]}))
@@ -195,7 +196,8 @@ class DiveTest(unittest.TestCase):
                   "flow 'Pay': code steps must follow the order of their first linking message",
                   "walkthrough step 7 (quiz 'Q'): only edge steps may follow an edge step",
                   'id "f" is used twice',
-                  'message 1: step "zz" is not a flow id', "big-picture step 2 (edge 'Edge'): edge steps belong in walkthrough",
+                  'message 1: step "zz" is not a flow id',
+                  "big-picture step 1 (sequence 'Pay') actor 1: category must be one of person, service", "big-picture step 2 (edge 'Edge'): edge steps belong in walkthrough",
                   "big-picture step 3 (diagram 'D'): nodes ['m'] are in no note's focus",
                   "big-picture step 3 (diagram 'D') note 2: missing \"focus\""]:
             self.assertIn(e, r.stdout)

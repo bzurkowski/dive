@@ -417,48 +417,57 @@
             {
               "id": "app",
               "label": "App",
+              "category": "service",
               "group": "app"
             },
             {
               "id": "rhooks",
               "label": "beforeRetry hooks",
+              "category": "service",
               "group": "app"
             },
             {
               "id": "create",
               "label": "Ky.create",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "retry",
               "label": "Ky#retry",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "recover",
               "label": "Ky#retryFromError",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "decide",
               "label": "Ky#calculateRetryDelay",
+              "category": "service",
               "group": "ky",
               "change": "changed"
             },
             {
               "id": "kyfetch",
               "label": "Ky#fetch",
+              "category": "service",
               "group": "ky",
               "change": "changed"
             },
             {
               "id": "timeout",
               "label": "timeout",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "runtime",
               "label": "Runtime fetch",
+              "category": "provider",
               "group": "outside"
             }
           ],
@@ -793,32 +802,38 @@
             {
               "id": "app",
               "label": "App",
+              "category": "service",
               "group": "app"
             },
             {
               "id": "create",
               "label": "Ky.create",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "retry",
               "label": "Ky#retry",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "recover",
               "label": "Ky#retryFromError",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "decide",
               "label": "Ky#calculateRetryDelay",
+              "category": "service",
               "group": "ky",
               "change": "changed"
             },
             {
               "id": "kyfetch",
               "label": "Ky#fetch",
+              "category": "service",
               "group": "ky",
               "change": "changed"
             }
@@ -878,26 +893,31 @@
             {
               "id": "app",
               "label": "App",
+              "category": "service",
               "group": "app"
             },
             {
               "id": "ehooks",
               "label": "beforeError hooks",
+              "category": "service",
               "group": "app"
             },
             {
               "id": "create",
               "label": "Ky.create",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "recover",
               "label": "Ky#retryFromError",
+              "category": "service",
               "group": "ky"
             },
             {
               "id": "decide",
               "label": "Ky#calculateRetryDelay",
+              "category": "service",
               "group": "ky",
               "change": "changed"
             }

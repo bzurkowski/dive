@@ -103,15 +103,19 @@
      "actors": [
       {
        "id": "app",
-       "label": "Refund worker"
+       "label": "Refund worker",
+       "category": "service"
       },
       {
        "id": "pg",
-       "label": "Postgres"
+       "label": "Database",
+       "category": "data"
       },
       {
        "id": "gateway",
-       "label": "Payment gateway"
+       "label": "Stripe",
+       "category": "provider",
+       "group": "outside"
       }
      ],
      "messages": [
@@ -269,27 +273,31 @@
       {
        "id": "worker",
        "label": "runWorker",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "retry",
        "label": "retryRefund",
+       "category": "service",
        "group": "refund worker",
        "change": "changed"
       },
       {
        "id": "store",
        "label": "RefundStore",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "pg",
-       "label": "Postgres",
-       "group": "database"
+       "label": "Database",
+       "category": "data"
       },
       {
        "id": "gateway",
-       "label": "Payment gateway",
+       "label": "Stripe",
+       "category": "provider",
        "group": "outside"
       }
      ],
@@ -469,22 +477,26 @@
       {
        "id": "worker",
        "label": "runWorker",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "retry",
        "label": "retryRefund",
+       "category": "service",
        "group": "refund worker",
        "change": "changed"
       },
       {
        "id": "store",
        "label": "RefundStore",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "gateway",
-       "label": "Payment gateway",
+       "label": "Stripe",
+       "category": "provider",
        "group": "outside"
       }
      ],
@@ -547,17 +559,20 @@
       {
        "id": "retry",
        "label": "retryRefund",
+       "category": "service",
        "group": "refund worker",
        "change": "changed"
       },
       {
        "id": "store",
        "label": "RefundStore",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "gateway",
-       "label": "Payment gateway",
+       "label": "Stripe",
+       "category": "provider",
        "group": "outside"
       }
      ],
@@ -678,17 +693,20 @@
       {
        "id": "retry",
        "label": "retryRefund",
+       "category": "service",
        "group": "refund worker",
        "change": "changed"
       },
       {
        "id": "store",
        "label": "RefundStore",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "gateway",
-       "label": "Payment gateway",
+       "label": "Stripe",
+       "category": "provider",
        "group": "outside"
       }
      ],
@@ -723,17 +741,20 @@
       {
        "id": "worker",
        "label": "runWorker",
+       "category": "service",
        "group": "refund worker"
       },
       {
        "id": "retry",
        "label": "retryRefund",
+       "category": "service",
        "group": "refund worker",
        "change": "changed"
       },
       {
        "id": "store",
        "label": "RefundStore",
+       "category": "service",
        "group": "refund worker"
       }
      ],
