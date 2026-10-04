@@ -11,7 +11,7 @@ const LOOP = 36 // self-message loop width
 const DROP = 22 // self-message loop height
 const TOP = 12
 const BOTTOM = 170 // room for the callout under the last message
-const MIN_COL = 96 // narrowest lane: past it the lanes group, then scroll
+const MIN_COL = 120
 const NOTE_W = 300
 const LABEL_PX = 12.5
 const LINK = ' ↗' // after the label of a message that links to a step
@@ -23,14 +23,12 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 
-// Group by app is one choice for every sequence in the dive. Until the reader
-// makes it, a sequence groups when its lanes don't fit. Storage can be blocked;
-// the choice then holds for this visit only.
+// Group by app is one choice for every sequence in the dive. Storage can be
+// blocked; the choice then holds for this visit only.
 const KEY = 'dive-grouped'
-let groupedPref: boolean | undefined
+let groupedPref = false
 try {
-  const v = localStorage.getItem(KEY)
-  if (v) groupedPref = v === '1'
+  groupedPref = localStorage.getItem(KEY) === '1'
 } catch {}
 
 // Messages up to `focus` are shown; later ones are faint ghosts.
@@ -43,7 +41,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   // Offer grouping only where it merges lanes.
   const merged = lanes(step.actors, true)
   const canGroup = merged.lanes.length < step.actors.length
-  const grouped = canGroup && (pref ?? step.actors.length * MIN_COL > w)
+  const grouped = canGroup && pref
   const view = grouped ? merged : lanes(step.actors, false)
   const runs = grouped ? [] : bands(view.lanes)
   const n = view.lanes.length
@@ -56,9 +54,11 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     setPref(groupedPref)
   }
 
-  // Columns share the stage down to MIN_COL; a longer lane name truncates. Each row
-  // has one label, so labels may run past lifelines without colliding.
-  const cw = Math.max(MIN_COL, w / n)
+  // Columns fill the stage and fit lane names; a wider diagram scrolls. Each row has
+  // one label, so labels may run past lifelines without colliding.
+  let cw = Math.max(MIN_COL, w / n)
+  // 42: lane px-2, box px-3 and its border.
+  for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 42)
   const width = cw * n
   // Lanes past the stage's edges get a hint that scrolls to them.
   const [cutL, cutR] = cut(n, cw, scrollX, w)
