@@ -200,7 +200,7 @@ const RowView = memo(function RowView(p: {
     <div
       data-note={p.note >= 0 ? p.note : undefined}
       data-anchor={p.anchor || undefined}
-      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
+      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr] max-sm:grid-cols-[2.75rem_2.75rem_0.75rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${bg} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
     >
       {/* The first gutter cell repaints the row's band, which its own background would hide. */}
       {p.diff && <span className={`${num} ${gut && band}`}>{row.old ?? ''}</span>}

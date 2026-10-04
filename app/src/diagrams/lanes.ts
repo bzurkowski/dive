@@ -22,6 +22,15 @@ export function lanes(actors: Actor[], grouped: boolean) {
   return { lanes: list, of }
 }
 
+// Lanes cut off at the [left, right] edges of a `view` px wide canvas scrolled to `x`.
+export function cut(n: number, cw: number, x: number, view: number): [number, number] {
+  const max = n * cw - view
+  if (max <= 1) return [0, 0]
+  x = Math.min(Math.max(x, 0), max)
+  // 0.01 of a lane absorbs sub-pixel scroll positions.
+  return [Math.max(0, Math.ceil(x / cw - 0.01)), n - Math.floor((x + view) / cw + 0.01)]
+}
+
 // Runs of neighbouring lanes that share a group: the bands above the actor heads.
 export function bands(list: Lane[]) {
   const out: { group: string; start: number; n: number }[] = []

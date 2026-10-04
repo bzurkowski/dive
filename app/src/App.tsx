@@ -222,12 +222,14 @@ export default function App({ dive }: { dive: Dive }) {
           <button
             type="button"
             onClick={() => go(COVER)}
-            className={`min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg ${railOpen ? 'lg:hidden' : ''}`}
+            className={`min-w-0 truncate rounded text-left text-sm text-muted hover:text-fg max-sm:hidden ${railOpen ? 'lg:hidden' : ''}`}
           >
             {dive.title}
           </button>
-          <p className="hidden min-w-0 truncate text-sm text-muted lg:block">
-            {chapter.title}, step {pos.s + 1} of {chapter.steps.length}
+          {/* Below 640px the position drops the chapter name and the dive title; the drawer has both. */}
+          <p className="min-w-0 truncate text-sm text-muted">
+            <span className="max-sm:hidden">{chapter.title}, step</span>
+            <span className="sm:hidden">Step</span> {pos.s + 1} of {chapter.steps.length}
           </p>
           <button
             type="button"
@@ -504,7 +506,7 @@ function StepView({
     </section>
   )
   const page = (view: ReactNode, wide = false) => (
-    <section className="h-full overflow-y-auto">
+    <section className="h-full overflow-y-auto motion-safe:scroll-smooth">
       <div className={`mx-auto px-6 py-12 sm:py-16 ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>
         {crumb}
         {view}

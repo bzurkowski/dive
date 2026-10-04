@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Change, SequenceStep, StepViewProps } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
-import { bands, lanes } from './lanes'
+import { bands, cut, lanes } from './lanes'
 import { textWidth, useSize } from './util'
 
 const ROW = 56 // height of a message row
@@ -11,7 +11,7 @@ const LOOP = 36 // self-message loop width
 const DROP = 22 // self-message loop height
 const TOP = 12
 const BOTTOM = 170 // room for the callout under the last message
-const MIN_COL = 120
+const MIN_COL = 96 // narrowest lane: past it the lanes group, then scroll
 const NOTE_W = 300
 const LABEL_PX = 12.5
 const LINK = ' ↗' // after the label of a message that links to a step
@@ -28,12 +28,14 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 
-// Group by app is one choice for every sequence in the dive. Storage can be
-// blocked; the choice then holds for this visit only.
+// Group by app is one choice for every sequence in the dive. Until the reader
+// makes it, a sequence groups when its lanes don't fit. Storage can be blocked;
+// the choice then holds for this visit only.
 const KEY = 'dive-grouped'
-let groupedPref = false
+let groupedPref: boolean | undefined
 try {
-  groupedPref = localStorage.getItem(KEY) === '1'
+  const v = localStorage.getItem(KEY)
+  if (v) groupedPref = v === '1'
 } catch {}
 
 // Messages up to `focus` are shown; later ones are faint ghosts.
@@ -42,10 +44,11 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const [ref, { w }] = useSize<HTMLDivElement>()
   const anchor = useRef<HTMLDivElement>(null)
   const [pref, setPref] = useState(groupedPref)
+  const [scrollX, setScrollX] = useState(0)
   // Offer grouping only where it merges lanes.
   const merged = lanes(step.actors, true)
   const canGroup = merged.lanes.length < step.actors.length
-  const grouped = canGroup && pref
+  const grouped = canGroup && (pref ?? step.actors.length * MIN_COL > w)
   const view = grouped ? merged : lanes(step.actors, false)
   const runs = grouped ? [] : bands(view.lanes)
   const n = view.lanes.length
@@ -58,12 +61,26 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     setPref(groupedPref)
   }
 
-  // Columns fill the stage and fit lane names. Each row has one label,
-  // so labels may run past lifelines without colliding.
-  let cw = Math.max(MIN_COL, w / n)
-  // 42: lane px-2, box px-3 and its border.
-  for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 42)
+  // Columns share the stage down to MIN_COL; a longer lane name truncates. Each row
+  // has one label, so labels may run past lifelines without colliding.
+  const cw = Math.max(MIN_COL, w / n)
   const width = cw * n
+  // Lanes past the stage's edges get a hint that scrolls to them.
+  const [cutL, cutR] = cut(n, cw, scrollX, w)
+  const hint = (k: number, dir: -1 | 1) => {
+    if (!k) return null
+    const count = `${k} ${k === 1 ? 'lane' : 'lanes'}`
+    return (
+      <button
+        type="button"
+        onClick={() => ref.current?.scrollBy({ left: dir * Math.max(cw, w - cw) })}
+        aria-label={`Show ${count} on the ${dir < 0 ? 'left' : 'right'}`}
+        className={`rounded px-1 py-0.5 text-xs text-muted hover:text-fg ${dir < 0 ? 'sticky left-2' : ''}`}
+      >
+        {dir < 0 ? `← ${count}` : `${count} →`}
+      </button>
+    )
+  }
   const x = (id: string) => (view.of.get(id)! + 0.5) * cw
 
   // y is the message line, ey the arrow tip.
@@ -88,24 +105,35 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const jump = active.m.step && onJump ? active.m.step : undefined
   const tw = (s: string) => textWidth(s, LABEL_PX, 600, true)
 
+  // Wait for the stage's width: grouping, and so the rows, depend on it.
   useEffect(() => {
-    anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [focus, step, grouped])
+    if (w) anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [focus, step, grouped, w])
 
   return (
-    <div ref={ref} className="h-full w-full overflow-auto bg-surface motion-safe:scroll-smooth">
+    <div
+      ref={ref}
+      onScroll={(e) => setScrollX(e.currentTarget.scrollLeft)}
+      className="h-full w-full overflow-auto bg-surface motion-safe:scroll-smooth"
+    >
       <div style={{ width }}>
         <div className="sticky top-0 z-10 bg-surface/90 pb-1 backdrop-blur">
-          {canGroup ? (
-            <div className="flex justify-end px-2 pt-2 pb-1.5">
-              <button
-                type="button"
-                aria-pressed={grouped}
-                onClick={toggle}
-                className="sticky right-2 rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg"
-              >
-                Group by app
-              </button>
+          {canGroup || cutL || cutR ? (
+            <div className="flex items-center px-2 pt-2 pb-1.5">
+              {hint(cutL, -1)}
+              <div className="sticky right-2 ml-auto flex items-center gap-2">
+                {hint(cutR, 1)}
+                {canGroup && (
+                  <button
+                    type="button"
+                    aria-pressed={grouped}
+                    onClick={toggle}
+                    className="rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg"
+                  >
+                    Group by app
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="h-4" />

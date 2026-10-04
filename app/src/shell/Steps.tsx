@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Inline } from '../Inline'
 import type { CardStep, Link, QuizStep, Term, TermsStep } from '../types'
 
@@ -129,6 +129,12 @@ function order(step: QuizStep): number[] {
 // The pick is an index into step.options and lives in App, so it survives a revisit.
 export function QuizView({ step, picked, onPick }: { step: QuizStep; picked?: number; onPick: (k: number) => void }) {
   const done = picked !== undefined
+  // A fresh pick brings the verdict under the options into view; a revisit doesn't scroll.
+  const verdict = useRef<HTMLParagraphElement>(null)
+  const restored = useRef(done)
+  useEffect(() => {
+    if (done && !restored.current) verdict.current?.scrollIntoView({ block: 'nearest' })
+  }, [done])
   return (
     <article>
       <h1 className={heading}>
@@ -174,7 +180,7 @@ export function QuizView({ step, picked, onPick }: { step: QuizStep; picked?: nu
           )
         })}
       </ul>
-      <p aria-live="polite" className="mt-5 text-lg font-semibold">
+      <p ref={verdict} aria-live="polite" className="mt-5 text-lg font-semibold">
         {done &&
           (step.options[picked].correct ? (
             <span className="text-ok">Right.</span>

@@ -1,5 +1,5 @@
 import { deepStrictEqual as eq } from 'node:assert/strict'
-import { bands, lanes } from './lanes.ts'
+import { bands, cut, lanes } from './lanes.ts'
 
 const actors = [
   { id: 'worker', label: 'runWorker', group: 'app' },
@@ -59,3 +59,9 @@ eq(
   ['app/undefined', 'Y/undefined', 'app/app'],
   'empty group is no group; a group named like an actor keeps its own lane',
 )
+
+// 9 lanes of 100px in a 356px view: lanes 0-2 fit at the start, 6 hide on the right.
+eq(cut(9, 100, 0, 356), [0, 6], 'start: lanes cut on the right')
+eq(cut(9, 100, 150, 356), [2, 4], 'middle: a half-shown lane counts as cut')
+eq(cut(9, 100, 9999, 356), [6, 0], 'scrolled past the end clamps to the end')
+eq(cut(3, 356 / 3, 0, 356), [0, 0], 'lanes that fit cut nothing')
