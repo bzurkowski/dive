@@ -57,7 +57,23 @@ You write `parts/intro.json`: why the code exists.
 
 Find the why. In a PR: the description, the reviews and their comments, the commit messages, and the linked issues. Outside a PR: the recent history of the files in the plan, and the READMEs and docs that use the terms of the plan. When the orchestrator names knowledge tools, search them for the PR title, the ticket ids and the terms of the plan, and read the few most relevant pages.
 
-Write a short run of cards, one topic each. Each card follows from the one before it. For a PR: the problem, the constraint, the decision, then what the decision means for the code. For a module: what the code is for, who uses it, and what starts it (a route, a job, a flag, an import). For a question: the answer, then what the answer rests on. Give each card that uses a source its `links`. The build shows all the links on the cover.
+The intro is the first chapter that the reader opens, before they meet any code. Tell it as a story in plain words and the terms of the plan: the motivation, the decisions, and their effect. The walkthrough introduces the services, functions and files, so leave them to it. Name a piece of code only when the story turns on it, such as a new endpoint.
+
+Write a short run of cards, one topic each. Each card follows from the one before it. For a PR: the problem, the constraint, the decision, then its effect on the users and the system. For a module: what the code is for, who uses it, and what starts it (a route, a job, a flag, an import). For a question: the answer, then what the answer rests on. Give each card that uses a source its `links`. The build shows all the links on the cover.
+
+Write the body of a card as a few bullets. Each bullet carries the story on from the one before it, with words such as "so", "but" and "then".
+
+Before, facts in code names that the reader has not met yet:
+
+- `runWorker` now calls `nextDelay` after a failure.
+- `MAX_ATTEMPTS` is 5.
+
+After, a story:
+
+- A failed refund was sent again every minute, with no end.
+- So an outage of the gateway turned into a flood of retries.
+- Now each retry waits twice as long as the one before.
+- After 5 attempts, the worker stops and marks the refund failed.
 
 ## Glossary writer
 
@@ -89,6 +105,7 @@ The **main path** is the path that the change or the question is about. For a mo
 **The sequence.** Draw the path as it really runs, with as many actors and messages as the reader needs to follow it without the code.
 
 - A message is a call, a return, a queued message, or one pass of a loop. Each message starts from an actor that has control: the one that the last message reached, or a caller that waits for its call. A check inside one unit is a message from the actor to itself.
+- In the flow and its edge steps, draw a return for each call that gives back a result: the response of a provider, the value of a service, or an error. Draw it from the callee back to its caller, one level at a time, so that the reader sees where control goes.
 - Link a message to the code step that shows its code. Several messages can link to one code step. Returns, errors and calls to external systems can have no link.
 - In a PR, mark the actors and messages that the PR adds, changes or removes with `change`. Keep the unchanged path around them, so that the reader sees where the change sits.
 
