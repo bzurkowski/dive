@@ -57,7 +57,7 @@ Write `docs/dives/<slug>/plan.md`:
 
 ```md
 # <title>
-<summary, 1-2 sentences>
+<summary: 1-2 short sentences, two clauses as two sentences, with no semicolon>
 
 - Story: <the dive in one sentence>
 - Level: <new or familiar> - <the reason>
@@ -77,7 +77,7 @@ Path: <the files it runs through, in order>
 Write the frame of `docs/dives/<slug>/dive.json`. Leave out `url` outside a PR. The build fills in the chapters from the part files, the git fields, and the links.
 
 ```json
-{ "title": "<title>", "summary": "<summary>",
+{ "title": "<title>", "summary": "<the summary of the plan>",
   "source": { "kind": "<pr, module or question>", "ref": "<the argument as given>", "url": "<the PR URL>" },
   "chapters": [] }
 ```
