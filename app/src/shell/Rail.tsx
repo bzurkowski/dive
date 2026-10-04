@@ -17,7 +17,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
         </button>
         <p className="mt-2 truncate text-sm text-muted">
           {dive.source.url ? (
-            <a href={dive.source.url} target="_blank" rel="noreferrer" className="hover:text-accent hover:underline">
+            <a href={dive.source.url} target="_blank" rel="noreferrer" className="hover:text-fg hover:underline">
               {origin(dive.source)}
             </a>
           ) : (
@@ -50,9 +50,11 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
               type="button"
               onClick={() => go({ c, s: 0, f: 0 })}
               aria-current={current || undefined}
-              className="flex w-full items-baseline justify-between gap-3 rounded text-left"
+              className="group flex w-full items-baseline justify-between gap-3 rounded text-left"
             >
-              <span className={`text-[15px] ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}>
+              <span
+                className={`text-[15px] group-hover:underline ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}
+              >
                 {ch.title}
               </span>
               <span className="min-w-9 shrink-0 text-right text-xs text-muted">

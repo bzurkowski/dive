@@ -46,10 +46,10 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
               <button
                 type="button"
                 onClick={() => go({ c, s: 0, f: 0 })}
-                className="flex w-full items-baseline gap-4 py-4 text-left hover:text-accent"
+                className="group flex w-full items-baseline gap-4 py-4 text-left"
               >
                 <span className="w-6 shrink-0 text-lg text-muted tabular-nums">{c + 1}</span>
-                <span className="grow text-lg">{ch.title}</span>
+                <span className="grow text-lg group-hover:underline">{ch.title}</span>
                 <span className="shrink-0 text-sm text-muted">
                   {ch.steps.length} {ch.steps.length === 1 ? 'step' : 'steps'}, {minutes(chapterSeconds(ch.steps))}
                 </span>

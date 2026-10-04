@@ -150,7 +150,7 @@ function FileBody({
                 key={`g${it.start}`}
                 type="button"
                 onClick={() => setOpen((s) => new Set(s).add(it.start))}
-                className="my-1 block w-full bg-bg py-1 text-center font-sans text-xs text-muted hover:text-accent"
+                className="my-1 block w-full bg-bg py-1 text-center font-sans text-xs text-muted hover:text-fg"
               >
                 <span aria-hidden>⋯</span> {it.end - it.start} unchanged lines
               </button>

@@ -19,12 +19,7 @@ const LINK = ' ↗' // after the label of a message that links to a step
 // Chips are opaque: they sit on the actor box border.
 const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: string }> = {
   added: { tone: 'text-ok', sign: '+ ', badge: 'new', chip: 'bg-add text-ok' },
-  changed: {
-    tone: 'text-blue-700 dark:text-blue-300',
-    sign: '~ ',
-    badge: 'changed',
-    chip: 'bg-chg text-blue-700 dark:text-blue-300',
-  },
+  changed: { tone: 'text-chg-ink', sign: '~ ', badge: 'changed', chip: 'bg-chg text-chg-ink' },
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 

@@ -186,6 +186,7 @@ export default function App({ dive }: { dive: Dive }) {
         : dive.chapters[skip.c].title)
 
   const toEdge = last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
+  const toFlow = last && flow && next.c === pos.c && chapter.steps[next.s].kind === 'flow'
   const nextLabel =
     next.c === END.c
       ? 'Finish'
@@ -193,7 +194,9 @@ export default function App({ dive }: { dive: Dive }) {
         ? 'Next: edge cases (optional)'
         : next.c !== pos.c
           ? `Next chapter: ${dive.chapters[next.c].title}`
-          : 'Next'
+          : toFlow
+            ? `Next flow: ${chapter.steps[next.s].title}`
+            : 'Next'
 
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
@@ -216,11 +219,7 @@ export default function App({ dive }: { dive: Dive }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="relative flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
-          <button
-            type="button"
-            onClick={() => chapters.current?.showModal()}
-            className="rounded px-2 py-1 text-sm font-medium lg:hidden"
-          >
+          <button type="button" onClick={() => chapters.current?.showModal()} className={`${quiet} lg:hidden`}>
             Chapters
           </button>
           <button
@@ -249,19 +248,14 @@ export default function App({ dive }: { dive: Dive }) {
             <span className="max-sm:hidden">{chapter.title}, step</span>
             <span className="sm:hidden">Step</span> {pos.s + 1} of {chapter.steps.length}
           </p>
-          <button
-            type="button"
-            onClick={toggleGlossary}
-            aria-keyshortcuts="g"
-            className="ml-auto shrink-0 rounded px-2 py-1 text-sm font-medium hover:text-accent"
-          >
+          <button type="button" onClick={toggleGlossary} aria-keyshortcuts="g" className={`${quiet} ml-auto shrink-0`}>
             Glossary
           </button>
           <ThemeButton />
           <div className="absolute inset-x-0 -bottom-px h-0.5 bg-line" aria-hidden>
             <div
-              className="h-full bg-accent motion-safe:transition-[width]"
-              style={{ width: `${((flatIndex(flat, pos) + 1) / flat.length) * 100}%` }}
+              className="h-full origin-left bg-accent motion-safe:transition-transform"
+              style={{ transform: `scaleX(${(flatIndex(flat, pos) + 1) / flat.length})` }}
             />
           </div>
         </header>
@@ -317,9 +311,10 @@ export default function App({ dive }: { dive: Dive }) {
           {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
           <button
             type="button"
-            className={fill}
+            className={`${fill} min-w-0 truncate`}
             onClick={() => go(next)}
             aria-label={nextLabel}
+            title={nextLabel}
             aria-keyshortcuts="ArrowRight"
           >
             <span className="max-sm:hidden">{nextLabel}</span>
@@ -353,7 +348,7 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
         <div className="mb-6 flex items-center justify-between">
           {head}
           <form method="dialog">
-            <button className="rounded px-2 py-1 text-muted hover:text-fg">Close</button>
+            <button className={quiet}>Close</button>
           </form>
         </div>
         {children}
@@ -474,8 +469,10 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
 }
 
 // Footer buttons: a hairline outline, and solid ink for Next, the footer's one main action.
+// Header and drawer actions are quiet: muted text that turns ink on hover.
 const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 const fill = 'rounded-lg border border-accent bg-accent px-4 py-2 font-medium text-bg hover:opacity-85'
+const quiet = 'rounded px-2 py-1 text-sm font-medium text-muted hover:text-fg'
 
 const COPY =
   'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z'

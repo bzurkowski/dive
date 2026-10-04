@@ -16,6 +16,7 @@
   --color-add: #e3f4e6;
   --color-del: #fbe8e8;
   --color-chg: #e0ecff;
+  --color-chg-ink: oklch(48.8% 0.243 264.376);
   --color-mark: #ffee8a;
   --color-ok: #1b7a45;
   --color-bad: #c0271d;
@@ -40,6 +41,7 @@
   --color-add: #13271a;
   --color-del: #341a1b;
   --color-chg: #1d2c44;
+  --color-chg-ink: oklch(80.9% 0.105 251.813);
   --color-mark: #423a06;
   --color-ok: #5ccb8c;
   --color-bad: #f28b82;

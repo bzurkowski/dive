@@ -246,7 +246,7 @@ Diagram groups use categorical tints of sky, fuchsia, emerald, violet, rose and 
 
 ## Layout
 
-The app fills the viewport and never scrolls as a page. A 288px rail (`w-72`) sits on the left from 1024px up, and the reader can hide it. Below 1024px the same rail opens as a Chapters drawer (`min(22rem, 90%)`). A slim header holds the position ("Walkthrough, step 3 of 7") at every width, Glossary and the theme toggle, with a 2px progress hairline along its bottom edge. The footer holds Previous, the focus counter ("Note 2 of 6" on code and diagram steps, "Message 5 of 15" on sequences), Skip to the next flow, Ask, and Next. The Next label names its destination ("Next chapter: Recap", "Next: edge cases (optional)").
+The app fills the viewport and never scrolls as a page. A 288px rail (`w-72`) sits on the left from 1024px up, and the reader can hide it. Below 1024px the same rail opens as a Chapters drawer (`min(22rem, 90%)`). A slim header holds the position ("Walkthrough, step 3 of 7") at every width, Glossary and the theme toggle, with a 2px progress hairline along its bottom edge. The footer holds Previous, the focus counter ("Note 2 of 6" on code and diagram steps, "Message 5 of 15" on sequences), Skip to the next flow, Ask, and Next. The Next label names its destination ("Next chapter: Recap", "Next flow: Pass a custom fetch through", "Next: edge cases (optional)"), and a label too long for the footer truncates with its full text as a tooltip.
 
 Steps use one of two layouts:
 - **Stage:** used for code, sequence and diagram steps. A crumb, the title and the narration sit at the top, and one bordered `surface` panel fills the rest of the height and scrolls on its own. Padding is 16px, rising to 24px from 640px.
@@ -280,6 +280,7 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 - **Primary:** solid ink with white text and 12px × 24px padding at 1.125rem semibold. Used only for "Start the dive" and the end screen's "Open the pull request ↗", or "Back to the start" when the dive has no URL. On hover it drops to 90% opacity.
 - **Next:** solid ink with paper-colored text and 8px × 16px padding, opacity 85% on hover. It is the one filled button in the footer, as the Open square is inside the Ask popover.
 - **Quiet:** Pencil Gray text that turns ink on hover. Used for the header actions (Chapters, Glossary, theme, Close) and for "Back to the start" beside the end screen's primary.
+- **Rows:** ink text that acts as a link, like the cover's chapters, the end screen's What to check and the rail's chapters, underlines on hover. Muted rail steps turn ink instead.
 - **Focus:** every control shows a 2px ink outline offset by 2px.
 
 ### Chips
