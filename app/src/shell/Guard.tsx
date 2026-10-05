@@ -1,10 +1,8 @@
 import { Component, type ReactNode } from 'react'
-import { Notice } from './Steps'
 
 type Props = { at: number; children: ReactNode }
 type State = { error?: Error }
 
-// Bad step data shows a notice instead of blanking the whole dive.
 export class Guard extends Component<Props, State> {
   state: State = {}
   static getDerivedStateFromError(error: Error) {
@@ -17,15 +15,14 @@ export class Guard extends Component<Props, State> {
     if (prevState.error && prev.at !== this.props.at) this.setState({ error: undefined })
   }
   render() {
-    // The plain sentence is for the reader; the error itself is for the dive's author.
     return this.state.error ? (
-      <Notice>
+      <div role="status" className="m-4 rounded-md border border-line bg-surface px-4 py-3 text-sm">
         This step could not be shown. Its data may not match what this version of Dive expects.
         <details className="mt-2 text-xs text-muted">
           <summary className="cursor-pointer">Technical details</summary>
           <p className="mt-1">{String(this.state.error)}</p>
         </details>
-      </Notice>
+      </div>
     ) : (
       this.props.children
     )

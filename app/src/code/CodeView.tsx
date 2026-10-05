@@ -1,6 +1,8 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { Inline } from '../Inline'
-import type { CodeNote, CodeStep, FileData, StepViewProps } from '../types'
+import { ExternalLink } from '../shell/Steps'
+import type { StepViewProps } from '../shell/nav'
+import type { CodeNote, CodeStep, FileData } from '../types'
 import { highlightFile, type Tokens } from './highlight'
 import { layout, noteSpan, parse, type Row } from './rows'
 
@@ -135,9 +137,9 @@ function FileBody({
             </span>
           )}
           {link && (
-            <a className="text-accent hover:underline" href={link} target="_blank" rel="noreferrer">
+            <ExternalLink className="text-accent hover:underline" href={link}>
               Open on GitHub <span aria-hidden>↗</span>
-            </a>
+            </ExternalLink>
           )}
         </span>
       </header>

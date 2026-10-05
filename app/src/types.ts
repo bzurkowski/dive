@@ -145,10 +145,3 @@ export interface FileData {
   status?: 'added' | 'modified' | 'deleted' | 'renamed'
   oldPath?: string // for renames
 }
-
-export interface StepViewProps<S extends Step> {
-  step: S
-  focus: number // active position, 0-based, < stepSize(step)
-  onFocus: (i: number) => void // user clicked a note or message
-  onJump?: (id: string) => void // open the step with this id (Message.step)
-}

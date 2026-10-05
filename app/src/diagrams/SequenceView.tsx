@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Category, Change, SequenceStep, StepViewProps } from '../types'
+import type { StepViewProps } from '../shell/nav'
+import type { Category, Change, SequenceStep } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
 import { actorLabel, bands, cut, lanes } from './lanes'

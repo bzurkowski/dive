@@ -1,6 +1,7 @@
 import dagre from '@dagrejs/dagre'
 import { useMemo } from 'react'
-import type { DiagramStep, StepViewProps } from '../types'
+import type { StepViewProps } from '../shell/nav'
+import type { DiagramStep } from '../types'
 import { Inline } from '../Inline'
 import './diagrams.css'
 import { textWidth, useSize } from './util'

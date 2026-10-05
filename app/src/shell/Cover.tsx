@@ -1,17 +1,15 @@
 import { Inline } from '../Inline'
 import type { Dive } from '../types'
-import { chapterSeconds, minutes, origin, quizTally, COVER, type Picks, type Pos } from './nav'
+import { minutes, origin, quizTally, COVER, KIND, type Picks, type Pos } from './nav'
 import { ExternalLink, Links } from './Steps'
 
-const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
 // The border keeps primary and secondary the same height side by side.
 const primary =
   'rounded-lg border border-accent bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
 const secondary = 'rounded-lg border border-line bg-surface px-6 py-3 text-lg font-medium hover:border-accent'
-const focus = (el: HTMLElement | null) => el?.focus() // React's autoFocus skips links
+const focus = (el: HTMLElement | null) => el?.focus() // autoFocus in React skips links
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
-  const total = chapterSeconds(dive.chapters.flatMap((ch) => ch.steps))
   const { source } = dive
   const where = source.kind === 'question' ? source.ref : origin(source)
   const deep = dive.chapters.findIndex((ch) => ch.id === 'walkthrough')
@@ -47,7 +45,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
               Jump to the code
             </button>
           )}
-          <span className="text-muted">About {minutes(total)} to read</span>
+          <span className="text-muted">About {minutes(dive.chapters.flatMap((ch) => ch.steps))} to read</span>
         </div>
         <p className="mt-4 text-sm text-muted">
           Move with <kbd>←</kbd> <kbd>→</kbd>. Press <kbd>g</kbd> for the glossary. Skip to any chapter below.
@@ -64,7 +62,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
                 <span className="w-6 shrink-0 text-lg text-muted tabular-nums">{c + 1}</span>
                 <span className="grow text-lg group-hover:underline">{ch.title}</span>
                 <span className="shrink-0 text-sm text-muted">
-                  {ch.steps.length} {ch.steps.length === 1 ? 'step' : 'steps'}, {minutes(chapterSeconds(ch.steps))}
+                  {ch.steps.length} {ch.steps.length === 1 ? 'step' : 'steps'}, {minutes(ch.steps)}
                 </span>
               </button>
             </li>
@@ -82,7 +80,6 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   )
 }
 
-// The last page: what to check in the code, how the quizzes went, then the hand-off to the source.
 export function End({ dive, picks, go }: { dive: Dive; picks: Picks; go: (p: Pos) => void }) {
   const { source } = dive
   const c = dive.chapters.findIndex((ch) => ch.id === 'review-focus')
@@ -115,9 +112,9 @@ export function End({ dive, picks, go }: { dive: Dive; picks: Picks; go: (p: Pos
 
         <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3">
           {source.url && (
-            <a ref={focus} href={source.url} target="_blank" rel="noreferrer" className={primary}>
+            <ExternalLink ref={focus} href={source.url} className={primary}>
               Open the {KIND[source.kind].toLowerCase()} <span aria-hidden>↗</span>
-            </a>
+            </ExternalLink>
           )}
           <button
             type="button"

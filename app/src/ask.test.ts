@@ -54,7 +54,7 @@ eq(
   '/tmp/x/page.html',
   'elsewhere: the file itself',
 )
-// A shared file (Downloads) has no notes folder beside it: no trace line, the commit lines stay.
+// A shared copy has no plan beside it: no plan line, the commit lines stay.
 const shared = askPrompt(askContext(dive, { c: 1, s: 1, f: 0 }, 'file:///Users/me/Downloads/index.html'), 'q')
 ok(
   !shared.includes('Plan of this flow') && shared.includes('git show h1:') && shared.includes('git diff b0 h1'),

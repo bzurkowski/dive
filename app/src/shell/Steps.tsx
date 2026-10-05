@@ -1,16 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useRef, type ComponentProps } from 'react'
+import { flushSync } from 'react-dom'
 import { Inline } from '../Inline'
 import type { CardStep, Link, QuizStep, Term, TermsStep } from '../types'
 
-export function Notice({ children }: { children: ReactNode }) {
-  return (
-    <div role="status" className="m-4 rounded-md border border-line bg-surface px-4 py-3 text-sm">
-      {children}
-    </div>
-  )
-}
-
-// Paragraphs split on blank lines. "- " lines become bullets.
 function Rich({ text }: { text: string }) {
   const blocks: { ul: boolean; lines: string[] }[] = []
   let block: (typeof blocks)[number] | undefined
@@ -42,12 +34,11 @@ function Rich({ text }: { text: string }) {
   )
 }
 
-export function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-      {children}
-    </a>
-  )
+export function ExternalLink({
+  className = 'text-accent underline underline-offset-4',
+  ...props
+}: ComponentProps<'a'>) {
+  return <a target="_blank" rel="noreferrer" className={className} {...props} />
 }
 
 export function Links({ links }: { links: Link[] }) {
@@ -122,7 +113,7 @@ function shuffle<T>(xs: T[]): T[] {
   return a
 }
 
-// Shuffled once per quiz and kept, so a revisit shows the same order. Holds indexes into step.options.
+// Shuffled once per quiz, so a revisit shows the same order.
 const orders = new WeakMap<QuizStep, number[]>()
 function order(step: QuizStep): number[] {
   let o = orders.get(step)
@@ -130,15 +121,13 @@ function order(step: QuizStep): number[] {
   return o
 }
 
-// The pick is an index into step.options and lives in App, so it survives a revisit.
 export function QuizView({ step, picked, onPick }: { step: QuizStep; picked?: number; onPick: (k: number) => void }) {
   const done = picked !== undefined
-  // A fresh pick brings the verdict under the options into view; a revisit doesn't scroll.
   const verdict = useRef<HTMLParagraphElement>(null)
-  const restored = useRef(done)
-  useEffect(() => {
-    if (done && !restored.current) verdict.current?.scrollIntoView({ block: 'nearest' })
-  }, [done])
+  const pick = (k: number) => {
+    flushSync(() => onPick(k))
+    verdict.current?.scrollIntoView({ block: 'nearest' })
+  }
   return (
     <article>
       <h1 className={heading}>
@@ -161,7 +150,7 @@ export function QuizView({ step, picked, onPick }: { step: QuizStep; picked?: nu
                 type="button"
                 aria-disabled={done}
                 aria-pressed={k === picked}
-                onClick={() => !done && onPick(k)}
+                onClick={() => !done && pick(k)}
                 className={`w-full rounded-lg border-2 bg-surface px-4 py-3 text-left text-lg leading-snug ${tone} ${done ? 'cursor-default' : ''}`}
               >
                 <span className="flex items-start gap-3">

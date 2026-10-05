@@ -1,28 +1,22 @@
 import { actorLabel } from './diagrams/lanes.ts'
 import { flowAt, flows, focusLabel, type Pos } from './shell/nav.ts'
-import type { CodeNote, Dive, SequenceStep, Step } from './types.ts'
+import type { CodeNote, Dive, SequenceStep, Source, Step } from './types.ts'
 
-// Ask your agent about the current step: the facts the page holds, the prompt wording, the deep links.
-
-export interface AskContext {
-  title: string // dive title
-  ref: string // source.ref
-  pr: boolean
-  base?: string
-  head?: string
-  repo?: string // "owner/name"
-  page?: string // the open file: "docs/dives/<slug>/index.html" relative to cwd, else absolute
-  cwd?: string // absolute repo root, only for a file:// page under <root>/docs/dives/<slug>/
-  step: string // "Walkthrough › Retry › Send the request (note 2 of 4)"
+interface AskContext {
+  title: string
+  source: Source
+  page?: string // "docs/dives/<slug>/index.html" relative to cwd, else absolute
+  cwd?: string
+  step: string
   refs: string[] // "path:12-30", or "old path:12-30" for a note on deleted lines
   note?: string
-  flow?: string // flow id: its plan is `## flow <id>` of <dir>/plan.md
+  flow?: string
 }
 
 const noteRef = (n: CodeNote, files: Dive['files']) =>
   `${n.side === 'old' ? `old ${files?.[n.file]?.oldPath ?? n.file}` : n.file}:${n.lines[0]}-${n.lines[1]}`
 
-// Only a file:// page knows where it is: under <root>/docs/dives/<slug>/ that gives the repo root too.
+// Only a file:// page knows where it is. Under <root>/docs/dives/<slug>/ that gives the repo root too.
 function place(url: string): Pick<AskContext, 'page' | 'cwd'> {
   const u = new URL(url)
   if (u.protocol !== 'file:') return {}
@@ -32,7 +26,6 @@ function place(url: string): Pick<AskContext, 'page' | 'cwd'> {
 }
 
 export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
-  const { source } = dive
   const ch = dive.chapters[pos.c]
   const step = ch.steps[pos.s]
   const fl = flowAt(flows(ch.steps), pos.s)
@@ -40,11 +33,7 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
   const crumb = [ch.title, fl && pos.s > fl.s && ch.steps[fl.s].title, step.kind === 'edge' && 'Edge cases', step.title]
   const ctx: AskContext = {
     title: dive.title,
-    ref: source.ref,
-    pr: source.kind === 'pr',
-    base: source.base,
-    head: source.head,
-    repo: source.repo,
+    source: dive.source,
     ...place(url),
     step: crumb.filter(Boolean).join(' › ') + (at && ` (${at})`),
     refs: [],
@@ -75,37 +64,38 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
   return ctx
 }
 
-// What the live region reads for the focus: "note 2 of 6, src/a.ts:3-5: text" or "message 5 of 15, A → B: label. note".
 export function focusText(step: Step, f: number, { refs, note }: AskContext): string {
   const head = [focusLabel(step, f), step.kind === 'code' && refs[0]].filter(Boolean).join(', ')
   return [head, note].filter(Boolean).join(': ')
 }
 
 export function askPrompt(ctx: AskContext, question: string): string {
-  const { title, ref, pr, base, head, page, cwd, step, refs, note, flow } = ctx
+  const { title, source, page, cwd, step, refs, note, flow } = ctx
+  const { kind, ref, base, head } = source
   return [
     `I am reading the dive "${title}"${page ? ` (${page})` : ''}, a walkthrough of ${ref}.`,
     `Step: ${step}`,
     refs.length > 0 && `Code: ${refs.join(', ')}`,
     note && `Note: ${note}`,
-    // The plan sits next to the dive in the repo; a shared copy of the file travels without it.
+    // The plan sits next to the dive in the repo. A shared copy of the page travels without it.
     cwd &&
       flow &&
       `Plan of this flow: \`## flow ${flow}\` in ${page?.replace(/index\.html$/, 'plan.md')}. Read it first, then the code.`,
     head && `The code is at commit ${head}: read a file with \`git show ${head}:<path>\`.`,
-    pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`. Old lines are at ${base}.`,
+    kind === 'pr' && base && head && `The change is \`git diff ${base} ${head} -- <path>\`. Old lines are at ${base}.`,
     `\nMy question: ${question.trim()}`,
   ]
     .filter(Boolean)
     .join('\n')
 }
 
-// The agents in the Ask menu. icon: a 24×24 path from simple-icons.
+// icon: a 24×24 path from simple-icons.
 // ponytail: claude-cli caps q at 5000 chars and nothing here trims to it. Shorten refs and notes if prompts outgrow it.
 export function askTargets(ctx: AskContext, prompt: string): { label: string; href: string; icon: string }[] {
   const enc = encodeURIComponent
   const q = enc(prompt)
-  const { cwd, repo } = ctx
+  const { cwd } = ctx
+  const { repo } = ctx.source
   return [
     {
       label: 'Claude Code',

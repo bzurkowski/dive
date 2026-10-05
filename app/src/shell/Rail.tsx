@@ -1,5 +1,6 @@
 import type { Dive, Step } from '../types'
-import { chapterSeconds, flowAt, flows, minutes, origin, COVER, type Pos } from './nav'
+import { flowAt, flows, minutes, origin, COVER, type Pos } from './nav'
+import { ExternalLink } from './Steps'
 
 // The title and source of the dive, then chapters on a vertical "depth line" that fills in
 // as the reader goes deeper. The flows of the current chapter are smaller stops on it.
@@ -17,9 +18,9 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
         </button>
         <p className="mt-2 truncate text-sm text-muted">
           {dive.source.url ? (
-            <a href={dive.source.url} target="_blank" rel="noreferrer" className="hover:text-fg hover:underline">
+            <ExternalLink href={dive.source.url} className="hover:text-fg hover:underline">
               {origin(dive.source)}
-            </a>
+            </ExternalLink>
           ) : (
             origin(dive.source)
           )}
@@ -58,9 +59,7 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
                 >
                   {ch.title}
                 </span>
-                <span className="min-w-9 shrink-0 text-right text-xs text-muted">
-                  {minutes(chapterSeconds(ch.steps))}
-                </span>
+                <span className="min-w-9 shrink-0 text-right text-xs text-muted">{minutes(ch.steps)}</span>
               </button>
               {current && <StepList steps={ch.steps} c={c} pos={pos} go={go} />}
             </li>

@@ -1,17 +1,16 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
-import { askContext, askPrompt, askTargets, focusText } from './ask'
+import { askContext, focusText } from './ask'
 import { Inline } from './Inline'
 import { CodeView, type CodeLink } from './code/CodeView'
 import { DiagramView } from './diagrams/DiagramView'
 import { actorLabel } from './diagrams/lanes'
 import { SequenceView } from './diagrams/SequenceView'
+import { Ask } from './shell/Ask'
 import { Cover, End } from './shell/Cover'
 import { Guard } from './shell/Guard'
 import {
   flatIndex,
   flatten,
-  flowAt,
-  flows,
   focusLabel,
   move,
   parseHash,
@@ -22,6 +21,7 @@ import {
   END,
   type Picks,
   type Pos,
+  type StepViewProps,
 } from './shell/nav'
 import { Rail } from './shell/Rail'
 import { searchTerms } from './shell/search'
@@ -33,37 +33,34 @@ export default function App({ dive }: { dive: Dive }) {
   const flat = useMemo(() => flatten(dive), [dive])
   const terms = useMemo(() => {
     const seen = new Map<string, Term>()
-    for (const ch of dive.chapters)
-      for (const st of ch.steps) if (st.kind === 'terms') for (const t of st.terms) seen.set(t.term, t)
+    for (const { step } of flat) if (step.kind === 'terms') for (const t of step.terms) seen.set(t.term, t)
     return [...seen.values()]
-  }, [dive])
+  }, [flat])
   const backLinks = useMemo(() => {
     const m = new Map<string, (CodeLink & { pos: Pos })[]>()
-    dive.chapters.forEach((ch, c) =>
-      ch.steps.forEach((st, s) => {
-        if (st.kind !== 'flow') return
-        const actor = (id: string) => actorLabel(st.actors, id)
-        st.messages.forEach((msg, f) => {
-          if (!msg.step) return
-          const link = { from: actor(msg.from), to: actor(msg.to), label: msg.label, pos: { c, s, f } }
-          m.set(msg.step, [...(m.get(msg.step) ?? []), link])
-        })
-      }),
-    )
+    for (const { c, s, step } of flat) {
+      if (step.kind !== 'flow') continue
+      const actor = (id: string) => actorLabel(step.actors, id)
+      step.messages.forEach((msg, f) => {
+        if (!msg.step) return
+        const link = { from: actor(msg.from), to: actor(msg.to), label: msg.label, pos: { c, s, f } }
+        m.set(msg.step, [...(m.get(msg.step) ?? []), link])
+      })
+    }
     return m
-  }, [dive])
+  }, [flat])
   const [pos, setPos] = useState(() => parseHash(dive, location.hash))
   const glossary = useRef<HTMLDialogElement>(null)
   const search = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const chapters = useRef<HTMLDialogElement>(null)
   const [railOpen, setRailOpen] = useState(true)
-  const [agent, setAgent] = useState('Claude Code')
-  const [picks, setPicks] = useState<Picks>({}) // for this visit only, like the agent
+  const [agent, setAgent] = useState('')
+  const [picks, setPicks] = useState<Picks>({})
 
   useEffect(() => {
     document.title = dive.title
-    // Back and forward fire popstate too, but every entry has its own hash.
+    // Back and forward also fire hashchange, since every history entry has its own hash.
     const sync = () => setPos(parseHash(dive, location.hash))
     addEventListener('hashchange', sync)
     return () => removeEventListener('hashchange', sync)
@@ -77,11 +74,8 @@ export default function App({ dive }: { dive: Dive }) {
   }
 
   const jump = (id: string) => {
-    const t = flat.find(({ c, s }) => {
-      const st = dive.chapters[c].steps[s]
-      return 'id' in st && st.id === id
-    })
-    if (t) go({ ...t, f: 0 })
+    const t = flat.find(({ step }) => 'id' in step && step.id === id)
+    if (t) go({ c: t.c, s: t.s, f: 0 })
   }
 
   const toggleGlossary = () => {
@@ -100,23 +94,20 @@ export default function App({ dive }: { dive: Dive }) {
       return toggleGlossary()
     }
     if (open || (e.key === ' ' && t.closest('button, a, summary'))) return
-    // On a page step, Space scrolls the page while it has more that way, then moves.
-    const kind = dive.chapters[pos.c]?.steps[pos.s]?.kind
-    const page = e.key === ' ' && ['card', 'terms', 'quiz'].includes(kind)
-    const box = page && document.getElementById('step')?.firstElementChild
-    if (box && (e.shiftKey ? box.scrollTop : box.scrollHeight - box.clientHeight - box.scrollTop) > 1) {
+    const page = e.key === ' ' && document.getElementById('page')
+    if (page && (e.shiftKey ? page.scrollTop : page.scrollHeight - page.clientHeight - page.scrollTop) > 1) {
       e.preventDefault()
-      return box.scrollBy({ top: (e.shiftKey ? -0.9 : 0.9) * box.clientHeight })
+      return page.scrollBy({ top: (e.shiftKey ? -0.9 : 0.9) * page.clientHeight })
     }
     if (e.key === 'a') {
-      e.preventDefault() // else the a lands in the question box that opening focuses
+      e.preventDefault()
       return document.getElementById('ask')?.togglePopover()
     }
     const fwd = ['ArrowRight', 'j'].includes(e.key) || (e.key === ' ' && !e.shiftKey)
     const back = ['ArrowLeft', 'k'].includes(e.key) || (e.key === ' ' && e.shiftKey)
     if (!fwd && !back) return
     e.preventDefault()
-    go(move(dive, flat, pos, fwd ? 1 : -1))
+    go(move(dive, pos, fwd ? 1 : -1))
   })
   useEffect(() => {
     addEventListener('keydown', onKey)
@@ -126,9 +117,7 @@ export default function App({ dive }: { dive: Dive }) {
   const chapter = dive.chapters[pos.c]
   const step = chapter?.steps[pos.s]
   const found = searchTerms(terms, query)
-  // One tree on every screen, so the live region and the glossary outlive the cover and end screens:
-  // a live region only announces changes, not its own mount. Only changed text is read, so a step
-  // change reads the step title and the focused note or message, and a focus change only the latter.
+  // One tree on every screen: a live region announces changes, not its own mount.
   const frame = (screen: ReactNode) => (
     <>
       <div className="sr-only" aria-live="polite">
@@ -138,9 +127,8 @@ export default function App({ dive }: { dive: Dive }) {
       {screen}
       <Drawer
         ref={glossary}
-        aria-label="Glossary"
+        label="Glossary"
         onClose={() => setQuery('')}
-        head={<h2 className="text-2xl font-bold tracking-tight">Glossary</h2>}
         className="right-0 left-auto w-[min(30rem,100%)] border-l border-line bg-bg"
       >
         {terms.length ? (
@@ -170,13 +158,21 @@ export default function App({ dive }: { dive: Dive }) {
       </>,
     )
 
-  const size = stepSize(step)
-  const last = pos.f === size - 1
-  const next = move(dive, flat, pos, 1)
+  const next = move(dive, pos, 1)
+  const after = pos.f === stepSize(step) - 1 ? chapter.steps[pos.s + 1]?.kind : undefined
+  const toEdge = after === 'edge' && step.kind !== 'edge'
+  const nextLabel =
+    next.c === END.c
+      ? 'Finish'
+      : toEdge
+        ? 'Next: edge cases'
+        : next.c !== pos.c
+          ? `Next chapter: ${dive.chapters[next.c].title}`
+          : after === 'flow'
+            ? `Next flow: ${chapter.steps[next.s].title}`
+            : 'Next'
 
-  const edge = step.kind === 'edge'
-  const flow = flowAt(flows(chapter.steps), pos.s)
-  const skip = skipFlow(dive, flat, pos)
+  const skip = skipFlow(dive, pos)
   const skipTo =
     skip &&
     (skip.c === pos.c
@@ -185,19 +181,7 @@ export default function App({ dive }: { dive: Dive }) {
         ? 'the end'
         : dive.chapters[skip.c].title)
 
-  const toEdge = last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
-  const toFlow = last && flow && next.c === pos.c && chapter.steps[next.s].kind === 'flow'
-  const nextLabel =
-    next.c === END.c
-      ? 'Finish'
-      : toEdge
-        ? 'Next: edge cases'
-        : next.c !== pos.c
-          ? `Next chapter: ${dive.chapters[next.c].title}`
-          : toFlow
-            ? `Next flow: ${chapter.steps[next.s].title}`
-            : 'Next'
-
+  const at = `${pos.c}/${pos.s}`
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
 
@@ -243,7 +227,6 @@ export default function App({ dive }: { dive: Dive }) {
           >
             {dive.title}
           </button>
-          {/* Below 640px the position drops the chapter name and the dive title; the drawer has both. */}
           <p className="min-w-0 truncate text-sm text-muted">
             <span className="max-sm:hidden">{chapter.title}, step</span>
             <span className="sm:hidden">Step</span> {pos.s + 1} of {chapter.steps.length}
@@ -260,7 +243,7 @@ export default function App({ dive }: { dive: Dive }) {
           </div>
         </header>
 
-        <main id="step" tabIndex={-1} className="min-h-0 flex-1 focus-visible:outline-none!" key={`${pos.c}-${pos.s}`}>
+        <main id="step" tabIndex={-1} className="min-h-0 flex-1 focus-visible:outline-none!" key={at}>
           <Guard at={pos.f}>
             <StepView
               dive={dive}
@@ -270,25 +253,20 @@ export default function App({ dive }: { dive: Dive }) {
               onJump={jump}
               links={back}
               onLink={(k) => back && go(back[k].pos)}
-              picked={picks[`${pos.c}/${pos.s}`]}
-              onPick={(k) => setPicks({ ...picks, [`${pos.c}/${pos.s}`]: k })}
+              picked={picks[at]}
+              onPick={(k) => setPicks((p) => ({ ...p, [at]: k }))}
             />
           </Guard>
         </main>
 
-        {/* Equal side columns hold the counter at the center, and Ask beside Previous, whatever Skip and Next say.
+        {/* Equal side columns hold the counter at the center whatever Skip and Next say.
             The right column may shrink to nothing, so a tight footer squeezes Next before it moves the counter. */}
         <footer className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-line bg-surface px-4 py-2.5">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={btn}
-              onClick={() => go(move(dive, flat, pos, -1))}
-              aria-keyshortcuts="ArrowLeft"
-            >
+            <button type="button" className={btn} onClick={() => go(move(dive, pos, -1))} aria-keyshortcuts="ArrowLeft">
               Previous
             </button>
-            <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
+            <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} className={btn} />
           </div>
           <p className="text-sm whitespace-nowrap text-muted tabular-nums first-letter:uppercase max-sm:hidden">
             {focusLabel(step, pos.f)}
@@ -304,7 +282,7 @@ export default function App({ dive }: { dive: Dive }) {
                 Skip to {skipTo}
               </button>
             )}
-            {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
+            {/* The aria-label keeps the destination that the short label below 640px drops. */}
             <button
               type="button"
               className={`${fill} min-w-0 truncate max-sm:shrink-0`}
@@ -320,30 +298,26 @@ export default function App({ dive }: { dive: Dive }) {
         </footer>
       </div>
 
-      <Drawer
-        ref={chapters}
-        aria-label="Chapters"
-        head={<h2 className="text-2xl font-bold tracking-tight">Chapters</h2>}
-        className="left-0 w-[min(22rem,90%)] bg-surface"
-      >
+      <Drawer ref={chapters} label="Chapters" className="left-0 w-[min(22rem,90%)] bg-surface">
         {rail}
       </Drawer>
     </div>,
   )
 }
 
-// A modal side panel. Its content fills it, so a click on the dialog itself is a
-// backdrop click, unless it ends a text selection dragged out of the panel.
-function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'> & { head: ReactNode }) {
+// The content fills the panel, so a click on the dialog itself is a backdrop click,
+// unless it ends a text selection dragged out of the panel.
+function Drawer({ label, className, children, ...props }: ComponentProps<'dialog'> & { label: string }) {
   return (
     <dialog
       {...props}
+      aria-label={label}
       onClick={(e) => e.target === e.currentTarget && getSelection()?.isCollapsed && e.currentTarget.close()}
       className={`fixed inset-y-0 m-0 h-full max-h-none max-w-none overflow-y-auto text-fg ${className}`}
     >
       <div className="min-h-full p-6">
         <div className="mb-6 flex items-center justify-between">
-          {head}
+          <h2 className="text-2xl font-bold tracking-tight">{label}</h2>
           <form method="dialog">
             <button className={quiet}>Close</button>
           </form>
@@ -354,142 +328,9 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
   )
 }
 
-// The prompt follows the step and focus. The link of the agent only prefills its prompt box.
-// The agent picked is App state: remembered for this visit only.
-function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: string; setAgent: (a: string) => void }) {
-  const [question, setQuestion] = useState('')
-  const [copied, setCopied] = useState<'' | 'ok' | 'fail'>('')
-  const panel = useRef<HTMLDivElement>(null)
-  const box = useRef<HTMLTextAreaElement>(null)
-  const trigger = useRef<HTMLButtonElement>(null)
-  const open = useRef<HTMLAnchorElement>(null)
-  const timer = useRef(0)
-  const ctx = askContext(dive, pos, location.href)
-  const prompt = askPrompt(ctx, question)
-  const targets = askTargets(ctx, prompt)
-  const target = targets.find((t) => t.label === agent) ?? targets[0]
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt)
-      setCopied('ok')
-    } catch {
-      setCopied('fail')
-    }
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => setCopied(''), 1500)
-  }
-  const square = 'grid size-8 shrink-0 place-items-center rounded-md'
-  return (
-    <>
-      <button
-        ref={trigger}
-        type="button"
-        popoverTarget="ask"
-        title="Ask your agent about this step (A)"
-        aria-keyshortcuts="a"
-        className={`${btn} flex shrink-0 items-center gap-2`}
-      >
-        <Icon d={target.icon} />
-        <span>
-          Ask<span className="max-sm:hidden"> your agent</span>
-        </span>
-      </button>
-      <div
-        ref={panel}
-        id="ask"
-        popover="auto"
-        role="dialog"
-        aria-label="Ask your agent"
-        // Opens over its button, kept 1rem inside the screen.
-        onBeforeToggle={(e) =>
-          e.newState === 'open' &&
-          e.currentTarget.style.setProperty('--x', `${trigger.current?.getBoundingClientRect().left ?? 16}px`)
-        }
-        onToggle={(e) => e.newState === 'open' && box.current?.focus()}
-        className="inset-auto bottom-18 left-[max(1rem,min(var(--x),calc(100vw-25rem)))] m-0 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
-      >
-        <h2 className="font-bold">Ask your agent about this step</h2>
-        {/* A chat composer: the question, then the agent on the left and the actions on the right. */}
-        <div className="mt-3 rounded-lg border border-line bg-bg outline-offset-2 outline-accent has-[textarea:focus-visible]:outline-2">
-          <textarea
-            ref={box}
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
-              e.preventDefault() // Enter opens once there is a question, Shift+Enter adds a line
-              if (question.trim()) open.current?.click()
-            }}
-            rows={3}
-            aria-label="Your question (optional)"
-            placeholder="Your question (optional)"
-            className="block w-full resize-none bg-transparent px-3 pt-2 text-base placeholder:text-muted focus-visible:outline-none!"
-          />
-          <div className="flex items-center gap-2 p-2">
-            <label className="relative mr-auto flex items-center">
-              <span className="sr-only">Agent</span>
-              <Icon d={target.icon} className="pointer-events-none absolute left-2.5" />
-              <select
-                value={target.label}
-                onChange={(e) => setAgent(e.target.value)}
-                className="h-8 rounded-md border border-line bg-surface pr-1 pl-8 text-sm font-medium hover:border-accent"
-              >
-                {targets.map((t) => (
-                  <option key={t.label}>{t.label}</option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="button"
-              onClick={copy}
-              title="Copy prompt"
-              aria-label="Copy prompt"
-              className={`${square} border border-line bg-surface hover:border-accent`}
-            >
-              <Icon d={copied === 'ok' ? CHECK : COPY} />
-            </button>
-            <a
-              ref={open}
-              href={target.href}
-              title={`Open in ${target.label} (Enter)`}
-              aria-label={`Open in ${target.label}`}
-              onClick={() => panel.current?.hidePopover()}
-              className={`${square} bg-accent text-bg hover:opacity-85`}
-            >
-              <Icon d={PLAY} />
-            </a>
-          </div>
-        </div>
-        <p role="status" className="mt-2 text-xs text-muted">
-          {copied === 'ok'
-            ? 'Copied the prompt.'
-            : copied === 'fail'
-              ? 'Could not copy: the browser blocked the clipboard.'
-              : ctx.cwd
-                ? 'The prompt is filled in, not sent: you continue in your agent.'
-                : 'No agent here? Copy the prompt into any chat.'}
-        </p>
-      </div>
-    </>
-  )
-}
-
-// Footer buttons: a hairline outline, and solid ink for Next, the footer's one main action.
-// Header and drawer actions are quiet: muted text that turns ink on hover.
 const btn = 'rounded-lg border border-line bg-surface px-4 py-2 font-medium hover:border-accent'
 const fill = 'rounded-lg border border-accent bg-accent px-4 py-2 font-medium text-bg hover:opacity-85'
 const quiet = 'rounded px-2 py-1 text-sm font-medium text-muted hover:text-fg'
-
-const COPY =
-  'M16 1H4a2 2 0 0 0-2 2v14h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m0 16H8V7h11z'
-const CHECK = 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'
-const PLAY = 'M8 5v14l11-7z'
-
-const Icon = ({ d, className = '' }: { d: string; className?: string }) => (
-  <svg viewBox="0 0 24 24" aria-hidden className={`size-4 shrink-0 fill-current ${className}`}>
-    <path d={d} />
-  </svg>
-)
 
 function StepView({
   dive,
@@ -501,12 +342,8 @@ function StepView({
   onLink,
   picked,
   onPick,
-}: {
+}: StepViewProps<Step> & {
   dive: Dive
-  step: Step
-  focus: number
-  onFocus: (f: number) => void
-  onJump: (id: string) => void
   links?: CodeLink[]
   onLink: (i: number) => void
   picked?: number
@@ -524,7 +361,7 @@ function StepView({
     </section>
   )
   const page = (view: ReactNode, wide = false) => (
-    <section className="h-full overflow-y-auto motion-safe:scroll-smooth">
+    <section id="page" className="h-full overflow-y-auto motion-safe:scroll-smooth">
       <div className={`mx-auto px-6 py-12 sm:py-16 ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>{view}</div>
     </section>
   )
