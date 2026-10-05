@@ -187,16 +187,17 @@ export default function App({ dive }: { dive: Dive }) {
 
   const toEdge = last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
   const toFlow = last && flow && next.c === pos.c && chapter.steps[next.s].kind === 'flow'
-  const nextLabel =
+  // Where Next leads when it leaves the flow or the chapter. Plain text beside the button, so the button keeps its width.
+  const upNext =
     next.c === END.c
-      ? 'Finish'
+      ? ''
       : toEdge
         ? 'Next: edge cases (optional)'
         : next.c !== pos.c
           ? `Next chapter: ${dive.chapters[next.c].title}`
           : toFlow
             ? `Next flow: ${chapter.steps[next.s].title}`
-            : 'Next'
+            : ''
 
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
@@ -298,18 +299,21 @@ export default function App({ dive }: { dive: Dive }) {
               Skip to {skipTo}
             </button>
           )}
+          {upNext && (
+            <p title={upNext} className="min-w-0 truncate text-sm text-muted max-sm:hidden">
+              {upNext}
+            </p>
+          )}
           <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
-          {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
+          {/* Its accessible name keeps the destination, also below 640px, where the text hides. */}
           <button
             type="button"
-            className={`${fill} min-w-0 truncate max-sm:shrink-0`}
+            className={`${fill} shrink-0`}
             onClick={() => go(next)}
-            aria-label={nextLabel}
-            title={nextLabel}
+            aria-label={upNext || undefined}
             aria-keyshortcuts="ArrowRight"
           >
-            <span className="max-sm:hidden">{nextLabel}</span>
-            <span className="sm:hidden">{toEdge ? 'Edge cases →' : next.c === END.c ? 'Finish' : 'Next'}</span>
+            {next.c === END.c ? 'Finish' : 'Next'}
           </button>
         </footer>
       </div>
