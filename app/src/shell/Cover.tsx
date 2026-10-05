@@ -4,7 +4,10 @@ import { chapterSeconds, minutes, origin, quizTally, COVER, type Picks, type Pos
 import { ExternalLink, Links } from './Steps'
 
 const KIND = { pr: 'Pull request', module: 'Module', question: 'Question' }
-const primary = 'rounded-lg bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
+// The border keeps primary and secondary the same height side by side.
+const primary =
+  'rounded-lg border border-accent bg-accent px-6 py-3 text-lg font-semibold text-surface hover:opacity-90'
+const secondary = 'rounded-lg border border-line bg-surface px-6 py-3 text-lg font-medium hover:border-accent'
 const focus = (el: HTMLElement | null) => el?.focus() // React's autoFocus skips links
 
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
@@ -12,6 +15,7 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const { source } = dive
   // "Pull request: sindresorhus/ky #842", or the question itself. Without a repo, origin() says "Pull request".
   const where = source.kind === 'question' ? source.ref : origin(source)
+  const deep = dive.chapters.findIndex((ch) => ch.id === 'walkthrough')
   return (
     <main className="h-full overflow-y-auto">
       <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
@@ -34,6 +38,16 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
           <button type="button" autoFocus onClick={() => go({ c: 0, s: 0, f: 0 })} className={primary}>
             Start the dive
           </button>
+          {deep > 0 && (
+            <button
+              type="button"
+              title="Skip to the walkthrough"
+              onClick={() => go({ c: deep, s: 0, f: 0 })}
+              className={secondary}
+            >
+              Jump to the deep end
+            </button>
+          )}
           <span className="text-muted">About {minutes(total)} to read</span>
         </div>
         <p className="mt-4 text-sm text-muted">

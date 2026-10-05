@@ -288,6 +288,7 @@ Corners are gently rounded and consistent. 8px (`lg`) is the default for buttons
 - **Shape:** gently rounded (8px).
 - **Default:** white sheet, hairline border and ink text at medium weight, with 8px × 16px padding. Used for Previous, and for Ask with the chosen agent's icon and "Ask your agent". On hover the border darkens to ink.
 - **Primary:** solid ink with white text and 12px × 24px padding at 1.125rem semibold. Used only for "Start the dive" and the end screen's "Open the pull request ↗", or "Back to the start" when the dive has no URL. On hover it drops to 90% opacity.
+- **Secondary:** the default button at the size of the primary. Used only for "Jump to the deep end" beside "Start the dive", which skips to the walkthrough. The primary carries a border in its own ink, so the two stand the same height.
 - **Next:** solid ink with paper-colored text and 8px × 16px padding, opacity 85% on hover. It is the one filled button in the footer, as the Open square is inside the Ask popover.
 - **Quiet:** Pencil Gray text that turns ink on hover. Used for the header actions (Chapters, Glossary, theme, Close) and for "Back to the start" beside the end screen's primary.
 - **Rows:** ink text that acts as a link, like the cover's chapters, the end screen's What to check and the rail's chapters, underlines on hover. Muted rail steps turn ink instead.
