@@ -40,7 +40,7 @@ Write every string in **Simplified Technical English** (ASD-STE100), the control
 
 | Slot | Before | After |
 |---|---|---|
-| Flow `say` | "In this flow, we will dive into how refunds get processed." | "A cron job starts `runWorker` every minute. The worker sends each due refund to the payment gateway." |
+| Flow `say` | "Flow 1 created the refund. In this flow, we will dive into how refunds get processed." | "The new refund waits with the status `due`. A cron job starts `runWorker` every minute. The worker sends each due refund to the payment gateway. The refund ends `paid`, or it waits for a retry." |
 | Code note | "This line calls `incrementAttempts` with the refund id." | "The count goes up before the gateway call. If the process crashes during the call, the attempt still counts." |
 | Code note in a PR | "Refactored the retry logic to make it more robust." | "Before, every failure waited 60 s. Now `nextDelay` doubles the wait after each attempt, up to 32 s." |
 | Code note | "When the gateway returns a 5xx, which happens during outages, the worker schedules a retry unless the max is hit." | "A 5xx from the gateway schedules a retry. After 5 attempts (`MAX_ATTEMPTS`), the worker marks the refund `failed`." |
@@ -142,7 +142,7 @@ You write one flow into `parts/walkthrough.<n>.json`. The section of your flow i
 
 A flow has these steps, in this order:
 
-1. The `flow` step: the sequence diagram of the main path. Its `say` tells where the reader is: what starts the flow, or how they got here from the flow before. Its title says what the flow does: "Build the unsigned transaction".
+1. The `flow` step: the sequence diagram of the main path. Its title says what the flow does: "Build the unsigned transaction". Its `say` tells where the flow sits after the flows before it, what it does, and where it leaves the user or the logic. Name an earlier flow by what it did, never by its number.
 2. The code steps, in the order that the messages of the flow first link to them.
 3. One quiz.
 4. The `edge` steps. They come last, so that the reader can skip them.
