@@ -6,8 +6,8 @@ import { chapterSeconds, flowAt, flows, minutes, origin, COVER, type Pos } from 
 // Titles stop at the reading-time column: pr-12 = its min-w-9 plus the gap-3 before it.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
   return (
-    <ol>
-      <li className="mb-6 border-b border-line pb-5">
+    <>
+      <div className="mb-6 border-b border-line pb-5">
         <button
           type="button"
           onClick={() => go(COVER)}
@@ -24,48 +24,50 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
             origin(dive.source)
           )}
         </p>
-      </li>
-      {dive.chapters.map((ch, c) => {
-        const current = c === pos.c
-        const past = c < pos.c
-        return (
-          <li key={ch.id} className="relative pb-5 pl-8">
-            {c < dive.chapters.length - 1 && (
+      </div>
+      <ol>
+        {dive.chapters.map((ch, c) => {
+          const current = c === pos.c
+          const past = c < pos.c
+          return (
+            <li key={ch.id} className="relative pb-5 pl-8">
+              {c < dive.chapters.length - 1 && (
+                <span
+                  aria-hidden
+                  className={`absolute top-3 -bottom-3 left-[11px] w-0.5 ${past ? 'bg-accent' : 'bg-line'}`}
+                />
+              )}
               <span
                 aria-hidden
-                className={`absolute top-3 -bottom-3 left-[11px] w-0.5 ${past ? 'bg-accent' : 'bg-line'}`}
+                className={`absolute top-1.5 left-1.5 size-3 rounded-full border-2 ${
+                  past
+                    ? 'border-accent bg-accent'
+                    : current
+                      ? 'border-accent bg-surface ring-4 ring-accent/20'
+                      : 'border-line bg-surface'
+                }`}
               />
-            )}
-            <span
-              aria-hidden
-              className={`absolute top-1.5 left-1.5 size-3 rounded-full border-2 ${
-                past
-                  ? 'border-accent bg-accent'
-                  : current
-                    ? 'border-accent bg-surface ring-4 ring-accent/20'
-                    : 'border-line bg-surface'
-              }`}
-            />
-            <button
-              type="button"
-              onClick={() => go({ c, s: 0, f: 0 })}
-              aria-current={current || undefined}
-              className="group flex w-full items-baseline justify-between gap-3 rounded text-left"
-            >
-              <span
-                className={`text-[15px] group-hover:underline ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}
+              <button
+                type="button"
+                onClick={() => go({ c, s: 0, f: 0 })}
+                aria-current={current || undefined}
+                className="group flex w-full items-baseline justify-between gap-3 rounded text-left"
               >
-                {ch.title}
-              </span>
-              <span className="min-w-9 shrink-0 text-right text-xs text-muted">
-                {minutes(chapterSeconds(ch.steps))}
-              </span>
-            </button>
-            {current && <StepList steps={ch.steps} c={c} pos={pos} go={go} />}
-          </li>
-        )
-      })}
-    </ol>
+                <span
+                  className={`text-[15px] group-hover:underline ${current ? 'font-semibold' : past ? 'text-fg' : 'text-muted'}`}
+                >
+                  {ch.title}
+                </span>
+                <span className="min-w-9 shrink-0 text-right text-xs text-muted">
+                  {minutes(chapterSeconds(ch.steps))}
+                </span>
+              </button>
+              {current && <StepList steps={ch.steps} c={c} pos={pos} go={go} />}
+            </li>
+          )
+        })}
+      </ol>
+    </>
   )
 }
 

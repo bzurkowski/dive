@@ -11,7 +11,7 @@ export interface AskContext {
   base?: string
   head?: string
   repo?: string // "owner/name"
-  dir?: string // the folder of the dive: "docs/dives/<slug>" when cwd is known, else the absolute folder of a file:// page
+  page?: string // the open file: "docs/dives/<slug>/index.html" relative to cwd, else absolute
   cwd?: string // absolute repo root, only for a file:// page under <root>/docs/dives/<slug>/
   step: string // "Walkthrough › Retry › Send the request (note 2 of 4)"
   refs: string[] // "path:12-30", or "old path:12-30" for a note on deleted lines
@@ -19,15 +19,16 @@ export interface AskContext {
   flow?: string // flow id: its plan is `## flow <id>` of <dir>/plan.md
 }
 
-const noteRef = (n: CodeNote) => `${n.side === 'old' ? 'old ' : ''}${n.file}:${n.lines[0]}-${n.lines[1]}`
+const noteRef = (n: CodeNote, files: Dive['files']) =>
+  `${n.side === 'old' ? `old ${files?.[n.file]?.oldPath ?? n.file}` : n.file}:${n.lines[0]}-${n.lines[1]}`
 
 // Only a file:// page knows where it is: under <root>/docs/dives/<slug>/ that gives the repo root too.
-function place(url: string): Pick<AskContext, 'dir' | 'cwd'> {
+function place(url: string): Pick<AskContext, 'page' | 'cwd'> {
   const u = new URL(url)
   if (u.protocol !== 'file:') return {}
-  const path = decodeURIComponent(u.pathname).replace(/^\/(?=[A-Za-z]:)/, '')
-  const m = path.match(/^(.+)\/(docs\/dives\/[^/]+)\/(index\.html)?$/)
-  return m ? { cwd: m[1], dir: m[2] } : { dir: path.replace(/\/[^/]*$/, '') }
+  const page = decodeURIComponent(u.pathname).replace(/^\/(?=[A-Za-z]:)/, '')
+  const m = page.match(/^(.+)\/(docs\/dives\/[^/]+\/index\.html)$/)
+  return m ? { cwd: m[1], page: m[2] } : { page }
 }
 
 export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
@@ -52,7 +53,7 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
   switch (step.kind) {
     case 'code': {
       const note = step.notes[pos.f]
-      ctx.refs = [noteRef(note)]
+      ctx.refs = [noteRef(note, dive.files)]
       ctx.note = note.text
       break
     }
@@ -67,7 +68,8 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
       ctx.note = `${who(m.from)} → ${who(m.to)}: ${m.label}. ${m.note}`
       if (step.kind === 'sequence') ctx.flow = m.step
       for (const s of dive.chapters.flatMap((c) => c.steps))
-        if (s.kind === 'code' && s.id && s.id === m.step) ctx.refs = [...new Set(s.notes.map(noteRef))]
+        if (s.kind === 'code' && s.id && s.id === m.step)
+          ctx.refs = [...new Set(s.notes.map((n) => noteRef(n, dive.files)))]
     }
   }
   return ctx
@@ -80,14 +82,16 @@ export function focusText(step: Step, f: number, { refs, note }: AskContext): st
 }
 
 export function askPrompt(ctx: AskContext, question: string): string {
-  const { title, ref, pr, base, head, dir, cwd, step, refs, note, flow } = ctx
+  const { title, ref, pr, base, head, page, cwd, step, refs, note, flow } = ctx
   return [
-    `I am reading the dive "${title}"${dir ? ` (${dir}/index.html)` : ''}, a walkthrough of ${ref}.`,
+    `I am reading the dive "${title}"${page ? ` (${page})` : ''}, a walkthrough of ${ref}.`,
     `Step: ${step}`,
     refs.length > 0 && `Code: ${refs.join(', ')}`,
     note && `Note: ${note}`,
     // The plan sits next to the dive in the repo; a shared copy of the file travels without it.
-    cwd && flow && `Plan of this flow: \`## flow ${flow}\` in ${dir}/plan.md. Read it first, then the code.`,
+    cwd &&
+      flow &&
+      `Plan of this flow: \`## flow ${flow}\` in ${page?.replace(/index\.html$/, 'plan.md')}. Read it first, then the code.`,
     head && `The code is at commit ${head}: read a file with \`git show ${head}:<path>\`.`,
     pr && base && head && `The change is \`git diff ${base} ${head} -- <path>\`. Old lines are at ${base}.`,
     `\nMy question: ${question.trim()}`,

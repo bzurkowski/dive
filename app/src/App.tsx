@@ -99,7 +99,7 @@ export default function App({ dive }: { dive: Dive }) {
       e.preventDefault() // else the g lands in the search box that opening focuses
       return toggleGlossary()
     }
-    if (open || (e.key === ' ' && t.closest('button, a'))) return
+    if (open || (e.key === ' ' && t.closest('button, a, summary'))) return
     // On a page step, Space scrolls the page while it has more that way, then moves.
     const kind = dive.chapters[pos.c]?.steps[pos.s]?.kind
     const page = e.key === ' ' && ['card', 'terms', 'quiz'].includes(kind)
@@ -261,7 +261,7 @@ export default function App({ dive }: { dive: Dive }) {
         </header>
 
         <main id="step" tabIndex={-1} className="min-h-0 flex-1 focus-visible:outline-none!" key={`${pos.c}-${pos.s}`}>
-          <Guard>
+          <Guard at={pos.f}>
             <StepView
               dive={dive}
               step={step}
@@ -339,7 +339,7 @@ function Drawer({ head, className, children, ...props }: ComponentProps<'dialog'
     <dialog
       {...props}
       onClick={(e) => e.target === e.currentTarget && getSelection()?.isCollapsed && e.currentTarget.close()}
-      className={`fixed inset-y-0 m-0 h-full max-h-none overflow-y-auto text-fg ${className}`}
+      className={`fixed inset-y-0 m-0 h-full max-h-none max-w-none overflow-y-auto text-fg ${className}`}
     >
       <div className="min-h-full p-6">
         <div className="mb-6 flex items-center justify-between">
@@ -363,6 +363,7 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
   const box = useRef<HTMLTextAreaElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const open = useRef<HTMLAnchorElement>(null)
+  const timer = useRef(0)
   const ctx = askContext(dive, pos, location.href)
   const prompt = askPrompt(ctx, question)
   const targets = askTargets(ctx, prompt)
@@ -374,7 +375,8 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
     } catch {
       setCopied('fail')
     }
-    setTimeout(() => setCopied(''), 1500)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setCopied(''), 1500)
   }
   const square = 'grid size-8 shrink-0 place-items-center rounded-md'
   return (

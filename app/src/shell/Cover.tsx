@@ -13,14 +13,13 @@ const focus = (el: HTMLElement | null) => el?.focus() // React's autoFocus skips
 export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
   const total = chapterSeconds(dive.chapters.flatMap((ch) => ch.steps))
   const { source } = dive
-  // "Pull request: sindresorhus/ky #842", or the question itself. Without a repo, origin() says "Pull request".
   const where = source.kind === 'question' ? source.ref : origin(source)
   const deep = dive.chapters.findIndex((ch) => ch.id === 'walkthrough')
   return (
     <main className="h-full overflow-y-auto">
       <div className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
         <p className="text-muted">
-          {!where.startsWith(KIND[source.kind]) && `${KIND[source.kind]}: `}
+          {(source.kind !== 'pr' || source.repo) && `${KIND[source.kind]}: `}
           {source.url ? (
             <ExternalLink href={source.url}>{where}</ExternalLink>
           ) : (

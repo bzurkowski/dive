@@ -30,20 +30,30 @@ const dive = {
 
 const url = 'file:///Users/me/my%20repo/docs/dives/pr-1-x/index.html'
 const code = askContext(dive, { c: 1, s: 1, f: 0 }, url)
-eq([code.cwd, code.dir, code.flow, code.refs], ['/Users/me/my repo', 'docs/dives/pr-1-x', 'flow', ['src/a.ts:3-5']])
+eq(
+  [code.cwd, code.page, code.flow, code.refs],
+  ['/Users/me/my repo', 'docs/dives/pr-1-x/index.html', 'flow', ['src/a.ts:3-5']],
+)
 eq(code.step, 'W › flow › C (note 1 of 3)')
 const prompt = askPrompt(code, ' why? \n')
-for (const s of ['## flow flow` in docs/dives/pr-1-x/plan.md', 'src/a.ts:3-5', 'h1']) ok(prompt.includes(s), s)
+for (const s of ['(docs/dives/pr-1-x/index.html)', '## flow flow` in docs/dives/pr-1-x/plan.md', 'src/a.ts:3-5', 'h1'])
+  ok(prompt.includes(s), s)
 ok(prompt.endsWith(' why?'), 'ends with the trimmed question')
 eq(focusText(dive.chapters[1].steps[1], 0, code), 'note 1 of 3, src/a.ts:3-5: new', 'live region, code note')
 const hop = askContext(dive, { c: 1, s: 0, f: 0 }, url)
 eq(focusText(dive.chapters[1].steps[0], 0, hop), 'a → b: call. n', 'one message: no counter, no refs')
 eq(askContext(dive, { c: 1, s: 1, f: 1 }, url).refs, ['old src/a.ts:1-2'], 'old side')
+const renamed = { ...dive, files: { 'src/a.ts': { lang: 'ts', diff: true, text: '', oldPath: 'src/z.ts' } } }
+eq(askContext(renamed, { c: 1, s: 1, f: 1 }, url).refs, ['old src/z.ts:1-2'], 'old side of a renamed file')
 eq(askContext(dive, { c: 1, s: 0, f: 0 }, url).refs, ['src/a.ts:3-5', 'old src/a.ts:1-2'], 'message refs its code step')
 
-const over = askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///C:/w/docs/dives/s/')
-eq([over.cwd, over.dir, over.flow], ['C:/w', 'docs/dives/s', 'flow'], 'windows, overview links a flow')
-eq(askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///tmp/x/page.html').dir, '/tmp/x', 'elsewhere: its folder')
+const over = askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///C:/w/docs/dives/s/index.html')
+eq([over.cwd, over.page, over.flow], ['C:/w', 'docs/dives/s/index.html', 'flow'], 'windows, overview links a flow')
+eq(
+  askContext(dive, { c: 0, s: 0, f: 0 }, 'file:///tmp/x/page.html').page,
+  '/tmp/x/page.html',
+  'elsewhere: the file itself',
+)
 // A shared file (Downloads) has no notes folder beside it: no trace line, the commit lines stay.
 const shared = askPrompt(askContext(dive, { c: 1, s: 1, f: 0 }, 'file:///Users/me/Downloads/index.html'), 'q')
 ok(
@@ -52,7 +62,7 @@ ok(
 )
 
 const web = askContext(dive, { c: 1, s: 1, f: 0 }, 'http://localhost:5173/#/1/1/0')
-eq([web.cwd, web.dir], [undefined, undefined])
+eq([web.cwd, web.page], [undefined, undefined])
 const [claude] = askTargets(web, askPrompt(web, 'q'))
 ok(claude.href.includes('repo=o%2Fr') && !claude.href.includes('cwd='), claude.href)
 ok(askTargets(code, prompt)[0].href.includes('cwd=%2FUsers%2Fme%2Fmy%20repo'))

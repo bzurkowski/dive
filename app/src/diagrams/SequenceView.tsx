@@ -129,7 +129,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
       onScroll={(e) => setScrollX(e.currentTarget.scrollLeft)}
       className="h-full w-full overflow-auto bg-surface motion-safe:scroll-smooth"
     >
-      <div style={{ width }}>
+      <div className="flex min-h-full flex-col" style={{ width }}>
         <div className="sticky top-0 z-10 bg-surface/90 pb-1 backdrop-blur">
           {cutL || cutR ? (
             <div className="flex items-center px-2 pt-2 pb-1.5">
@@ -156,7 +156,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           <div className="flex">
             {view.lanes.map((l, i) => {
               const group = grouped && l.group !== undefined
-              const mark = !group && l.actors[0].change && CHANGE[l.actors[0].change]
+              const mark = l.actors.length === 1 && l.actors[0].change && CHANGE[l.actors[0].change]
               return (
                 <div key={i} className="relative shrink-0 px-2" style={{ width: cw }}>
                   <div
@@ -323,7 +323,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
           </div>
         </div>
         {/* Pinned to the stage's bottom-right corner; the diagram scrolls under it both ways. */}
-        <div className="sticky bottom-0 left-0 z-10 h-0" style={{ width: w }}>
+        <div className="sticky bottom-0 left-0 z-10 mt-auto h-0" style={{ width: w }}>
           <div className="absolute right-3 bottom-3 flex flex-col items-end gap-2">
             {legend && (
               <ul aria-label="Actor colors" className="rounded-lg border border-line bg-surface px-3 py-2 text-xs">
