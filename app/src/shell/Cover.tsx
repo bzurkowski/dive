@@ -41,11 +41,11 @@ export function Cover({ dive, go }: { dive: Dive; go: (p: Pos) => void }) {
           {deep > 0 && (
             <button
               type="button"
-              title="Skip to the walkthrough"
+              title="Skip to the code walkthrough"
               onClick={() => go({ c: deep, s: 0, f: 0 })}
               className={secondary}
             >
-              Jump to the deep end
+              Jump to the code
             </button>
           )}
           <span className="text-muted">About {minutes(total)} to read</span>
