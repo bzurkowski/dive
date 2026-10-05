@@ -16,7 +16,7 @@ Simple and fast. If the skill is slow or long, people do not use it.
 skills/dive/                  the skill (this is what ships)
   SKILL.md                    the orchestrator: prep, plan (plan.md and dive.json formats), write, build
   references/                 the writers, loaded on demand
-    writers.md                the reader, the writing style with before-and-after examples, then one job per chapter
+    writers.md                the reader, the writing style with before-and-after examples, the steps that several jobs write, then one job per chapter
     format.md                 part-file JSON and what the build rejects
   scripts/dive.py             prep (fetch PR, diff.json) + level (new or familiar) + build (validate, bake index.html, reading time) + check (validate one part)
   assets/template.html        built walkthrough app, data placeholder inside
