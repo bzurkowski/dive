@@ -123,14 +123,14 @@ interface Link { title: string; url: string }
 
 `dive.py check` runs these checks on one part. It does not check the links from the overview to the flows, because the flows are in other parts.
 
-- A field the types mark without `?` that is missing or empty (`""`, `[]`), or a `kind`, `type`, `side`, `change` or `category` outside the listed values.
+- A field the types mark without `?` that is missing or empty (`""`, `[]`), a required text field that is not a string, or a `kind`, `type`, `side`, `change` or `category` outside the listed values. A chapter id outside `ChapterId`. A `group` that is not a string.
 - `flow` and `edge` steps outside `walkthrough`, or a `sequence` inside it. A walkthrough part that does not start with its `flow` step. A non-`edge` step after an `edge` step.
 - A missing or repeated id. Ids are lowercase words joined by dashes (`send-refund`), unique in the whole dive. Every `flow` step and every code step in `walkthrough` needs one.
 - A message `step` that is not a code step of the same flow (in the overview: not a flow id). A code step that no message of its `flow` step links to. Code steps out of the order of their first linking message.
-- A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. `change` outside a PR dive.
+- Two actors of a step with the same id. A `from` or `to` that is not an actor of the step. A message after the first whose sender no earlier message came from or reached. `change` outside a PR dive.
 - A code note on a test file, or on a file that does not exist (in a PR: at head, or changed), or with `lines` outside the file. `side: "old"` on a file the PR did not change.
-- A diagram edge or `focus` that names no node. A diagram with notes where some node is in the `focus` of no note.
-- A quiz without 3-4 options and exactly one `"correct": true`.
+- Two nodes of a diagram with the same id. A diagram edge or `focus` that names no node. A diagram with notes where some node is in the `focus` of no note.
+- A quiz without 3-4 options and exactly one `"correct": true`. Any truthy `correct`, even `"false"`, counts as correct.
 
 ## Example: `parts/walkthrough.1.json`
 

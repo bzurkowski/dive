@@ -24,15 +24,15 @@ def pr_repo():
     sh(tmp, 'git', 'init', '-q', '--bare', '-b', 'main', str(origin))
     sh(tmp, 'git', 'clone', '-q', str(origin), str(work))
     git = lambda *a: sh(work, 'git', '-c', 'user.name=t', '-c', 'user.email=t@t', *a)
-    (work / 'app.py').write_text('def pay(x):\n    return x\n')
+    (work / 'app.py').write_text('def pay(x):\n    return x\n\n\nX = 0\n')
     git('add', '.'); git('commit', '-qm', 'base'); git('push', '-q', 'origin', 'HEAD:main')
     sh(work, 'git', 'remote', 'set-head', 'origin', 'main')
-    (work / 'app.py').write_text('def pay(x):\n    if x < 0:\n        raise ValueError(x)\n    return x\n')
+    (work / 'app.py').write_text('def pay(x):\n    if x < 0:\n        raise ValueError(x)\n    return x\n\n\nX = 0\n')
     (work / 'util.py').write_text('X = 1\n')
     (work / 'app_test.py').write_text('assert True\n')
     git('add', '.'); git('commit', '-qm', 'pr'); git('push', '-q', 'origin', 'HEAD:refs/pull/1/head')
     git('reset', '-q', '--hard', 'HEAD~1')  # user's tree stays on base
-    git('config', 'color.ui', 'always'); git('config', 'diff.external', 'echo')  # user settings prep must survive
+    git('config', 'color.ui', 'always'); git('config', 'diff.external', 'echo'); git('config', 'diff.suppressBlankEmpty', 'true')  # user settings prep must survive
     return work, git
 
 
@@ -80,6 +80,7 @@ class DiveTest(unittest.TestCase):
         data = json.loads(re.search(r'<script id="dive-data" type="application/json">(.*?)</script>', html, re.S).group(1))
         self.assertEqual(data['chapters'][0]['id'], 'walkthrough')
         self.assertIn('+    if x < 0:', data['files']['app.py']['text'])
+        self.assertIn('\n \n \n X = 0', data['files']['app.py']['text'])
         self.assertEqual(len(data['source']['head']), 40)
         self.assertNotIn('links', data['source'])
 
@@ -140,7 +141,12 @@ class DiveTest(unittest.TestCase):
         (d / 'dive.json').write_text(json.dumps(dive))
         r = run(work, 'build', str(d))
         self.assertIn('src/__tests__/app.spec.ts is a test file', r.stdout)
-        note['file'] = 'app.py'
+        (work / 'page.py').write_text('a\x0cb\n')  # a form feed does not break the line in the app
+        note.update(file='page.py', lines=[2, 2])
+        (d / 'dive.json').write_text(json.dumps(dive))
+        r = run(work, 'build', str(d))
+        self.assertIn('outside page.py', r.stdout)
+        note.update(file='app.py', lines=[1, 1])
         (d / 'dive.json').write_text(json.dumps(dive))
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 0, r.stdout)
@@ -156,16 +162,18 @@ class DiveTest(unittest.TestCase):
         terms = {'kind': 'terms', 'title': 'T', 'terms': ['Refund']}
         (d / 'parts' / 'walkthrough.json').write_text(json.dumps([quiz]))
         (d / 'parts' / 'glossary.json').write_text(json.dumps({'id': 'glossary', 'steps': [terms, 'a step']}))
-        (d / 'parts' / 'review-focus.json').write_text(json.dumps({'id': 'review-focus', 'title': 'R', 'steps': [quiz, card]}))
+        bad = {'kind': 'card', 'title': 'C2', 'body': 5}
+        (d / 'parts' / 'review-focus.json').write_text(json.dumps({'id': 'review-focus', 'title': 'R', 'steps': [quiz, card, bad]}))
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 1)
         self.assertNotIn('Traceback', r.stderr)
         for e in ['dive.json source: missing "ref"', 'walkthrough.json: must be an object',
                   'chapter glossary: missing "title"', "glossary step 1 (terms 'T') term 1: must be an object",
                   'glossary step 2: must be an object', "review-focus step 1 (quiz 'Q') option 3: must be an object",
-                  "review-focus step 2 (card 'C') link 1: missing \"url\""]:
+                  "review-focus step 2 (card 'C') link 1: missing \"url\"",
+                  "review-focus step 3 (card 'C2'): \"body\" must be a string",
+                  "review-focus step 1 (quiz 'Q'): needs exactly one correct option"]:
             self.assertIn(e, r.stdout)
-        self.assertNotIn('exactly one correct', r.stdout)
 
     def test_build_checks_flows_and_links(self):
         work, git = pr_repo()
@@ -184,7 +192,8 @@ class DiveTest(unittest.TestCase):
         (d / 'parts' / 'walkthrough.2.json').write_text(json.dumps({'id': 'walkthrough', 'steps': [code('a2'), flow(fid='f')]}))
         over = {**flow(), 'kind': 'sequence', 'messages': [{'from': 'a', 'to': 'a', 'label': 'l', 'note': 'n', 'step': 'zz'}]}
         over['actors'][0]['category'] = 'db'
-        box = {'kind': 'diagram', 'title': 'D', 'say': 'S', 'nodes': [{'id': 'n', 'label': 'N'}, {'id': 'm', 'label': 'M'}],
+        over['actors'].append({'id': 'a', 'label': 'A2', 'category': 'service'})
+        box = {'kind': 'diagram', 'title': 'D', 'say': 'S', 'nodes': [{'id': 'n', 'label': 'N'}, {'id': 'm', 'label': 'M'}, {'id': 'n', 'label': 'N2'}],
                'edges': [], 'notes': [{'focus': ['n'], 'text': 't'}, {'text': 'no focus'}]}
         (d / 'parts' / 'big-picture.json').write_text(json.dumps({'id': 'big-picture', 'title': 'B', 'steps': [over, edge, box]}))
         r = run(work, 'build', str(d))
@@ -199,7 +208,9 @@ class DiveTest(unittest.TestCase):
                   'message 1: step "zz" is not a flow id',
                   "big-picture step 1 (sequence 'Pay') actor 1: category must be one of person, service", "big-picture step 2 (edge 'Edge'): edge steps belong in walkthrough",
                   "big-picture step 3 (diagram 'D'): nodes ['m'] are in no note's focus",
-                  "big-picture step 3 (diagram 'D') note 2: missing \"focus\""]:
+                  "big-picture step 3 (diagram 'D') note 2: missing \"focus\"",
+                  "big-picture step 1 (sequence 'Pay'): two actors have the same id",
+                  "big-picture step 3 (diagram 'D'): two nodes have the same id"]:
             self.assertIn(e, r.stdout)
 
     def test_check_validates_one_part(self):

@@ -41,7 +41,7 @@ LANGS = {'ts': 'ts', 'tsx': 'tsx', 'js': 'js', 'jsx': 'jsx', 'mjs': 'js', 'cjs':
          'xml': 'xml', 'graphql': 'graphql', 'proto': 'proto', 'tf': 'hcl'}
 NAMES = {'Dockerfile': 'dockerfile', 'Makefile': 'make'}
 PROSE = {'title', 'summary', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'}
-DIFF = ('-M', '--no-color', '--no-ext-diff')  # user git settings must not change the output
+DIFF = ('-c', 'diff.suppressBlankEmpty=false', 'diff', '-M', '--no-color', '--no-ext-diff')  # user git settings must not change the output
 HUNK = re.compile(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@')
 NEW_BELOW = 10  # ponytail: first guess, tune after real dives
 SEQUENCES = ('sequence', 'flow', 'edge')
@@ -89,7 +89,7 @@ def default_branch(remote):
 
 def diff_files(base, head, context=3):
     """Changed files with hunks, in the order of git, without test files."""
-    names = git('diff', *DIFF, '--name-status', '-z', base, head).split('\0')
+    names = git(*DIFF, '--name-status', '-z', base, head).split('\0')
     files, i = [], 0
     while i < len(names) - 1:
         st = names[i]
@@ -99,7 +99,7 @@ def diff_files(base, head, context=3):
         else:
             files.append({'path': names[i + 1], 'status': {'A': 'added', 'D': 'deleted'}.get(st[0], 'modified')})
             i += 2
-    chunks = re.split(r'^diff --git ', git('diff', *DIFF, f'-U{context}', base, head), flags=re.M)[1:]
+    chunks = re.split(r'^diff --git ', git(*DIFF, f'-U{context}', base, head), flags=re.M)[1:]
     if len(chunks) != len(files):
         sys.exit(f'Diff parse error: {len(chunks)} diffs for {len(files)} files.')
     for f, chunk in zip(files, chunks):
@@ -156,10 +156,11 @@ def lang(path):
 
 
 def side_len(f, side):
+    lines = f['text'].split('\n')  # only \n breaks a line, as in the app
     if not f['diff']:
-        return len(f['text'].splitlines())
+        return len(lines) - (lines[-1] == '')
     skip = '-' if side == 'new' else '+'
-    return sum(1 for l in f['text'].split('\n') if l[:1] in (' ', '+', '-') and l[0] != skip)
+    return sum(1 for l in lines if l[:1] in (' ', '+', '-') and l[0] != skip)
 
 
 def embed_files(dive, diff):
@@ -200,8 +201,17 @@ def validate(dive, files, partial=False):
         if not isinstance(obj, dict):
             errs.append(f'{where}: must be an object, not {json.dumps(obj)[:40]}')
             return False
-        errs.extend(f'{where}: missing "{k}"' for k in keys if not obj.get(k))
+        for k in keys:
+            if not obj.get(k):
+                errs.append(f'{where}: missing "{k}"')
+            elif k in PROSE and not isinstance(obj[k], str):
+                errs.append(f'{where}: "{k}" must be a string')
         return True
+
+    def unique(ids, where, what):
+        if len(set(ids)) < len(ids):
+            errs.append(f'{where}: two {what} have the same id')
+        return set(ids)
 
     need(dive, 'dive.json', ('title', 'summary', 'source'))
     src = dive.get('source') or {}
@@ -250,7 +260,7 @@ def validate(dive, files, partial=False):
                         errs.append(f'{w} note {j}: lines {ln} outside {p} ({side} side has {side_len(f, side)} lines)')
             elif k in SEQUENCES:
                 actors = s.get('actors') or []
-                ids = {a.get('id') for j, a in enumerate(actors, 1) if need(a, f'{w} actor {j}', ('id', 'label'))}
+                ids = unique([a.get('id') for j, a in enumerate(actors, 1) if need(a, f'{w} actor {j}', ('id', 'label'))], w, 'actors')
                 for j, a in enumerate(actors, 1):
                     if isinstance(a, dict) and 'group' in a and not isinstance(a['group'], str):
                         errs.append(f'{w} actor {j}: group must be a string')
@@ -273,7 +283,7 @@ def validate(dive, files, partial=False):
                     if 'step' in m and not isinstance(m['step'], str):
                         errs.append(f'{w} message {j}: step must be a step id')
             elif k == 'diagram':
-                ids = {n.get('id') for j, n in enumerate(s.get('nodes') or [], 1) if need(n, f'{w} node {j}', ('id', 'label'))}
+                ids = unique([n.get('id') for j, n in enumerate(s.get('nodes') or [], 1) if need(n, f'{w} node {j}', ('id', 'label'))], w, 'nodes')
                 refs = [(e.get('from'), e.get('to')) for j, e in enumerate(s.get('edges') or [], 1)
                         if need(e, f'{w} edge {j}', ('from', 'to'))]
                 focus = {x for j, n in enumerate(s.get('notes') or [], 1) if need(n, f'{w} note {j}', ('focus', 'text'))
@@ -288,7 +298,7 @@ def validate(dive, files, partial=False):
                 if not 3 <= len(opts) <= 4:
                     errs.append(f'{w}: needs 3-4 options')
                 opts = [o for j, o in enumerate(opts, 1) if need(o, f'{w} option {j}', ('text', 'why'))]
-                if sum(o.get('correct') is True for o in opts) != 1:
+                if sum(bool(o.get('correct')) for o in opts) != 1:  # the app counts any truthy value
                     errs.append(f'{w}: needs exactly one correct option (correct: true)')
     return errs + links(dive, partial)
 
