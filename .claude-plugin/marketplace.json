@@ -6,7 +6,7 @@
     {
       "name": "dive",
       "description": "Deep-dive walkthroughs of pull requests, code modules and domains. Builds an interactive, story-driven HTML walkthrough in docs/dives/.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "./"
     }
   ]

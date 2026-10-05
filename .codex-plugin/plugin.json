@@ -1,6 +1,6 @@
 {
   "name": "dive",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Deep-dive walkthroughs of pull requests, code modules and domains. Builds an interactive, story-driven HTML walkthrough in docs/dives/.",
   "author": { "name": "Bartosz Zurkowski" },
   "keywords": ["pull-request", "code-review", "onboarding", "walkthrough", "skills"],
