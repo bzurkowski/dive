@@ -286,6 +286,8 @@ def validate(dive, files, partial=False):
                 ids = unique([n.get('id') for j, n in enumerate(s.get('nodes') or [], 1) if need(n, f'{w} node {j}', ('id', 'label'))], w, 'nodes')
                 refs = [(e.get('from'), e.get('to')) for j, e in enumerate(s.get('edges') or [], 1)
                         if need(e, f'{w} edge {j}', ('from', 'to'))]
+                if len(set(refs)) < len(refs):  # dagre cannot lay out a repeated pair
+                    errs.append(f'{w}: two edges have the same from and to. Merge them into one edge')
                 focus = {x for j, n in enumerate(s.get('notes') or [], 1) if need(n, f'{w} note {j}', ('focus', 'text'))
                          for x in n.get('focus') or []}
                 bad = {x for pair in refs for x in pair} | focus

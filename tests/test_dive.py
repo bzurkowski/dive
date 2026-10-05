@@ -194,7 +194,7 @@ class DiveTest(unittest.TestCase):
         over['actors'][0]['category'] = 'db'
         over['actors'].append({'id': 'a', 'label': 'A2', 'category': 'service'})
         box = {'kind': 'diagram', 'title': 'D', 'say': 'S', 'nodes': [{'id': 'n', 'label': 'N'}, {'id': 'm', 'label': 'M'}, {'id': 'n', 'label': 'N2'}],
-               'edges': [], 'notes': [{'focus': ['n'], 'text': 't'}, {'text': 'no focus'}]}
+               'edges': [{'from': 'n', 'to': 'm'}, {'from': 'n', 'to': 'm'}], 'notes': [{'focus': ['n'], 'text': 't'}, {'text': 'no focus'}]}
         (d / 'parts' / 'big-picture.json').write_text(json.dumps({'id': 'big-picture', 'title': 'B', 'steps': [over, edge, box]}))
         r = run(work, 'build', str(d))
         self.assertEqual(r.returncode, 1)
@@ -210,7 +210,8 @@ class DiveTest(unittest.TestCase):
                   "big-picture step 3 (diagram 'D'): nodes ['m'] are in no note's focus",
                   "big-picture step 3 (diagram 'D') note 2: missing \"focus\"",
                   "big-picture step 1 (sequence 'Pay'): two actors have the same id",
-                  "big-picture step 3 (diagram 'D'): two nodes have the same id"]:
+                  "big-picture step 3 (diagram 'D'): two nodes have the same id",
+                  "big-picture step 3 (diagram 'D'): two edges have the same from and to"]:
             self.assertIn(e, r.stdout)
 
     def test_check_validates_one_part(self):
