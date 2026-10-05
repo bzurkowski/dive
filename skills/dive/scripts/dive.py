@@ -402,6 +402,13 @@ def words(x):
     return sum(map(words, x)) if isinstance(x, list) else 0
 
 
+def seconds(s):
+    """Reading time of a step, as the cover counts it (stepSeconds in the app)."""
+    n = len(s.get('notes') or [])
+    look = {'code': 10 + 10 * n, 'diagram': 8 + 4 * n, 'quiz': 15}.get(s['kind'], 0)
+    return words(s) * 60 / 200 + look + (5 + 4 * len(s['messages']) if s['kind'] in SEQUENCES else 0)
+
+
 def load(path, errs):
     try:
         return json.loads(path.read_text(encoding='utf-8'))
@@ -476,7 +483,8 @@ def build(d):
         print(f"Not embedded (lockfile or > {MAX_LINES} lines): {', '.join(skipped)}")
     w = words(dive)
     count = lambda steps: sum(len(s['notes']) for s in steps if s['kind'] == 'code')
-    print(f"Reading: {w} words, {count(s for c in dive['chapters'] for s in c['steps'])} code notes, about {max(1, round(w / 200))} min.")
+    every = [s for c in dive['chapters'] for s in c['steps']]
+    print(f"Reading: {w} words, {count(every)} code notes, about {max(1, int(sum(map(seconds, every)) / 60 + 0.5))} min.")
     wt = next((c for c in dive['chapters'] if c['id'] == 'walkthrough'), None)
     for _, f, rest in split_flows(wt['steps']) if wt else []:
         steps = [f, *(s for _, s in rest)]

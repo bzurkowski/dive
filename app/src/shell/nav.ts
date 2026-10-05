@@ -123,7 +123,7 @@ export function skipFlow(dive: Dive, flat: Flat, p: Pos): Pos | null {
   return p.s === end.s && p.f === end.f ? null : move(dive, flat, end, 1)
 }
 
-// The step keys of PROSE in dive.py: only they hold prose, not ids, enums or paths.
+// PROSE, words and stepSeconds mirror dive.py, which prints the same reading time.
 const PROSE = new Set(['title', 'say', 'text', 'body', 'term', 'meaning', 'question', 'why', 'label', 'note'])
 
 function words(v: unknown): number {
@@ -134,7 +134,6 @@ function words(v: unknown): number {
   )
 }
 
-// Reading time: ~200 wpm plus a fixed cost to look at code, diagrams and quizzes.
 // ponytail: rough constants, tune against real dives.
 export function stepSeconds(step: Step): number {
   const read = (words(step) / 200) * 60
