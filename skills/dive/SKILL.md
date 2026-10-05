@@ -53,7 +53,7 @@ Read the scope only as deep as you need to name the flows:
 - **Module**: the files under the path and their entry points: routes, handlers, jobs, consumers, commands, exports.
 - **Question**: the files that your search found.
 
-A **flow** is one trigger and the path that it runs to its effect. A **trigger** is an entry into the domain, where something from outside starts the logic: a user action, a job, a webhook, a consumer, or a CI event. Name it by who enters and what they do: "The customer asks for a refund".
+A **flow** is one trigger and the path that it runs to its effect. A **trigger** is an entry into the domain, where something from outside starts the logic: a user action, a job, a webhook, a consumer, or a CI event. Name it by who enters and what they do: "The customer asks for a refund". A migration or a deploy step is not a flow. Nothing in the domain starts it. The big picture draws the change of the data model, and the review focus draws the deploy risk.
 
 Pick the flows that matter most:
 
@@ -78,12 +78,12 @@ Write `docs/dives/<slug>/plan.md`. Like every text of the dive, write it in **fu
 - <id: a short lowercase word> <label: the code name, the name of the provider, or the role, such as Database> (<group: the app without its path, outside, or infra for data and messaging>, <category: person, service, provider, data or messaging>)
 
 ## flow <id: lowercase words joined by dashes>: <title>
-Trigger: <the trigger> - <path>:<line>
+Trigger: <the id of the actor who enters> <the trigger> - <path>:<line>
 Effect: <where the flow ends, as <path>:<line> or an external system>
 Path: <the files it runs through, in order>
 ```
 
-**Actors** lists only the actors that more than one flow shows, so that every writer draws them the same way. **Path** gives the writer a head start. The writer follows the code wherever it goes.
+**Actors** lists the actors that more than one writer draws, so that every writer draws them the same way: the actor who enters each flow, which the overview also draws, and the actors that more than one flow shows. **Path** gives the writer a head start. The writer follows the code wherever it goes.
 
 ### Write the frame
 

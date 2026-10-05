@@ -271,7 +271,7 @@ def validate(dive, files, partial=False):
                 for j, m in enumerate(s.get('messages') or [], 1):
                     if not need(m, f'{w} message {j}', ('from', 'to', 'label', 'note')):
                         continue
-                    if reached and m.get('from') not in reached:
+                    if k != 'sequence' and reached and m.get('from') not in reached:  # the overview starts each flow at its entry
                         errs.append(f'{w} message {j}: no earlier message reaches "{m.get("from")}". '
                                     'Restore the skipped message or merge actors')
                     reached |= {m.get('from'), m.get('to')}

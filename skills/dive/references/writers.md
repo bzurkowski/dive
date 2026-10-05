@@ -7,7 +7,7 @@ You write one chapter of a dive, or one flow of its walkthrough. A dive explains
 1. Read `docs/dives/<slug>/plan.md`: the flows and their order, the shared actors, and the terms. The plan comes from a quick read of the scope. Check each claim of the plan in the code before you repeat it.
 2. Read [format.md](format.md): the JSON of a part file, and what the build rejects.
 3. Read the code that your job needs, then write your part file in `docs/dives/<slug>/parts/`. Other writers work at the same time, so write only your own file, and do not read theirs: they can be half written.
-4. Run `python3 <skill>/scripts/dive.py check docs/dives/<slug>/parts/<your file>`. It runs the checks of the build on your part alone. Fix each error, then run it again.
+4. Run `python3 <skill>/scripts/dive.py check docs/dives/<slug>/parts/<your file>`. It runs the checks of the build on your part alone. Fix each error, then run it again. When you are not sure that your part passes a rule, write it and run the check. The check takes seconds. Do not work the rules out in your head or in `dive.py`.
 
 ## Reading code
 
@@ -132,7 +132,7 @@ Order the terms so that each meaning uses only the terms above it, or plain word
 
 You write `parts/big-picture.json`. Read the code that the flows start from, as deep as the concepts need: the entry points, the types, the data model. Then write, in this order:
 
-1. The overview: one `sequence` step, the map of the walkthrough. Its first actors are the entries into the domain, one for each flow: who enters, such as the customer or Stripe. Then come the apps as `service` actors, by their group names, and the providers, data and messaging. Each message links to the flow that zooms into it, by the id of the flow in the plan. Leave out the overview when the dive has one flow.
+1. The overview: one `sequence` step, the map of the walkthrough. Its first actors are the entries into the domain, one for each flow: who enters, such as the customer or Stripe. Then come the apps as `service` actors, by their group names, and the providers, data and messaging. The overview draws apps, not the units of the plan. From the plan, use only its people, providers, data and messaging. Each flow starts from its entry, even when no earlier message reached it. Each message links to the flow that zooms into it, by the id of the flow in the plan. Leave out the overview when the dive has one flow.
 2. The concepts that the flows depend on, such as a state machine, the data model, or who calls whom. Each concept is one `diagram` step or one card. The notes of a diagram show its nodes one note at a time, so start with the entry nodes and add a few nodes with each note.
 3. One quiz.
 
