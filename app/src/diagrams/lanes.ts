@@ -1,20 +1,20 @@
-import type { Actor, Category } from '../types.ts'
+import type { Actor, Category, Message } from '../types.ts'
 
-// An actor's label by id; an unknown id stands for itself.
 export const actorLabel = (actors: Actor[], id: string) => actors.find((a) => a.id === id)?.label ?? id
 
-export interface Lane {
+// "A → B: label", as a screen reader hears a message.
+export const hop = (actors: Actor[], m: Message) =>
+  `${actorLabel(actors, m.from)} → ${actorLabel(actors, m.to)}: ${m.label}`
+
+interface Lane {
   label: string // the label of the actor, or the name of a collapsed group
   group?: string
   category: Category // the category that all its actors share, else 'service'
-  actors: Actor[] // one, or every actor of a collapsed group
+  actors: Actor[]
 }
 
-// An actor of an older dive has no category: it draws as a service.
-const category = (a: Actor): Category => a.category ?? 'service'
-
-// Lifelines of a sequence. Grouped, each group collapses into one lane at its
-// first actor. `of` maps actor id → lane. A duplicate id keeps its first actor.
+// Grouped, a group collapses into one lane where its first actor stands.
+// `of` maps an actor id to its lane. A duplicate id keeps its first actor, like actorLabel.
 export function lanes(actors: Actor[], grouped: boolean) {
   const list: Lane[] = []
   const of = new Map<string, number>()
@@ -22,8 +22,8 @@ export function lanes(actors: Actor[], grouped: boolean) {
     const group = a.group || undefined
     const merge = grouped ? group : undefined
     let i = merge ? list.findIndex((l) => l.group === merge) : -1
-    if (i < 0) i = list.push({ label: merge ?? a.label, group, category: category(a), actors: [] }) - 1
-    else if (list[i].category !== category(a)) list[i].category = 'service'
+    if (i < 0) i = list.push({ label: merge ?? a.label, group, category: a.category, actors: [] }) - 1
+    else if (list[i].category !== a.category) list[i].category = 'service'
     list[i].actors.push(a)
     if (!of.has(a.id)) of.set(a.id, i)
   }

@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import type { StepViewProps } from '../shell/nav'
 import type { DiagramStep } from '../types'
 import { Inline } from '../Inline'
-import './diagrams.css'
 import { textWidth, useSize } from './util'
 
 // Full class names so Tailwind picks them up.
@@ -30,7 +29,6 @@ type Laid = {
   edges: { i: number; pts: Pt[]; label?: Pt & { width: number; height: number } }[]
 }
 
-// Split a long label into two lines at the space nearest the middle.
 function wrap(label: string): string[] {
   if (label.length <= 24) return [label]
   const mid = label.length / 2
@@ -56,7 +54,6 @@ function layout(step: DiagramStep, rankdir: 'LR' | 'TB'): Laid {
   return {
     width: g.graph().width,
     height: g.graph().height,
-    // One per id: a repeated id overwrites the earlier node.
     nodes: g.nodes().map((id) => g.node(id)),
     edges: g.edges().map((e) => {
       const d = g.edge(e)
@@ -99,9 +96,6 @@ function curve(p: Pt[]): string {
   return `${d} L${last.x} ${last.y}`
 }
 
-// Box-and-arrow diagram, built up note by note. Each note focuses a set of nodes:
-// they and the edges between them are highlighted, nodes of earlier notes dim,
-// and nodes no note has reached yet are faint ghosts. Without notes all shows.
 export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>) {
   const [ref, { w, h }] = useSize<HTMLDivElement>()
   const both = useMemo(() => ({ LR: layout(step, 'LR'), TB: layout(step, 'TB') }), [step])
@@ -119,7 +113,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
   const groups = [...new Set(step.nodes.flatMap((n) => (n.group ? [n.group] : [])))]
 
   return (
-    <div className="flex h-full w-full flex-col bg-surface">
+    <div className="flex h-full flex-col">
       <div ref={ref} className="relative flex min-h-0 flex-1 overflow-auto p-4">
         {groups.length > 0 && (
           <div className="absolute top-3 right-4 z-10 flex flex-wrap gap-3 text-xs text-muted">
@@ -222,7 +216,7 @@ export function DiagramView({ step, focus, onFocus }: StepViewProps<DiagramStep>
       {note && (
         <div className="flex items-start gap-4 border-t border-line px-6 py-3.5 max-sm:flex-col max-sm:gap-1">
           {notes.length > 1 && (
-            // Each dot pads out to a 24px hit area; the background stays an 8px dot.
+            // Each dot pads out to a 24px hit area. The background stays an 8px dot.
             <div className="-mx-2 flex shrink-0">
               {notes.map((_, i) => (
                 <button

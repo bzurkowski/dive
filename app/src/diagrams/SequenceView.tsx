@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import type { StepViewProps } from '../shell/nav'
 import type { Category, Change, SequenceStep } from '../types'
 import { Inline } from '../Inline'
-import './diagrams.css'
-import { actorLabel, bands, cut, lanes } from './lanes'
+import { bands, cut, hop, lanes } from './lanes'
 import { textWidth, useSize } from './util'
 
-const ROW = 56 // height of a message row
-const SELF_ROW = 72 // height of a self-message row
+const ROW = 56
+const SELF_ROW = 72
 const LOOP = 36 // self-message loop width
 const DROP = 22 // self-message loop height
 const TOP = 12
@@ -15,7 +14,7 @@ const BOTTOM = 170 // room for the callout under the last message
 const MIN_COL = 120
 const NOTE_W = 300
 const LABEL_PX = 12.5
-const LINK = ' ↗' // after the label of a message that links to a step
+const LINK = ' ↗'
 
 // Chips are opaque: they sit on the actor box border.
 const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: string }> = {
@@ -24,28 +23,28 @@ const CHANGE: Record<Change, { tone: string; sign: string; badge: string; chip: 
   removed: { tone: 'text-muted', sign: '', badge: 'removed', chip: 'bg-del text-bad' },
 }
 
-// The color of an actor head and its lifeline. The legend lists them in this order.
-const CATEGORY: Record<Category, { name: string; ink: string; border: string }> = {
-  service: { name: 'Service', ink: 'text-fg', border: 'border-fg' },
-  data: { name: 'Data', ink: 'text-cat-data', border: 'border-cat-data' },
-  messaging: { name: 'Messaging', ink: 'text-cat-messaging', border: 'border-cat-messaging' },
-  provider: { name: 'Provider', ink: 'text-cat-provider', border: 'border-cat-provider' },
-  person: { name: 'Person', ink: 'text-cat-person', border: 'border-cat-person' },
+// The legend lists the categories in this order.
+const CATEGORY: Record<Category, { ink: string; border: string }> = {
+  service: { ink: 'text-fg', border: 'border-fg' },
+  data: { ink: 'text-cat-data', border: 'border-cat-data' },
+  messaging: { ink: 'text-cat-messaging', border: 'border-cat-messaging' },
+  provider: { ink: 'text-cat-provider', border: 'border-cat-provider' },
+  person: { ink: 'text-cat-person', border: 'border-cat-person' },
 }
 
 const BUTTON =
   'rounded border border-line bg-surface px-2 py-0.5 text-xs font-medium text-muted hover:text-fg aria-pressed:bg-line/60 aria-pressed:text-fg'
 
-// Group by app and the legend are each one choice for every sequence in the dive.
-// Storage can be blocked. Then the choice holds for this visit only.
+// One choice for every sequence of the dive. Blocked storage keeps it for this visit only.
 const prefs: Record<string, boolean> = {}
-for (const key of ['dive-grouped', 'dive-legend'])
-  try {
-    prefs[key] = localStorage.getItem(key) === '1'
-  } catch {}
 
 function usePref(key: string) {
-  const [on, set] = useState(!!prefs[key])
+  const [on, set] = useState(() => {
+    try {
+      prefs[key] ??= localStorage.getItem(key) === '1'
+    } catch {}
+    return !!prefs[key]
+  })
   const save = (next: boolean) => {
     prefs[key] = next
     try {
@@ -56,15 +55,12 @@ function usePref(key: string) {
   return [on, save] as const
 }
 
-// Messages up to `focus` are shown. Later ones are faint ghosts.
-// The active message carries its note as a callout right under it.
 export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<SequenceStep>) {
   const [ref, { w }] = useSize<HTMLDivElement>()
   const anchor = useRef<HTMLDivElement>(null)
   const [pref, setPref] = usePref('dive-grouped')
   const [legend, setLegend] = usePref('dive-legend')
   const [scrollX, setScrollX] = useState(0)
-  // Offer grouping only where it merges lanes.
   const merged = lanes(step.actors, true)
   const canGroup = merged.lanes.length < step.actors.length
   const grouped = canGroup && pref
@@ -73,13 +69,11 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const n = view.lanes.length
   const present = (Object.keys(CATEGORY) as Category[]).filter((c) => view.lanes.some((l) => l.category === c))
 
-  // Columns fill the stage and fit lane names; a wider diagram scrolls. Each row has
-  // one label, so labels may run past lifelines without colliding.
+  // Columns fit lane names, not message labels: each row has one label, so it may run past lifelines.
   let cw = Math.max(MIN_COL, w / n)
   // 42: lane px-2, box px-3 and its border.
   for (const l of view.lanes) cw = Math.max(cw, textWidth(l.label, 13, 600) + 42)
   const width = cw * n
-  // Lanes past the stage's edges get a hint that scrolls to them.
   const [cutL, cutR] = cut(n, cw, scrollX, w)
   const hint = (k: number, dir: -1 | 1) => {
     if (!k) return null
@@ -119,7 +113,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const jump = active.m.step && onJump ? active.m.step : undefined
   const tw = (s: string) => textWidth(s, LABEL_PX, 600, true)
 
-  // Wait for the stage's width: grouping, and so the rows, depend on it.
+  // Scroll once the width of the stage is known: the rows are laid out from it.
   useEffect(() => {
     if (w) anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [focus, step, grouped, w])
@@ -128,7 +122,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     <div
       ref={ref}
       onScroll={(e) => setScrollX(e.currentTarget.scrollLeft)}
-      className="h-full w-full overflow-auto bg-surface motion-safe:scroll-smooth"
+      className="h-full w-full overflow-auto motion-safe:scroll-smooth"
     >
       <div className="flex min-h-full flex-col" style={{ width }}>
         <div className="sticky top-0 z-10 bg-surface/90 pb-1 backdrop-blur">
@@ -206,12 +200,10 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const head = open
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
-              // The active message keeps the reading tone. Its change sign stays colored.
               const tone = m.type === 'error' ? 'text-bad' : on ? 'text-accent' : mark ? mark.tone : 'text-fg'
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const link = m.step && onJump ? LINK : ''
               const lw = tw((mark?.sign ?? '') + m.label + link)
-              // A self label that would run off the right edge sits above its loop.
               const beside = self && x1 + LOOP + 8 + lw <= width - 4
               const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min(mid - lw / 2, width - lw - 4))
               const ty = beside ? y + 15 : y - 9
@@ -286,16 +278,16 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               )
             })}
           </svg>
-          {/* To a screen reader the svg is one image: the messages as text, in order. */}
+          {/* The svg is one image to a screen reader, so the messages repeat as text. */}
           <ol className="sr-only">
             {step.messages.map((m, i) => (
               <li key={i} aria-current={i === focus ? 'step' : undefined}>
-                {actorLabel(step.actors, m.from)} → {actorLabel(step.actors, m.to)}: {m.label}
+                {hop(step.actors, m)}
               </li>
             ))}
           </ol>
 
-          {/* Scroll target: the lanes of the active message and its callout, from its row to the end of the callout. */}
+          {/* Scroll target: the lanes of the active message and its callout. */}
           <div
             ref={anchor}
             className="pointer-events-none absolute scroll-mt-28 scroll-mb-12 pt-12"
@@ -323,15 +315,15 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
             </div>
           </div>
         </div>
-        {/* Pinned to the stage's bottom-right corner; the diagram scrolls under it both ways. */}
+        {/* Pinned to the bottom-right corner of the stage. The diagram scrolls under it both ways. */}
         <div className="sticky bottom-0 left-0 z-10 mt-auto h-0" style={{ width: w }}>
           <div className="absolute right-3 bottom-3 flex flex-col items-end gap-2">
             {legend && (
               <ul aria-label="Actor colors" className="rounded-lg border border-line bg-surface px-3 py-2 text-xs">
                 {present.map((c) => (
-                  <li key={c} className="flex items-center gap-2 py-0.5">
+                  <li key={c} className="flex items-center gap-2 py-0.5 capitalize">
                     <span className={`h-3 w-4 rounded-sm border-2 bg-bg ${CATEGORY[c].border}`} />
-                    {CATEGORY[c].name}
+                    {c}
                   </li>
                 ))}
               </ul>

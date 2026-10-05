@@ -1,14 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
-// Content-box size of an element, kept up to date.
 export function useSize<T extends HTMLElement>() {
   const ref = useRef<T>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    // React renders an update from ResizeObserver only after the first paint,
-    // so measure now to fit the first frame. clientWidth includes padding.
+    // Measure now: React renders a ResizeObserver update only after the first paint.
+    // clientWidth includes the padding, which the content box of the observer does not.
     const cs = getComputedStyle(el)
     setSize({
       w: el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
@@ -26,10 +25,8 @@ const families: Record<string, string> = {}
 
 export function textWidth(text: string, px: number, weight = 400, mono = false): number {
   if (!ctx) return text.length * px * 0.6
-  const key = mono ? 'mono' : 'sans'
-  families[key] ??= mono
-    ? getComputedStyle(document.documentElement).getPropertyValue('--font-mono') || 'monospace'
-    : getComputedStyle(document.body).fontFamily
-  ctx.font = `${weight} ${px}px ${families[key]}`
+  const v = mono ? '--font-mono' : '--font-sans'
+  families[v] ??= getComputedStyle(document.documentElement).getPropertyValue(v)
+  ctx.font = `${weight} ${px}px ${families[v]}`
   return ctx.measureText(text).width
 }

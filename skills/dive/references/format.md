@@ -77,7 +77,7 @@ interface SequenceStep {
 interface Actor {
   id: string
   label: string // the code name ("RefundService"), the provider ("Stripe"), or the role ("Database", "Message bus")
-  category: Category // colors the head and the lifeline. Older dives without it draw as 'service'
+  category: Category // colors the head and the lifeline
   group?: string // the app, without its path, or "outside" for people and providers. Data and messaging take none
   change?: Change // PR: a unit the change adds, changes or removes
 }

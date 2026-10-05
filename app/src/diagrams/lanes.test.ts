@@ -2,15 +2,14 @@ import { deepStrictEqual as eq } from 'node:assert/strict'
 import type { Actor } from '../types.ts'
 import { bands, cut, lanes as lanesOf } from './lanes.ts'
 
-// The fixtures are partial actors, like those of an older dive.
 const lanes = (actors: object[], grouped: boolean) => lanesOf(actors as Actor[], grouped)
 
 const actors = [
-  { id: 'worker', label: 'runWorker', group: 'app' },
-  { id: 'store', label: 'RefundStore', group: 'app' },
-  { id: 'pg', label: 'Postgres', group: 'db' },
-  { id: 'retry', label: 'retryRefund', group: 'app' },
-  { id: 'user', label: 'User' },
+  { id: 'worker', label: 'runWorker', group: 'app', category: 'service' },
+  { id: 'store', label: 'RefundStore', group: 'app', category: 'service' },
+  { id: 'pg', label: 'Postgres', group: 'db', category: 'data' },
+  { id: 'retry', label: 'retryRefund', group: 'app', category: 'service' },
+  { id: 'user', label: 'User', category: 'person' },
 ]
 
 const all = lanes(actors, false)
@@ -42,18 +41,17 @@ eq(
 )
 eq([...grouped.of.values()], [0, 0, 1, 0, 2], 'actor → lane')
 
-// A collapsed lane keeps the category that its actors share. Mixed, or none (an older dive), it is a service.
 const cats = [
   { id: 'a', label: 'A', group: 'g', category: 'data' },
   { id: 'b', label: 'B', group: 'g', category: 'data' },
   { id: 'c', label: 'C', group: 'h', category: 'data' },
   { id: 'd', label: 'D', group: 'h', category: 'provider' },
-  { id: 'e', label: 'E' },
+  { id: 'e', label: 'E', category: 'person' },
 ]
 eq(
   lanes(cats, true).lanes.map((l) => l.category),
-  ['data', 'service', 'service'],
-  'lane category: shared, mixed, missing',
+  ['data', 'service', 'person'],
+  'a collapsed lane keeps a shared category, a mixed one is a service',
 )
 
 const plain = [
@@ -63,7 +61,6 @@ const plain = [
 eq(bands(lanes(plain, false).lanes), [], 'no groups, no bands')
 eq(lanes(plain, true).lanes.length, 2, 'no groups, nothing to collapse')
 
-// A duplicate id keeps the first actor, like the actor lookups in App.
 const dup = lanes([...plain, { id: 'a', label: 'A again' }], false)
 eq(dup.of.get('a'), 0, 'duplicate id maps to the first actor')
 
@@ -83,3 +80,4 @@ eq(cut(9, 100, 0, 356), [0, 6], 'start: lanes cut on the right')
 eq(cut(9, 100, 150, 356), [2, 4], 'middle: a half-shown lane counts as cut')
 eq(cut(9, 100, 9999, 356), [6, 0], 'scrolled past the end clamps to the end')
 eq(cut(3, 356 / 3, 0, 356), [0, 0], 'lanes that fit cut nothing')
+eq(cut(9, 100, 200.4, 356), [2, 4], 'a lane hidden by a sub-pixel still counts as shown')

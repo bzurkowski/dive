@@ -1,4 +1,4 @@
-import { actorLabel } from './diagrams/lanes.ts'
+import { hop } from './diagrams/lanes.ts'
 import { flowAt, flows, focusLabel, type Pos } from './shell/nav.ts'
 import type { CodeNote, Dive, SequenceStep, Source, Step } from './types.ts'
 
@@ -53,8 +53,7 @@ export function askContext(dive: Dive, pos: Pos, url: string): AskContext {
     case 'flow':
     case 'edge': {
       const m = step.messages[pos.f]
-      const who = (id: string) => actorLabel(step.actors, id)
-      ctx.note = `${who(m.from)} → ${who(m.to)}: ${m.label}. ${m.note}`
+      ctx.note = `${hop(step.actors, m)}. ${m.note}`
       if (step.kind === 'sequence') ctx.flow = m.step
       for (const s of dive.chapters.flatMap((c) => c.steps))
         if (s.kind === 'code' && s.id && s.id === m.step)

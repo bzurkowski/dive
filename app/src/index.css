@@ -86,3 +86,34 @@ dialog::backdrop {
 kbd {
   @apply rounded border border-line bg-surface px-1.5 py-0.5 font-sans text-xs;
 }
+
+@keyframes dive-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes dive-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes dive-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* On a path with pathLength="1". */
+  .dive-draw {
+    stroke-dasharray: 1;
+    animation: dive-draw 0.45s ease-out;
+  }
+  .dive-head {
+    animation: dive-fade 0.2s 0.35s both;
+  }
+  .dive-pop {
+    animation: dive-pop 0.3s ease-out;
+  }
+}
