@@ -1,46 +1,37 @@
 # Dive
 
-Dive is an Agent Skill that turns a pull request, a code module, or a question about your codebase into an interactive walkthrough of the real code.
+Dive is an Agent Skill. It turns a pull request, a module, or a question about your code into an interactive walkthrough of the real code.
 
-| Big picture | Code walkthrough | Sequence |
+| Big picture | Code with notes | Sequence diagram |
 | --- | --- | --- |
-| ![Diagram of which errors Ky retries](docs/screenshots/diagram.png) | ![Highlighted code with notes](docs/screenshots/code.png) | ![Edge-case sequence diagram with a note](docs/screenshots/sequence.png) |
-
-## Table of contents
-
-- [Why](#why)
-- [How it works](#how-it-works)
-- [What is in a dive](#what-is-in-a-dive)
-- [Usage](#usage)
-- [Installation](#installation)
-  - [Claude Code](#claude-code)
-  - [Codex and Cursor](#codex-and-cursor)
-  - [Other agents](#other-agents)
+| ![A diagram of where the retry errors of Ky come from](docs/screenshots/diagram.png) | ![Removed and added lines of a pull request, with a note on each change](docs/screenshots/code.png) | ![A sequence diagram of a failed fetch, with a note on the changed message](docs/screenshots/sequence.png) |
 
 ## Why
 
-Coding agents now write a large share of the code we ship. Changes land faster than we can review them in depth, so we skim, merge, and move on. A diff can look fine at a glance and still hide the details that matter.
+Coding agents write more of our code every day. Changes land faster than we can review them, so we skim them and merge. The code that other teams own changes just as fast, and it gets harder to follow. Over time, we understand less of our own systems. Addy Osmani calls this [comprehension debt](https://addyosmani.com/blog/comprehension-debt/).
 
-Other teams move just as fast. The parts of the system you do not own get harder to follow, and so does any work that crosses team lines. Over time we understand less of our own systems.
+Dive helps you pay it down. It walks you through a change or a part of the code, one small step at a time. Each step shows the real lines of code. At the end, you know how the code works and why it was built that way.
 
-Addy Osmani calls this [comprehension debt](https://addyosmani.com/blog/comprehension-debt/), also known as cognitive debt.
+## Install
 
-Dive helps you pay it down. It walks you through a change or a part of the domain one step at a time, using the real code, until you understand how it works and why it was built that way.
+In Claude Code:
 
-## How it works
+```
+/plugin marketplace add bzurkowski/dive
+/plugin install dive@dive
+```
 
-1. The orchestrator reads the scope and plans the key flows in the business logic.
-2. Writer subagents run in parallel, one per chapter and one per flow. Each flow writer traces its flow end to end. The intro writer also searches connected knowledge sources, such as Notion or Slack.
-3. `dive.py` checks every step and line range, and builds the page.
+In Codex or Cursor, add `bzurkowski/dive` as a plugin source. The repository has a plugin for each of them.
 
-## What is in a dive
+In any other agent that reads Agent Skills:
 
-- Intro with the basic concepts and the motivation.
-- Searchable glossary of domain terms.
-- Big picture of the change or the domain, with links to each flow.
-- Walkthrough of every business flow, each with an interactive sequence diagram and code snippets.
-- Short quizzes to check that you follow along :smile:
-- An Ask button on every step that opens Claude Code, Cursor, or Codex with a prompt about that step, or copies it.
+```
+npx skills add bzurkowski/dive
+```
+
+You can also copy `skills/dive/` into the skills directory of your agent.
+
+Dive needs `git` and `python3`. `gh` is optional. Dive uses it to read the description and the comments of a pull request.
 
 ## Usage
 
@@ -49,32 +40,27 @@ Dive helps you pay it down. It walks you through a change or a part of the domai
 /dive https://github.com/acme/shop/pull/1234  # a pull request URL
 /dive src/payments                            # a module
 /dive how do refunds get retried?             # a question
-/dive src/payments I am new to payments       # say how well you know the domain
+/dive src/payments I am new to payments       # how well you know the code
 ```
 
-The dive is written to `docs/dives/<slug>/index.html` and opens in your browser when it is ready. Nothing is committed. For pull requests, your working tree and current branch are left alone.
+Dive writes the walkthrough to `docs/dives/<slug>/index.html` and opens it in your browser. It commits nothing. For a pull request, it does not change your branch or your working tree.
 
-## Installation
+Dive writes for your level. If you are new to the code, the dive adds a primer and defines every term of the domain. If you know the code, it defines only the new terms. Say your level as in the last example, or Dive counts your commits in that code from the last year.
 
-### Claude Code
+## What is in a dive
 
-```
-/plugin marketplace add bzurkowski/dive
-/plugin install dive@dive
-```
+| Chapter | What it shows |
+| --- | --- |
+| Intro | Why the code exists. For a pull request, the problem and the decision. |
+| Glossary | The terms of the domain. You can search them from every step. |
+| Big picture | A map of the flows, and the concepts that they depend on. |
+| Walkthrough | Each flow as a sequence diagram. Each message links to the code behind it. |
+| Review focus | The risks, such as suspected bugs, traps and open questions. |
 
-### Codex and Cursor
+Short quizzes check that you understand the code. On every step, the Ask button opens Claude Code, Cursor or Codex with a prompt about that step. It can also copy the prompt for any other chat.
 
-This repo is also a Codex plugin (`.codex-plugin/`, marketplace in `.agents/plugins/`) and a Cursor plugin (`.cursor-plugin/`). Add `bzurkowski/dive` as a plugin source in your agent.
+## How it works
 
-### Other agents
-
-Any agent that reads Agent Skills:
-
-```
-npx skills add bzurkowski/dive
-```
-
-Or copy `skills/dive/` into the skills directory of your agent.
-
-Requirements: `git` and `python3`. `gh` is optional.
+1. The agent reads the scope and plans the key flows of the business logic.
+2. Writer subagents run in parallel, one for each chapter and one for each flow. Each flow writer traces its flow through the code. The intro writer also searches connected tools, such as Notion or Slack.
+3. `dive.py` checks each step and each line range against the code, and builds the page.
