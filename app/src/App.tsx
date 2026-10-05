@@ -187,17 +187,16 @@ export default function App({ dive }: { dive: Dive }) {
 
   const toEdge = last && !edge && chapter.steps[pos.s + 1]?.kind === 'edge'
   const toFlow = last && flow && next.c === pos.c && chapter.steps[next.s].kind === 'flow'
-  // Where Next leads when it leaves the flow or the chapter. Plain text beside the button, so the button keeps its width.
-  const upNext =
+  const nextLabel =
     next.c === END.c
-      ? ''
+      ? 'Finish'
       : toEdge
-        ? 'Next: edge cases (optional)'
+        ? 'Next: edge cases'
         : next.c !== pos.c
           ? `Next chapter: ${dive.chapters[next.c].title}`
           : toFlow
             ? `Next flow: ${chapter.steps[next.s].title}`
-            : ''
+            : 'Next'
 
   const back = step.kind === 'code' && step.id ? backLinks.get(step.id) : undefined
   const rail = <Rail dive={dive} pos={pos} go={go} />
@@ -277,44 +276,47 @@ export default function App({ dive }: { dive: Dive }) {
           </Guard>
         </main>
 
-        <footer className="flex items-center gap-3 border-t border-line bg-surface px-4 py-2.5">
-          <button
-            type="button"
-            className={btn}
-            onClick={() => go(move(dive, flat, pos, -1))}
-            aria-keyshortcuts="ArrowLeft"
-          >
-            Previous
-          </button>
-          <p className="min-w-0 grow truncate text-center text-sm text-muted first-letter:uppercase max-sm:invisible">
-            {focusLabel(step, pos.f)}
-          </p>
-          {skip && (
+        {/* Equal side columns hold the counter at the center, and Ask beside Previous, whatever Skip and Next say.
+            The right column may shrink to nothing, so a tight footer squeezes Next before it moves the counter. */}
+        <footer className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-line bg-surface px-4 py-2.5">
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              title={`Skip to ${skipTo}`}
-              onClick={() => go(skip)}
-              className="min-w-0 truncate rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg max-sm:hidden"
+              className={btn}
+              onClick={() => go(move(dive, flat, pos, -1))}
+              aria-keyshortcuts="ArrowLeft"
             >
-              Skip to {skipTo}
+              Previous
             </button>
-          )}
-          {upNext && (
-            <p title={upNext} className="min-w-0 truncate text-sm text-muted max-sm:hidden">
-              {upNext}
-            </p>
-          )}
-          <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
-          {/* Its accessible name keeps the destination, also below 640px, where the text hides. */}
-          <button
-            type="button"
-            className={`${fill} shrink-0`}
-            onClick={() => go(next)}
-            aria-label={upNext || undefined}
-            aria-keyshortcuts="ArrowRight"
-          >
-            {next.c === END.c ? 'Finish' : 'Next'}
-          </button>
+            <Ask dive={dive} pos={pos} agent={agent} setAgent={setAgent} />
+          </div>
+          <p className="text-sm whitespace-nowrap text-muted tabular-nums first-letter:uppercase max-sm:hidden">
+            {focusLabel(step, pos.f)}
+          </p>
+          <div className="col-start-3 flex min-w-0 items-center justify-end gap-3">
+            {skip && (
+              <button
+                type="button"
+                title={`Skip to ${skipTo}`}
+                onClick={() => go(skip)}
+                className="min-w-0 truncate rounded-lg px-3 py-2 text-sm font-medium text-muted hover:text-fg max-sm:hidden"
+              >
+                Skip to {skipTo}
+              </button>
+            )}
+            {/* Below 640px the label shortens so the footer stays one line; the name keeps the destination. */}
+            <button
+              type="button"
+              className={`${fill} min-w-0 truncate max-sm:shrink-0`}
+              onClick={() => go(next)}
+              aria-label={nextLabel}
+              title={nextLabel}
+              aria-keyshortcuts="ArrowRight"
+            >
+              <span className="max-sm:hidden">{nextLabel}</span>
+              <span className="sm:hidden">{toEdge ? 'Edge cases →' : next.c === END.c ? 'Finish' : 'Next'}</span>
+            </button>
+          </div>
         </footer>
       </div>
 
@@ -359,6 +361,7 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
   const [copied, setCopied] = useState<'' | 'ok' | 'fail'>('')
   const panel = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLTextAreaElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
   const open = useRef<HTMLAnchorElement>(null)
   const ctx = askContext(dive, pos, location.href)
   const prompt = askPrompt(ctx, question)
@@ -377,6 +380,7 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
   return (
     <>
       <button
+        ref={trigger}
         type="button"
         popoverTarget="ask"
         title="Ask your agent about this step (A)"
@@ -394,8 +398,13 @@ function Ask({ dive, pos, agent, setAgent }: { dive: Dive; pos: Pos; agent: stri
         popover="auto"
         role="dialog"
         aria-label="Ask your agent"
+        // Opens over its button, kept 1rem inside the screen.
+        onBeforeToggle={(e) =>
+          e.newState === 'open' &&
+          e.currentTarget.style.setProperty('--x', `${trigger.current?.getBoundingClientRect().left ?? 16}px`)
+        }
         onToggle={(e) => e.newState === 'open' && box.current?.focus()}
-        className="inset-auto right-4 bottom-18 m-0 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
+        className="inset-auto bottom-18 left-[max(1rem,min(var(--x),calc(100vw-25rem)))] m-0 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-4 text-fg shadow-lg"
       >
         <h2 className="font-bold">Ask your agent about this step</h2>
         {/* A chat composer: the question, then the agent on the left and the actions on the right. */}
