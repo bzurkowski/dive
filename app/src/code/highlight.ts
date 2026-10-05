@@ -1,7 +1,7 @@
 import { createHighlighterCore, type HighlighterCore, type LanguageInput, type ThemedToken } from 'shiki/core'
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import type { FileData } from '../types'
-import type { Parsed } from './rows'
+import { sideText, type Row } from './rows'
 
 type Lines = ThemedToken[][]
 export interface Tokens {
@@ -30,6 +30,7 @@ const LANGS: Record<string, LanguageInput> = {
   css: () => import('shiki/langs/css.mjs'),
   html: () => import('shiki/langs/html.mjs'),
   markdown: () => import('shiki/langs/markdown.mjs'),
+  xml: () => import('shiki/langs/xml.mjs'),
 }
 
 // dive.py ids that differ from the grammar name. tsx covers jsx, one grammar less.
@@ -46,18 +47,20 @@ async function tokenize(code: string, lang: string): Promise<Lines | null> {
   const id = ALIASES[lang] ?? lang
   if (!LANGS[id]) return null
   const h = await highlighter()
-  await h.loadLanguage(LANGS[id]) // a no-op once loaded
+  await h.loadLanguage(LANGS[id])
   const themes = { light: 'github-light', dark: 'github-dark' }
   return h.codeToTokens(code, { lang: id, themes, defaultColor: false }).tokens
 }
 
-// One highlight per file, shared by every step that shows it.
 const cache = new WeakMap<FileData, Promise<Tokens>>()
 
-export function highlightFile(file: FileData, parsed: Parsed): Promise<Tokens> {
+export function highlightFile(file: FileData, rows: Row[]): Promise<Tokens> {
   let hit = cache.get(file)
   if (!hit) {
-    hit = Promise.all([file.diff ? tokenize(parsed.oldText, file.lang) : null, tokenize(parsed.newText, file.lang)])
+    hit = Promise.all([
+      file.diff ? tokenize(sideText(rows, 'old'), file.lang) : null,
+      tokenize(sideText(rows, 'new'), file.lang),
+    ])
       .then(([o, n]) => ({ old: o, new: n }))
       .catch(() => ({ old: null, new: null }))
     cache.set(file, hit)

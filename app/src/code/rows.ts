@@ -2,54 +2,31 @@ import type { CodeNote, FileData } from '../types.ts'
 
 export interface Row {
   type: 'ctx' | 'add' | 'del'
-  old?: number // line number, old side
-  new?: number // line number, new side
+  old?: number
+  new?: number
   text: string
 }
 
-export interface Parsed {
-  rows: Row[]
-  oldText: string // old side, rebuilt from the diff
-  newText: string // new side, or the whole file
-  adds: number
-  dels: number
-}
-
-// Diff text is a full-context body: every line starts with ' ', '+' or '-'.
-export function parse(file: FileData): Parsed {
+export function parse(file: FileData): Row[] {
   const lines = file.text.split('\n')
   if (lines.at(-1) === '') lines.pop()
-  if (!file.diff) {
-    const rows = lines.map((text, i): Row => ({ type: 'ctx', new: i + 1, text }))
-    return { rows, oldText: '', newText: lines.join('\n'), adds: 0, dels: 0 }
-  }
-  const rows: Row[] = []
-  const oldL: string[] = []
-  const newL: string[] = []
+  if (!file.diff) return lines.map((text, i) => ({ type: 'ctx', new: i + 1, text }))
   let o = 1
   let n = 1
-  let adds = 0
-  let dels = 0
-  for (const line of lines) {
+  return lines.map((line): Row => {
     const text = line.slice(1)
-    if (line[0] === '+') {
-      rows.push({ type: 'add', new: n++, text })
-      newL.push(text)
-      adds++
-    } else if (line[0] === '-') {
-      rows.push({ type: 'del', old: o++, text })
-      oldL.push(text)
-      dels++
-    } else {
-      rows.push({ type: 'ctx', old: o++, new: n++, text })
-      oldL.push(text)
-      newL.push(text)
-    }
-  }
-  return { rows, oldText: oldL.join('\n'), newText: newL.join('\n'), adds, dels }
+    if (line[0] === '+') return { type: 'add', new: n++, text }
+    if (line[0] === '-') return { type: 'del', old: o++, text }
+    return { type: 'ctx', old: o++, new: n++, text }
+  })
 }
 
-// Row index range [first, last] a note covers, or null if its lines are not in the file.
+export const sideText = (rows: Row[], side: 'old' | 'new') =>
+  rows
+    .filter((r) => r[side] !== undefined)
+    .map((r) => r.text)
+    .join('\n')
+
 export function noteSpan(rows: Row[], note: Pick<CodeNote, 'lines' | 'side'>): [number, number] | null {
   const [a, b] = note.lines
   const side = note.side ?? 'new'
@@ -63,10 +40,10 @@ export function noteSpan(rows: Row[], note: Pick<CodeNote, 'lines' | 'side'>): [
 
 type Item = { kind: 'row'; i: number } | { kind: 'gap'; start: number; end: number } // end exclusive
 
-const CONTEXT = 8 // unchanged rows kept around a change or a note
-const MIN_GAP = 4 // shorter runs stay visible: folding them saves little room
+const CONTEXT = 8
+const MIN_GAP = 4
 
-// Rows to show, with far unchanged runs folded into gaps. `open` holds the starts of gaps the user expanded.
+// `open` holds the start rows of the gaps the reader expanded.
 export function layout(rows: Row[], spans: ([number, number] | null)[], open: Set<number>): Item[] {
   const near = rows.map(() => false)
   const keep = (a: number, b: number) => near.fill(true, Math.max(0, a - CONTEXT), b + CONTEXT + 1)

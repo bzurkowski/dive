@@ -6,7 +6,6 @@ import type { CodeNote, CodeStep, FileData } from '../types'
 import { highlightFile, type Tokens } from './highlight'
 import { layout, noteSpan, parse, type Row } from './rows'
 
-// A flow message that shows this step, resolved to actor labels.
 export interface CodeLink {
   from: string
   to: string
@@ -15,9 +14,9 @@ export interface CodeLink {
 
 type Props = StepViewProps<CodeStep> & {
   files?: Record<string, FileData>
-  blob?: string // GitHub blob URL prefix. The file path is appended
+  blob?: string
   links?: CodeLink[]
-  onLink?: (i: number) => void
+  onLink: (i: number) => void
 }
 
 // `focus`, data-note and data-card hold step-global note indices, across files.
@@ -30,7 +29,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
     if (!b || !card) return
     const el = b.querySelector<HTMLElement>('[data-anchor]') ?? card
     const y = (e: HTMLElement) => e.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop
-    // Span start at 20% from the top, unless that pushes the card below the fold.
+    // Note start 20% from the top, unless its card would fall below the fold.
     const top = Math.max(y(el) - b.clientHeight * 0.2, y(card) + card.offsetHeight + 16 - b.clientHeight)
     // 'auto' follows the CSS of the container: smooth unless the reader prefers reduced motion.
     b.scrollTo({ top, behavior: scrolled.current ? 'auto' : 'instant' })
@@ -44,7 +43,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    <div className="flex h-full flex-col">
       {!!links?.length && (
         <nav
           aria-label="In the flow"
@@ -55,7 +54,7 @@ export function CodeView({ step, files, focus, onFocus, blob, links, onLink }: P
             <button
               key={i}
               type="button"
-              onClick={() => onLink?.(i)}
+              onClick={() => onLink(i)}
               className="rounded-full border border-line px-2 py-0.5 hover:border-accent hover:text-fg"
             >
               {l.from} → {l.to} · <span className="font-mono">{l.label}</span>
@@ -86,34 +85,29 @@ function FileBody({
   focus: number
   blob?: string
 }) {
-  const parsed = useMemo(() => parse(file), [file])
+  const rows = useMemo(() => parse(file), [file])
   const spans = useMemo(
-    () => step.notes.map((n) => (n.file === path ? noteSpan(parsed.rows, n) : null)),
-    [parsed, step.notes, path],
+    () => step.notes.map((n) => (n.file === path ? noteSpan(rows, n) : null)),
+    [rows, step.notes, path],
   )
   const [open, setOpen] = useState(() => new Set<number>())
-  const items = useMemo(() => layout(parsed.rows, spans, open), [parsed, spans, open])
+  const items = useMemo(() => layout(rows, spans, open), [rows, spans, open])
 
   const [tokens, setTokens] = useState<Tokens | null>(null)
   useEffect(() => {
-    let live = true
-    highlightFile(file, parsed).then((t) => live && setTokens(t))
-    return () => {
-      live = false
-    }
-  }, [file, parsed])
+    highlightFile(file, rows).then(setTokens)
+  }, [file, rows])
 
   const covers = (s: [number, number] | null, r: number) => !!s && s[0] <= r && r <= s[1]
-  // The active note owns its rows. Any other row goes to the first note covering it.
   const owner = (r: number) => (covers(spans[focus], r) ? focus : spans.findIndex((s) => covers(s, r)))
 
   const active = step.notes[focus]
-  // A deleted file has no blob at head.
   const href = blob && file.status !== 'deleted' ? blob + path.split('/').map(encodeURIComponent).join('/') : ''
   // plain=1: a rendered file (Markdown, notebook) ignores line anchors.
   const [a, b] = active.lines
   const link = href && active.file === path && active.side !== 'old' ? `${href}?plain=1#L${a}-L${b}` : href
   const card = (i: number) => <NoteCard key={`n${i}`} notes={step.notes} i={i} focus={focus} />
+  const count = (type: Row['type']) => rows.filter((r) => r.type === type).length
 
   return (
     <section className="border-line not-first:border-t">
@@ -133,7 +127,7 @@ function FileBody({
           )}
           {file.diff && (
             <span className="text-xs tabular-nums">
-              <span className="text-ok">+{parsed.adds}</span> <span className="text-bad">−{parsed.dels}</span>
+              <span className="text-ok">+{count('add')}</span> <span className="text-bad">−{count('del')}</span>
             </span>
           )}
           {link && (
@@ -144,7 +138,6 @@ function FileBody({
         </span>
       </header>
       <div className="py-2 font-mono text-[13px] leading-6 [&_.tk]:[color:var(--shiki-light)] dark:[&_.tk]:[color:var(--shiki-dark)]">
-        {step.notes.map((n, i) => n.file === path && !spans[i] && card(i))}
         {items.flatMap((it) => {
           if (it.kind === 'gap')
             return (
@@ -161,7 +154,7 @@ function FileBody({
           return [
             <RowView
               key={it.i}
-              row={parsed.rows[it.i]}
+              row={rows[it.i]}
               tokens={tokens}
               diff={file.diff}
               note={note}
@@ -181,13 +174,13 @@ const RowView = memo(function RowView(p: {
   tokens: Tokens | null
   diff: boolean
   note: number // owning note, -1 for none
-  active: boolean // owned by the focused note
-  anchor: boolean // first row of the focused note
+  active: boolean
+  anchor: boolean
 }) {
   const { row } = p
   const line = row.type === 'del' ? p.tokens?.old?.[row.old! - 1] : p.tokens?.new?.[row.new! - 1]
   const tint = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : ''
-  // The highlighter marks only the line numbers of the active note; the code keeps its diff tint.
+  // The highlighter marks only the line numbers, so the code keeps its diff tint.
   const mark = p.active ? 'bg-mark' : ''
   const band = p.active
     ? 'shadow-[inset_4px_0_0_var(--color-accent)]'
@@ -197,15 +190,16 @@ const RowView = memo(function RowView(p: {
   // Ink on the highlighter: muted falls under 4.5:1 on the dark olive.
   const ink = p.active ? 'text-fg' : 'text-muted'
   const num = `select-none pr-3 text-right tabular-nums ${ink} ${mark}`
+  // The band sits on the first cell: on the row, the highlighter of the cell would hide it.
+  const first = `${num} ${band}`
   return (
     <div
       data-note={p.note >= 0 ? p.note : undefined}
       data-anchor={p.anchor || undefined}
-      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr] max-sm:grid-cols-[2.75rem_2.75rem_0.75rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${tint} ${band} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
+      className={`grid transition-opacity duration-200 ${p.diff ? 'grid-cols-[3rem_3rem_1.5rem_1fr] max-sm:grid-cols-[2.75rem_2.75rem_0.75rem_1fr]' : 'grid-cols-[3.5rem_1fr]'} ${tint} ${p.active ? '' : 'opacity-55'} ${p.note >= 0 ? 'cursor-pointer' : ''}`}
     >
-      {/* The first number cell repaints the row's band, which its highlighter would hide. */}
-      {p.diff && <span className={`${num} ${mark && band}`}>{row.old ?? ''}</span>}
-      <span className={`${num} ${p.diff ? '' : mark && band}`}>{row.new ?? ''}</span>
+      {p.diff && <span className={first}>{row.old ?? ''}</span>}
+      <span className={p.diff ? num : first}>{row.new ?? ''}</span>
       {p.diff && (
         <span className={`select-none text-center ${ink}`}>
           {row.type === 'add' ? '+' : row.type === 'del' ? '−' : ''}

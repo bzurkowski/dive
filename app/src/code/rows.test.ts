@@ -1,28 +1,28 @@
 import { deepStrictEqual as eq } from 'node:assert/strict'
-import { layout, noteSpan, parse } from './rows.ts'
+import { layout, noteSpan, parse, sideText } from './rows.ts'
 
 const diff = [' a', '-b', '+B', '+C', ' d', ...Array.from({ length: 20 }, (_, i) => ` x${i}`)].join('\n')
 const p = parse({ lang: 'ts', diff: true, text: diff + '\n' })
-eq(p.rows.length, 25, 'rows')
-eq([p.rows[1].old, p.rows[2].new, p.rows[4].old, p.rows[4].new], [2, 2, 3, 4], 'line numbers')
-eq([p.adds, p.dels], [2, 1], 'counts')
-eq(p.oldText.split('\n').slice(0, 3), ['a', 'b', 'd'], 'old side')
-eq(p.newText.split('\n').slice(0, 4), ['a', 'B', 'C', 'd'], 'new side')
+eq(p.length, 25, 'rows')
+eq([p[1].old, p[2].new, p[4].old, p[4].new], [2, 2, 3, 4], 'line numbers')
+eq(sideText(p, 'old').split('\n').slice(0, 3), ['a', 'b', 'd'], 'old side')
+eq(sideText(p, 'new').split('\n').slice(0, 4), ['a', 'B', 'C', 'd'], 'new side')
 
-eq(noteSpan(p.rows, { lines: [1, 3] }), [0, 3], 'new span includes inner del row')
-eq(noteSpan(p.rows, { lines: [2, 2], side: 'old' }), [1, 1], 'old span')
-eq(noteSpan(p.rows, { lines: [90, 91] }), null, 'missing span')
+eq(noteSpan(p, { lines: [1, 3] }), [0, 3], 'new span includes inner del row')
+eq(noteSpan(p, { lines: [2, 2], side: 'old' }), [1, 1], 'old span')
+eq(noteSpan(p, { lines: [2, 3], side: 'old' }), [1, 4], 'old span includes inner add rows')
+eq(noteSpan(p, { lines: [90, 91] }), null, 'missing span')
 
-const items = layout(p.rows, [], new Set())
+const items = layout(p, [], new Set())
 eq(items.at(-1), { kind: 'gap', start: 12, end: 25 }, 'collapses far context')
-eq(layout(p.rows, [], new Set([12])).length, 25, 'expanded gap')
+eq(layout(p, [], new Set([12])).length, 25, 'expanded gap')
 
 const plain = parse({ lang: 'py', diff: false, text: 'a\nb\n' })
-eq(layout(plain.rows, [], new Set()).length, 2, 'plain file without notes shows all')
-eq(layout(parse({ lang: 'py', diff: false, text: '' }).rows, [], new Set()), [], 'empty file')
+eq(layout(plain, [], new Set()).length, 2, 'plain file without notes shows all')
+eq(layout(parse({ lang: 'py', diff: false, text: '' }), [], new Set()), [], 'empty file')
 
 const long = parse({ lang: 'py', diff: false, text: Array.from({ length: 30 }, (_, i) => `l${i}`).join('\n') })
-const spanned = layout(long.rows, [null, [10, 10]], new Set())
+const spanned = layout(long, [null, [10, 10]], new Set())
 eq(
   [spanned.length, spanned[0], spanned.at(-1)],
   [20, { kind: 'row', i: 0 }, { kind: 'gap', start: 19, end: 30 }],
