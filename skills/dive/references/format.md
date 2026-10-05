@@ -23,7 +23,7 @@ interface Chapter { id: ChapterId; title: string; steps: Step[] }
 
 type Step = CardStep | TermsStep | CodeStep | SequenceStep | DiagramStep | QuizStep
 
-// `say` is the narration shown above the visual.
+// `say` is the narration: 1-3 short sentences shown above the visual.
 
 interface CardStep {
   kind: 'card'
