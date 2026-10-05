@@ -2,7 +2,18 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { loadDive } from './data.ts'
+import type { Dive } from './types'
+
+// In dev the data tag holds the placeholder, so the dive comes from public/dive.json.
+async function loadDive(): Promise<Dive> {
+  try {
+    return JSON.parse(document.getElementById('dive-data')?.textContent ?? '')
+  } catch {
+    const res = await fetch('dive.json')
+    if (!res.ok) throw new Error(`dive.json: ${res.status} ${res.statusText}`)
+    return res.json()
+  }
+}
 
 const root = createRoot(document.getElementById('root')!)
 const fonts = ['Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Mono Variable']

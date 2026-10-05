@@ -9,7 +9,7 @@
       var saved
       try {
         saved = localStorage.getItem('dive-theme')
-      } catch (e) {}
+      } catch {}
       document.documentElement.dataset.theme =
         saved === 'light' || saved === 'dark'
           ? saved

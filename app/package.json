@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build && cp dist/index.html ../skills/dive/assets/template.html",
     "lint": "oxlint --deny-warnings",
-    "test": "node --test",
+    "test": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
