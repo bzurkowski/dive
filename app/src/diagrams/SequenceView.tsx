@@ -7,8 +7,8 @@ import { textWidth, useSize } from './util'
 
 const ROW = 56
 const SELF_ROW = 72
-const LOOP = 36 // self-message loop width
-const DROP = 22 // self-message loop height
+const LOOP_W = 36
+const LOOP_H = 22
 const TOP = 12
 const BOTTOM = 170 // room for the callout under the last message
 const MIN_COL = 120
@@ -100,7 +100,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
     // Within one lane (same actor, or one collapsed group) a message loops back.
     const self = x1 === x2
     const y = bottom + 34
-    rows.push({ m, x1, x2, self, y, ey: self ? y + DROP : y, mid: self ? x1 + LOOP / 2 : (x1 + x2) / 2 })
+    rows.push({ m, x1, x2, self, y, ey: self ? y + LOOP_H : y, mid: self ? x1 + LOOP_W / 2 : (x1 + x2) / 2 })
     bottom += self ? SELF_ROW : ROW
   }
   const height = bottom + BOTTOM
@@ -196,7 +196,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const open = m.type === 'async'
               // A filled head covers the last 8px of the line. An open one needs the line up to its tip.
               const end = x2 - dir * (open ? 0 : 8)
-              const line = self ? `M${x1} ${y} h${LOOP} v${DROP} H${end}` : `M${x1} ${y} H${end}`
+              const line = self ? `M${x1} ${y} h${LOOP_W} v${LOOP_H} H${end}` : `M${x1} ${y} H${end}`
               const head = open
                 ? `M${x2 - dir * 9} ${ey - 5} L${x2} ${ey} L${x2 - dir * 9} ${ey + 5}`
                 : `M${x2} ${ey} l${-dir * 10} -5 v10 z`
@@ -204,10 +204,9 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
               const fade = on ? '' : i < focus ? 'opacity-60 hover:opacity-100' : 'opacity-15 hover:opacity-40'
               const link = m.step && onJump ? LINK : ''
               const lw = tw((mark?.sign ?? '') + m.label + link)
-              const beside = self && x1 + LOOP + 8 + lw <= width - 4
-              const tx = beside ? x1 + LOOP + 8 : Math.max(4, Math.min(mid - lw / 2, width - lw - 4))
+              const beside = self && x1 + LOOP_W + 8 + lw <= width - 4
+              const tx = beside ? x1 + LOOP_W + 8 : Math.max(4, Math.min(mid - lw / 2, width - lw - 4))
               const ty = beside ? y + 15 : y - 9
-              // The hit area spans the line and its label.
               const hx = Math.min(x1, x2, tx) - 6
               return (
                 <g
@@ -219,7 +218,7 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
                   <rect
                     x={hx}
                     y={y - 26}
-                    width={Math.max(self ? x1 + LOOP : x2, x1, tx + lw) + 6 - hx}
+                    width={Math.max(self ? x1 + LOOP_W : x2, x1, tx + lw) + 6 - hx}
                     height={self ? 56 : 36}
                     fill="transparent"
                   />

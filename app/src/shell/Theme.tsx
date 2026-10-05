@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-// index.html applies the saved 'dive-theme', else the OS setting, before first paint.
+// index.html reads 'dive-theme' before first paint.
 const root = document.documentElement
 
 export function ThemeButton({ className = '' }: { className?: string }) {
@@ -11,9 +11,7 @@ export function ThemeButton({ className = '' }: { className?: string }) {
     root.dataset.theme = theme
     try {
       localStorage.setItem('dive-theme', theme)
-    } catch {
-      // Storage blocked: the theme holds for this visit only.
-    }
+    } catch {}
     setDark(!dark)
   }
   return (

@@ -2,9 +2,6 @@ import type { Dive, Step } from '../types'
 import { flowAt, flows, minutes, origin, COVER, type Pos } from './nav'
 import { ExternalLink } from './Steps'
 
-// The title and source of the dive, then chapters on a vertical "depth line" that fills in
-// as the reader goes deeper. The flows of the current chapter are smaller stops on it.
-// Titles stop at the reading-time column: pr-12 = its min-w-9 plus the gap-3 before it.
 export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => void }) {
   return (
     <>
@@ -72,9 +69,6 @@ export function Rail({ dive, pos, go }: { dive: Dive; pos: Pos; go: (p: Pos) => 
 
 const range = (a: number, b: number) => Array.from({ length: b - a }, (_, k) => a + k)
 
-// Steps flush under the chapter title. The dot of a flow sits on the line of the chapter and
-// fills once the reader has passed the flow. Only the open flow lists its steps.
-// Semibold ink marks the current step. The highlighter stays in the content.
 function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; go: (p: Pos) => void }) {
   const fl = flows(steps)
   const open = flowAt(fl, pos.s)
@@ -92,6 +86,7 @@ function StepList({ steps, c, pos, go }: { steps: Step[]; c: number; pos: Pos; g
   )
 
   return (
+    // pr-12 = min-w-9 of the reading-time column plus gap-3, so titles stop at that column.
     <ol className="mt-2 space-y-2 pr-12">
       {range(0, fl[0]?.s ?? steps.length).map(item)}
       {fl.map((f) => (

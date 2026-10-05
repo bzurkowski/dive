@@ -2,7 +2,6 @@ import { deepStrictEqual as eq, ok } from 'node:assert/strict'
 import { askContext, askPrompt, askTargets, focusText } from './ask.ts'
 import type { Dive } from './types.ts'
 
-// An overview message links the flow. The message of the flow shows code step c1.
 const msg = (step?: string) => ({ from: 'a', to: 'b', label: 'call', note: 'n', step })
 const seq = (kind: string, step?: string) => ({
   kind,
@@ -54,7 +53,6 @@ eq(
   '/tmp/x/page.html',
   'elsewhere: the file itself',
 )
-// A shared copy has no plan beside it: no plan line, the commit lines stay.
 const shared = askPrompt(askContext(dive, { c: 1, s: 1, f: 0 }, 'file:///Users/me/Downloads/index.html'), 'q')
 ok(
   !shared.includes('Plan of this flow') && shared.includes('git show h1:') && shared.includes('git diff b0 h1'),

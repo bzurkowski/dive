@@ -2,7 +2,6 @@ import type { Actor, Category, Message } from '../types.ts'
 
 export const actorLabel = (actors: Actor[], id: string) => actors.find((a) => a.id === id)?.label ?? id
 
-// "A → B: label", as a screen reader hears a message.
 export const hop = (actors: Actor[], m: Message) =>
   `${actorLabel(actors, m.from)} → ${actorLabel(actors, m.to)}: ${m.label}`
 
@@ -39,7 +38,6 @@ export function cut(n: number, cw: number, x: number, view: number): [number, nu
   return [Math.max(0, Math.ceil(x / cw - 0.01)), n - Math.floor((x + view) / cw + 0.01)]
 }
 
-// Runs of neighbouring lanes that share a group: the bands above the actor heads.
 export function bands(list: Lane[]) {
   const out: { group: string; start: number; n: number }[] = []
   list.forEach((l, i) => {

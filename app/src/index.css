@@ -3,10 +3,7 @@
 @import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 @import '@fontsource-variable/atkinson-hyperlegible-mono/wght.css';
 
-/* A marked-up printout: graphite ink on paper. The highlighter (mark) is the only
-   color that means "read this now"; green and red only for diffs and answers;
-   edge only for optional edge cases; cat-* only for the actor categories of a
-   sequence. Fonts are bundled so dives work offline. */
+/* Fonts are bundled so a dive works offline. DESIGN.md gives each color its role. */
 @theme {
   --color-bg: #f2f3f5;
   --color-surface: #ffffff;
@@ -67,7 +64,7 @@ body {
   @apply bg-bg text-fg font-sans antialiased;
 }
 
-/* Tailwind v4 dropped the pointer on buttons. Everything clickable here is a button. */
+/* Tailwind v4 dropped the pointer cursor on buttons. */
 @layer base {
   button:not(:disabled) {
     cursor: pointer;

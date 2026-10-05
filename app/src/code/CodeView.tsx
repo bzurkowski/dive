@@ -180,7 +180,6 @@ const RowView = memo(function RowView(p: {
   const { row } = p
   const line = row.type === 'del' ? p.tokens?.old?.[row.old! - 1] : p.tokens?.new?.[row.new! - 1]
   const tint = row.type === 'add' ? 'bg-add' : row.type === 'del' ? 'bg-del' : ''
-  // The highlighter marks only the line numbers, so the code keeps its diff tint.
   const mark = p.active ? 'bg-mark' : ''
   const band = p.active
     ? 'shadow-[inset_4px_0_0_var(--color-accent)]'

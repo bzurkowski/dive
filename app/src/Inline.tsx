@@ -1,4 +1,4 @@
-// `backticks` become code spans. The capture group puts them at odd indices.
+// The capture group puts the code spans at odd indices.
 export function Inline({ text }: { text: string }) {
   return text.split(/(`[^`]+`)/).map((part, i) =>
     i % 2 ? (
