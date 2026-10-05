@@ -75,7 +75,7 @@ Write `docs/dives/<slug>/plan.md`. Like every text of the dive, write it in **fu
 - Terms: <the domain words that every writer uses for the same things>
 
 ## Actors
-- <id: a short lowercase word> <label: the code name, the name of the provider, or the role, such as Database> (<group: the app without its path, outside, or none for data and messaging>, <category: person, service, provider, data or messaging>)
+- <id: a short lowercase word> <label: the code name, the name of the provider, or the role, such as Database> (<group: the app without its path, outside, or infra for data and messaging>, <category: person, service, provider, data or messaging>)
 
 ## flow <id: lowercase words joined by dashes>: <title>
 Trigger: <the trigger> - <path>:<line>

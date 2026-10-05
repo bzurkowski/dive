@@ -109,7 +109,8 @@
       {
        "id": "pg",
        "label": "Database",
-       "category": "data"
+       "category": "data",
+       "group": "infra"
       },
       {
        "id": "gateway",
@@ -292,7 +293,8 @@
       {
        "id": "pg",
        "label": "Database",
-       "category": "data"
+       "category": "data",
+       "group": "infra"
       },
       {
        "id": "gateway",

@@ -87,7 +87,7 @@ export interface Actor {
   id: string
   label: string // the code name ("RefundService"), the provider ("Stripe"), or the role ("Database", "Message bus")
   category: Category // colors the head and the lifeline
-  group?: string // the app, without its path, or "outside" for people and providers. Data and messaging take none
+  group?: string // the app, without its path, or "outside" for people and providers, or "infra" for data and messaging
   change?: Change // PR: a unit the change adds, changes or removes
 }
 

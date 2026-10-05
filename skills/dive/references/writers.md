@@ -77,8 +77,8 @@ A sequence draws actors and the messages between them: the overview of the big p
 | `person` | The role in the domain: "Customer" | `outside` |
 | `service` | The code name, as the code spells it | The app, by its name without the path |
 | `provider` | The name of the company: "Stripe" | `outside` |
-| `data` | "Database". One actor for each type of database: "Relational database", "Graph database" | None |
-| `messaging` | "Message bus". Draw it each time the flow publishes or consumes through it | None |
+| `data` | "Database". One actor for each type of database: "Relational database", "Graph database" | `infra` |
+| `messaging` | "Message bus". Draw it each time the flow publishes or consumes through it | `infra` |
 
 A label that is not a code name starts with a capital letter. Keep the actors of one group next to each other. For the actors in the plan, use the ids, labels, groups and categories of the plan.
 
