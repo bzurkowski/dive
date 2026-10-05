@@ -50,10 +50,9 @@ export function ExternalLink({ href, children }: { href: string; children: React
   )
 }
 
-export function Links({ links }: { links?: Link[] }) {
-  if (!links?.length) return null
+export function Links({ links }: { links: Link[] }) {
   return (
-    <ul className="mt-6 space-y-1 text-base">
+    <ul className="mt-3 space-y-1 text-base">
       {links.map((l, i) => (
         <li key={i}>
           <ExternalLink href={l.url}>{l.title}</ExternalLink>
@@ -70,7 +69,12 @@ export function CardView({ step }: { step: CardStep }) {
     <article className="text-lg leading-relaxed">
       <h1 className={heading}>{step.title}</h1>
       <Rich text={step.body} />
-      <Links links={step.links} />
+      {!!step.links?.length && (
+        <section className="mt-8">
+          <h2 className="text-sm font-medium text-muted">Sources</h2>
+          <Links links={step.links} />
+        </section>
+      )}
     </article>
   )
 }
