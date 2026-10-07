@@ -106,7 +106,10 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const height = bottom + BOTTOM
 
   const active = rows[focus]
-  const noteW = Math.min(NOTE_W, width - 16)
+  // The callout widens to keep its longest code span on one line: 46 is its padding and border,
+  // the padding of the span, and a period after it.
+  const spans = [...active.m.note.matchAll(/`([^`]+)`/g)].map((c) => textWidth(c[1], 14 * 0.88, 400, true))
+  const noteW = Math.min(Math.max(NOTE_W, ...spans.map((s) => s + 46)), width - 16)
   const noteLeft = Math.max(8, Math.min(active.mid - noteW / 2, width - noteW - 8))
   const spanLeft = Math.min(active.x1 - cw / 2, active.x2 - cw / 2, noteLeft)
   const spanW = Math.max(active.x1 + cw / 2, active.x2 + cw / 2, noteLeft + noteW) - spanLeft

@@ -2,7 +2,7 @@
 export function Inline({ text }: { text: string }) {
   return text.split(/(`[^`]+`)/).map((part, i) =>
     i % 2 ? (
-      <code key={i} className="rounded bg-line/60 px-1 py-px font-mono text-[0.88em]">
+      <code key={i} className="rounded bg-line/60 px-1 py-px font-mono text-[0.88em] wrap-break-word">
         {part.slice(1, -1)}
       </code>
     ) : (
