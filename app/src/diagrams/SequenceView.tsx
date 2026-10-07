@@ -108,15 +108,19 @@ export function SequenceView({ step, focus, onFocus, onJump }: StepViewProps<Seq
   const active = rows[focus]
   const noteW = Math.min(NOTE_W, width - 16)
   const noteLeft = Math.max(8, Math.min(active.mid - noteW / 2, width - noteW - 8))
-  const anchorLeft = Math.min(active.x1 - cw / 2, active.x2 - cw / 2, noteLeft)
-  const anchorW = Math.max(active.x1 + cw / 2, active.x2 + cw / 2, noteLeft + noteW) - anchorLeft
+  const spanLeft = Math.min(active.x1 - cw / 2, active.x2 - cw / 2, noteLeft)
+  const spanW = Math.max(active.x1 + cw / 2, active.x2 + cw / 2, noteLeft + noteW) - spanLeft
+  // An arrow wider than the stage centers its label and callout, which both sit at its middle.
+  const fits = spanW <= w
+  const anchorLeft = fits ? spanLeft : noteLeft
+  const anchorW = fits ? spanW : noteW
   const jump = active.m.step && onJump ? active.m.step : undefined
   const tw = (s: string) => textWidth(s, LABEL_PX, 600, true)
 
   // Scroll once the width of the stage is known: the rows are laid out from it.
   useEffect(() => {
-    if (w) anchor.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [focus, step, grouped, w])
+    if (w) anchor.current?.scrollIntoView({ block: 'nearest', inline: fits ? 'nearest' : 'center' })
+  }, [focus, step, grouped, w, fits])
 
   return (
     <div
